@@ -1,5 +1,6 @@
 import torch
 from torch_geometric.data import Data
+import numpy as np
 from .base import Dataset
 
 class UniversalDataset(Dataset):
@@ -8,20 +9,25 @@ class UniversalDataset(Dataset):
                     states = None,
                     y = None,
                     edge_index = None,
+                    edge_weight = None,
                     edge_attr = None,
 
-                    lb_size = None, # look back window size
-                    fp_size = None # forward prediction size
+                    l_size = None, # lookback window size
+                    h_size = None # horizon size
 
                 ):
         
+        super().__init__()
 
-        super().__init__(   x = x,
-                            y = y,
-                            edge_index = edge_index,
-                            edge_attr = edge_attr,
-                            states = states
-                        )
+        self.x = x # N*D; L*D; L*N*D; 
+        self.y = y # N*1; L*1; L*N*1
+        self.edge_index = edge_index # None; 2*Links; L*2*Links
+        self.edge_weight = edge_weight # same as edge_index
+        self.edge_attr = edge_attr # same as edge_index
+        self.states = states # same as x
+
+        self.l_size = l_size
+        self.h_size = h_size
 
     def download(self):
         pass
@@ -56,3 +62,15 @@ class UniversalDataset(Dataset):
                     edge_attr = edge_attr,
                     states = states 
                     )
+    
+    def load_toy_dataset(self):
+        data = torch.load("dreamy/data/toy.pt")
+        self.x = data['feature']
+        self.y = data['label']
+        self.states = data['state']
+        self.edge_index = data['edge_index']
+        self.edge_weight = data['edge_weight']
+        
+
+
+
