@@ -10,11 +10,7 @@ class UniversalDataset(Dataset):
                     y = None,
                     edge_index = None,
                     edge_weight = None,
-                    edge_attr = None,
-
-                    l_size = None, # lookback window size
-                    h_size = None # horizon size
-
+                    edge_attr = None
                 ):
         
         super().__init__()
@@ -25,9 +21,6 @@ class UniversalDataset(Dataset):
         self.edge_weight = edge_weight # same as edge_index
         self.edge_attr = edge_attr # same as edge_index
         self.states = states # same as x
-
-        self.l_size = l_size
-        self.h_size = h_size
 
     def download(self):
         pass
