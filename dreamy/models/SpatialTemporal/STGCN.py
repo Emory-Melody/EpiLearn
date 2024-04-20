@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .base import BaseModel
+
 
 class TimeBlock(nn.Module):
     """
@@ -39,6 +41,11 @@ class TimeBlock(nn.Module):
         # Convert back from NCHW to NHWC
         out = out.permute(0, 2, 3, 1)
         return out
+    
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+        self.conv3.reset_parameters()
 
 
 class STGCNBlock(nn.Module):
@@ -73,6 +80,11 @@ class STGCNBlock(nn.Module):
         stdv = 1. / math.sqrt(self.Theta1.shape[1])
         self.Theta1.data.uniform_(-stdv, stdv)
 
+        self.temporal1.reset_parameters()
+        self.temporal2.reset_parameters()
+        self.batch_norm.reset_parameters()
+
+
     def forward(self, X, A_hat):
         """
         :param X: Input data of shape (batch_size, num_nodes, num_timesteps,
@@ -90,7 +102,7 @@ class STGCNBlock(nn.Module):
         # return t3
 
 
-class STGCN(nn.Module):
+class STGCN(BaseModel):
     """
     Spatio-temporal graph convolutional network as described in
     https://arxiv.org/abs/1709.04875v3 by Yu et al.
@@ -128,3 +140,9 @@ class STGCN(nn.Module):
         out3 = self.last_temporal(out2)
         out4 = self.fully(out3.reshape((out3.shape[0], out3.shape[1], -1)))
         return out4
+    
+    def initialize(self):
+        self.block1.reset_parameters()
+        self.block2.reset_parameters()
+        self.last_temporal.reset_parameters()
+        self.fully.reset_parameters()

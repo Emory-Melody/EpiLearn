@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_sparse import SparseTensor
 
-from .base_model import BaseModel
+from .base import BaseModel
 
 class GCN(BaseModel):
 

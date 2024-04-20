@@ -28,6 +28,41 @@ class UniversalDataset(Dataset):
     def save(self):
         pass
 
+    def generate_dataset(self, X = None, Y = None, lookback_window_size = 1, horizon_size = 1, permute = False):
+        """
+        Takes node features for the graph and divides them into multiple samples
+        along the time-axis by sliding a window of size (num_timesteps_input+
+        num_timesteps_output) across it in steps of 1.
+        :param X: Node features of shape (num_vertices, num_features,
+        num_timesteps)
+        :return:
+            - Node features divided into multiple samples. Shape is
+            (num_samples, num_vertices, num_features, num_timesteps_input).
+            - Node targets for the samples. Shape is
+            (num_samples, num_vertices, num_features, num_timesteps_output).
+        """
+        if X is None:
+            X = self.x
+        if Y is None:
+            Y = self.y
+
+        features, target = [], []
+
+        indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
+        
+        for i, j in indices:
+            features.append(X[i: i + lookback_window_size, :, :])
+            target.append(Y[i + lookback_window_size: j])
+        
+        features = torch.from_numpy(np.array(features))
+        targets = torch.from_numpy(np.array(target))
+
+        if permute:
+            features = features.permute((0,2,1,3))
+            targets = targets.permute((0,2,1))
+
+        return features, targets
+
     def get_slice(self, timestamp):
         try:
             x = self.x[timestamp]
@@ -57,12 +92,18 @@ class UniversalDataset(Dataset):
                     )
     
     def load_toy_dataset(self):
-        data = torch.load("dreamy/data/toy.pt")
-        self.x = data['feature']
-        self.y = data['label']
-        self.states = data['state']
-        self.edge_index = data['edge_index']
-        self.edge_weight = data['edge_weight']
+        data1 = np.load("dreamy/data/graphs.npy")
+        data2 = np.load("dreamy/data/features.npy", allow_pickle= True)
+
+        self.x = torch.FloatTensor(data2.tolist()['node'])
+        self.y = torch.FloatTensor(data2.tolist()['node'])[:,:,0]
+       
+        self.dynamic_graph = torch.FloatTensor(data2.tolist()['od'])
+        self.states = torch.FloatTensor(data2.tolist()['SIR'])
+
+        self.graph = data1
+        self.edge_index = torch.FloatTensor(data1).to_sparse_coo().indices()
+        self.edge_weight = torch.FloatTensor(data1).to_sparse_coo().values()
         
 
 
