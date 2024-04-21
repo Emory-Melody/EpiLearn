@@ -12,4 +12,8 @@ class LSTMNet(BaseModel):
         # x: [batch_size, seq_len, num_features]
         out, (h_n, c_n) = self.lstm(x)  # LSTM输出，同时输出最终隐藏状态和细胞状态
         out = self.fc(out[:, -1, :])  # 只取序列中的最后一个时间点的输出
-        return out  # 调整输出形状以匹配 y 的形状
+        return out  # 
+    
+    def initialize(self):
+        pass
+    

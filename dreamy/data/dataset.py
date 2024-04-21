@@ -51,7 +51,7 @@ class UniversalDataset(Dataset):
         indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
         
         for i, j in indices:
-            features.append(X[i: i + lookback_window_size, :, :])
+            features.append(X[i: i + lookback_window_size])
             target.append(Y[i + lookback_window_size: j])
         
         features = torch.from_numpy(np.array(features))
