@@ -1,1 +1,1 @@
-from . import base, GCN, GAT, SAGE
+from . import base, gcn, GAT, SAGE

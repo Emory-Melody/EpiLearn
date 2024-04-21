@@ -35,6 +35,7 @@ class TimeBlock(nn.Module):
         num_timesteps_out, num_features_out=out_channels)
         """
         # Convert into NCHW format for pytorch to perform convolutions.
+
         X = X.permute(0, 3, 1, 2)
         temp = self.conv1(X) + torch.sigmoid(self.conv2(X))
         out = F.relu(temp + self.conv3(X))
@@ -111,7 +112,7 @@ class STGCN(BaseModel):
     """
 
     def __init__(self, num_nodes, num_features, num_timesteps_input,
-                 num_timesteps_output):
+                 num_timesteps_output, device):
         """
         :param num_nodes: Number of nodes in the graph.
         :param num_features: Number of features at each node in each time step.
@@ -120,7 +121,7 @@ class STGCN(BaseModel):
         :param num_timesteps_output: Desired number of future time steps
         output by the network.
         """
-        super(STGCN, self).__init__()
+        super(STGCN, self).__init__(device=device)
         self.block1 = STGCNBlock(in_channels=num_features, out_channels=64,
                                  spatial_channels=16, num_nodes=num_nodes)
         self.block2 = STGCNBlock(in_channels=64, out_channels=64,

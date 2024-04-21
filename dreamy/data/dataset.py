@@ -53,9 +53,12 @@ class UniversalDataset(Dataset):
         for i, j in indices:
             features.append(X[i: i + lookback_window_size, :, :])
             target.append(Y[i + lookback_window_size: j])
+
+        '''features = torch.from_numpy(np.array(features))
+        targets = torch.from_numpy(np.array(target))'''
         
-        features = torch.from_numpy(np.array(features))
-        targets = torch.from_numpy(np.array(target))
+        features = torch.stack(features, dim=0)
+        targets = torch.stack(target, dim=0)
 
         if permute:
             features = features.permute((0,2,1,3))
