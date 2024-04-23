@@ -3,3 +3,4 @@ test.ipynb
 test.py
 .DS_Store
 **/__pycache__
+**/.vscode
