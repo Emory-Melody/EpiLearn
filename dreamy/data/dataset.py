@@ -1,16 +1,18 @@
 import torch
 from torch_geometric.data import Data
 import numpy as np
+
 from .base import Dataset
 
-class UniversalDataset(Dataset):
-    def __init__(   self,
-                    x = None,
-                    states = None,
-                    y = None,
-                    edge_index = None,
-                    edge_weight = None,
-                    edge_attr = None
+class UniversalDataset(Data):
+    def __init__(
+                self,
+                x=None, # timestep * Num nodes * features 
+                states=None,
+                y=None,
+                edge_index=None,
+                edge_weight=None,
+                edge_attr = None
                 ):
         
         super().__init__()
@@ -28,7 +30,7 @@ class UniversalDataset(Dataset):
     def save(self):
         pass
 
-    def generate_dataset(self, X = None, Y = None, lookback_window_size = 1, horizon_size = 1, permute = False):
+    def generate_dataset(self, X = None, Y = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
         """
         Takes node features for the graph and divides them into multiple samples
         along the time-axis by sliding a window of size (num_timesteps_input+
@@ -46,6 +48,9 @@ class UniversalDataset(Dataset):
         if Y is None:
             Y = self.y
 
+        if feat_idx is not None:
+            X = X[:, :, feat_idx]
+
         features, target = [], []
 
         indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
@@ -56,6 +61,9 @@ class UniversalDataset(Dataset):
         
         features = torch.from_numpy(np.array(features))
         targets = torch.from_numpy(np.array(target))
+
+        if target_idx is not None:
+            targets = targets[:,target_idx, :]
 
         if permute:
             features = features.permute((0,2,1,3))
