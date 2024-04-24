@@ -6,6 +6,7 @@ import torch
 from tqdm import tqdm
 
 from ...utils.utils import *
+from ...utils.metrics import get_loss
 
 
 class BaseModel(nn.Module):
@@ -13,22 +14,23 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         self.device = device
 
-    def fit(self, train_input, train_target, graph = None, val_input = None, val_target = None, epochs=1000, batch_size = 10, initialize=True, verbose = False, patience = 100, **kwargs):
+    def fit(self, train_input, train_target, train_states = None, graph = None, val_input = None, val_target = None, val_states = None, loss = 'mse', epochs=1000, batch_size = 10, initialize=True, verbose = False, patience = 100, **kwargs):
         if initialize:
             self.initialize()
         
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        loss_fn = nn.MSELoss()
+
+        loss_fn = get_loss(loss)
 
         training_losses = []
         validation_losses = []
         early_stopping = patience
         best_val = float('inf')
         for epoch in tqdm(range(epochs)):
-            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input, graph = graph, target = train_target, batch_size = batch_size, device = self.device)
+            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input, states = train_states, graph = graph, target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input, graph = graph, target = val_target, device = self.device)
+            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input, graph = graph, target = val_target, states = val_states, device = self.device)
             validation_losses.append(val_loss)
 
             if best_val > val_loss:
@@ -54,7 +56,7 @@ class BaseModel(nn.Module):
         self.load_state_dict(best_weights)
 
         
-    def train_epoch(self, optimizer, loss_fn, feature, graph = None, target = None, batch_size = 1, device = 'cpu'):
+    def train_epoch(self, optimizer, loss_fn, feature, states = None, graph = None, target = None, batch_size = 1, device = 'cpu'):
         """
         Trains one epoch with the given data.
         :param feature: Training features of shape (num_samples, num_nodes,
@@ -72,30 +74,32 @@ class BaseModel(nn.Module):
             optimizer.zero_grad()
 
             indices = permutation[i:i + batch_size]
-            X_batch, y_batch = feature[indices], target[indices]
+            X_states, X_batch, y_batch = states[indices], feature[indices], target[indices]
+
             X_batch = X_batch.to(device=device)
+            X_states = X_states.to(device=device)
             y_batch = y_batch.to(device=device)
 
-            out = self.forward(graph, X_batch)
+            out = self.forward(graph, X_batch, X_states)
             loss = loss_fn(out, y_batch)
             loss.backward()
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
         return sum(epoch_training_losses)/len(epoch_training_losses)
     
-    def evaluate(self, loss_fn, feature, graph = None, target = None, device = 'cpu'):
+    def evaluate(self, loss_fn, feature, graph = None, target = None, states = None, device = 'cpu'):
         with torch.no_grad():
             self.eval()
             feature = feature.to(device=device)
             target = target.to(device=device)
 
-            out = self.forward(graph, feature)
+            out = self.forward(graph, feature, states)
             val_loss = loss_fn(out, target).to(device="cpu")
             val_loss = val_loss.detach().numpy().item()
             
             return val_loss, out
 
-    def predict(self, feature, graph = None):
+    def predict(self, feature, states = None, graph = None):
         """
         Returns
         -------
@@ -103,4 +107,4 @@ class BaseModel(nn.Module):
         """
         self.eval()
 
-        return self.forward(graph, feature)
+        return self.forward(graph, feature, states)

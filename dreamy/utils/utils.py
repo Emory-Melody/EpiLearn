@@ -38,7 +38,6 @@ def normalize(X):
     
     return X, means, stds
 
-    
 
 def normalize_adj(A):
     """
@@ -55,3 +54,6 @@ def normalize_adj(A):
     A_wave = np.multiply(np.multiply(diag.reshape((-1, 1)), A),
                          diag.reshape((1, -1)))
     return torch.FloatTensor(A_wave)
+
+def diff(features):
+    return torch.diff(features, dim=0)

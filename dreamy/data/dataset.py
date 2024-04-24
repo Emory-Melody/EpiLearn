@@ -30,7 +30,7 @@ class UniversalDataset(Data):
     def save(self):
         pass
 
-    def generate_dataset(self, X = None, Y = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
+    def generate_dataset(self, X = None, Y = None, states = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
         """
         Takes node features for the graph and divides them into multiple samples
         along the time-axis by sliding a window of size (num_timesteps_input+
@@ -52,12 +52,16 @@ class UniversalDataset(Data):
             X = X[:, :, feat_idx]
 
         features, target = [], []
+        if states is not None:
+            input_states = []
 
         indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
         
         for i, j in indices:
             features.append(X[i: i + lookback_window_size])
             target.append(Y[i + lookback_window_size: j])
+            if states is not None:
+                input_states.append(states[i: i + lookback_window_size])
         
         features = torch.from_numpy(np.array(features))
         targets = torch.from_numpy(np.array(target))
@@ -66,10 +70,18 @@ class UniversalDataset(Data):
             targets = targets[:,target_idx, :]
 
         if permute:
-            features = features.permute((0,2,1,3))
-            targets = targets.permute((0,2,1))
+            features = features.transpose(1,2)
+            targets = targets.transpose(1,2)
 
-        return features, targets
+        if states is not None:
+            input_states = torch.from_numpy(np.array(input_states))
+            if permute:
+                input_states = input_states.transpose(1,2)
+            return features, targets, input_states
+        else:
+            return features, targets
+        
+
 
     def get_slice(self, timestamp):
         try:

@@ -34,7 +34,7 @@ class CNNRNN_Res(BaseModel):
             self.residual_window = min(self.residual_window, self.P)
             self.residual = nn.Linear(self.residual_window, 1)
 
-    def forward(self, adj, x):
+    def forward(self, adj, x, **kargs):
         # x: batch x window (self.P) x #signal (m)
         # first transform
 

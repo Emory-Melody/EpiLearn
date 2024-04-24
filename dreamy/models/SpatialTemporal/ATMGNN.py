@@ -119,7 +119,7 @@ class ATMGNN(BaseModel):
         self.relu = nn.ReLU()
         
         
-    def forward(self, adj, x):
+    def forward(self, adj, x, **kargs):
         lst = list()
         skip = x.view(-1, self.window, self.n_nodes, self.nfeat)
         skip = torch.transpose(skip, 1, 2).reshape(-1, self.window, self.nfeat)
@@ -258,7 +258,7 @@ class MPNN_LSTM(BaseModel):
         self.relu = nn.ReLU()
         
         
-    def forward(self, adj, x):
+    def forward(self, adj, x, **kargs):
         lst = list()
         weight = adj.to_sparse().values()
         adj = adj.to_sparse().indices()

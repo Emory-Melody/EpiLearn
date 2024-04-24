@@ -1,1 +1,1 @@
-from . import STGCN, ATMGNN, CNNRNN_Res
+from . import STGCN, ATMGNN, CNNRNN_Res, STAN
