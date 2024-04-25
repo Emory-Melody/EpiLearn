@@ -74,13 +74,18 @@ class BaseModel(nn.Module):
             optimizer.zero_grad()
 
             indices = permutation[i:i + batch_size]
-            X_states, X_batch, y_batch = states[indices], feature[indices], target[indices]
+            X_batch, y_batch = feature[indices], target[indices]
 
             X_batch = X_batch.to(device=device)
-            X_states = X_states.to(device=device)
             y_batch = y_batch.to(device=device)
 
-            out = self.forward(graph, X_batch, X_states)
+            if states is not None:
+                X_states = states[indices]
+                X_states = X_states.to(device=device)
+            else:
+                X_states = None
+
+            out = self.forward(X_batch, graph, X_states)
             loss = loss_fn(out, y_batch)
             loss.backward()
             optimizer.step()
@@ -93,7 +98,7 @@ class BaseModel(nn.Module):
             feature = feature.to(device=device)
             target = target.to(device=device)
 
-            out = self.forward(graph, feature, states)
+            out = self.forward(feature, graph, states)
             val_loss = loss_fn(out, target).to(device="cpu")
             val_loss = val_loss.detach().numpy().item()
             
@@ -107,4 +112,4 @@ class BaseModel(nn.Module):
         """
         self.eval()
 
-        return self.forward(graph, feature, states)
+        return self.forward(feature, graph, states)

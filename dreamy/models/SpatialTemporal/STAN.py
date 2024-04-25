@@ -94,7 +94,7 @@ class STAN(BaseModel):
         self.gru_dim = gru_dim
         self.device = device
 
-    def forward(self, adj, X, states, N = None, h = None):
+    def forward(self, X, adj, states, N = None, h = None):
         last_diff_I = X[:, -1, :, 1].unsqueeze(2)
         last_diff_R = X[:, -1, :, 2].unsqueeze(2)
         X = X.transpose(1,2).flatten(2,3)
