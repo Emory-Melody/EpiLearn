@@ -1,75 +1,80 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GATConv
-from torch_sparse import SparseTensor
+from torch_geometric.nn import GATConv, GATv2Conv
+import torch
 
 from .base import BaseModel
 
 class GAT(BaseModel):
 
-    def __init__(self, nfeat, nhid, nclass, nlayers=2, dropout=0.5, lr=0.01,
-                with_bn=False, weight_decay=5e-4, with_bias=True, device=None):
+    def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, nheads=[1, 1], dropout=0.5,
+                with_bn=False, with_bias=True, device=None, concat=False):
 
         super(GAT, self).__init__()
 
         assert device is not None, "Please specify 'device'!"
         self.device = device
+        
+        assert len(nheads) == nlayers, "nheads should match nlayers!"
 
         self.layers = nn.ModuleList([])
         if with_bn:
             self.bns = nn.ModuleList()
-
-        if nlayers == 1:
-            self.layers.append(GATConv(nfeat, nclass, bias=with_bias))
-        else:
-            self.layers.append(GATConv(nfeat, nhid, bias=with_bias))
-            if with_bn:
-                self.bns.append(nn.BatchNorm1d(nhid))
-            for i in range(nlayers-2):
-                self.layers.append(GATConv(nhid, nhid, bias=with_bias))
-                if with_bn:
-                    self.bns.append(nn.BatchNorm1d(nhid))
-            self.layers.append(GATConv(nhid, nclass, bias=with_bias))
-
-        self.dropout = dropout
-        self.weight_decay = weight_decay
-        self.lr = lr
-        self.output = None
-        self.best_model = None
-        self.best_output = None
-        self.with_bn = with_bn
-        self.name = 'GCN'
-
-    def forward(self, x, edge_index, edge_weight=None):
-        x, edge_index, edge_weight = self._ensure_contiguousness(x, edge_index, edge_weight)
-        for ii, layer in enumerate(self.layers):
-            if edge_weight is not None:
-                adj = SparseTensor.from_edge_index(edge_index, edge_weight, sparse_sizes=2 * x.shape[:1]).t()
-                x = layer(x, adj)
+        
+        if concat:
+            if nlayers == 1:
+                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
             else:
-                x = layer(x, edge_index)
-            if ii != len(self.layers) - 1:
+                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
+                if with_bn:
+                    self.bns.append(nn.BatchNorm1d(nheads[0]*hidden_dim))
+                        
+                for i in range(nlayers-2):
+                    self.layers.append(GATConv(nheads[i]*hidden_dim, hidden_dim, bias=with_bias, heads=nheads[i+1], concat=concat))
+                    if with_bn:
+                        self.bns.append(nn.BatchNorm1d(nheads[i+1]*hidden_dim))
+                self.layers.append(GATConv(nheads[-2]*hidden_dim, hidden_dim, bias=with_bias, heads=nheads[-1], concat=concat))
+            
+            
+        else:
+            if nlayers == 1:
+                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
+            else:
+                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
+                if with_bn:
+                    self.bns.append(nn.BatchNorm1d(hidden_dim))
+                        
+                for i in range(nlayers-2):
+                    self.layers.append(GATConv(hidden_dim, hidden_dim, bias=with_bias, heads=nheads[i+1], concat=concat))
+                    if with_bn:
+                        self.bns.append(nn.BatchNorm1d(hidden_dim))
+                self.layers.append(GATConv(hidden_dim, hidden_dim, bias=with_bias, heads=nheads[-1], concat=concat))
+                
+            
+        if concat:
+            self.fc = nn.Linear(nheads[-1]*hidden_dim, output_dim)
+        else:
+            self.fc = nn.Linear(hidden_dim, output_dim)
+            
+        self.dropout = dropout
+        self.with_bn = with_bn
+
+    def forward(self, data):
+        
+        x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
+        x = torch.reshape(x, (x.shape[0], -1))
+
+        for i, layer in enumerate(self.layers):
+            if edge_attr is not None:
+                x = layer(x, edge_index=edge_index, edge_attr=edge_attr)
+            else:
+                x = layer(x, edge_index=edge_index)
+            if i != len(self.layers) - 1:
                 if self.with_bn:
-                    x = self.bns[ii](x)
+                    x = self.bns[i](x)
                 x = F.relu(x)
                 x = F.dropout(x, p=self.dropout, training=self.training)
-        return F.log_softmax(x, dim=1)
-
-    def get_embed(self, x, edge_index, edge_weight=None):
-        x, edge_index, edge_weight = self._ensure_contiguousness(x, edge_index, edge_weight)
-        for ii, layer in enumerate(self.layers):
-            if ii == len(self.layers) - 1:
-                return x
-            if edge_weight is not None:
-                adj = SparseTensor.from_edge_index(edge_index, edge_weight, sparse_sizes=2 * x.shape[:1]).t()
-                x = layer(x, adj)
-            else:
-                x = layer(x, edge_index)
-            if ii != len(self.layers) - 1:
-                if self.with_bn:
-                    x = self.bns[ii](x)
-                x = F.relu(x)
-        return x
+        return self.fc(x) #F.log_softmax(x, dim=1)
 
     def initialize(self):
         for m in self.layers:
@@ -77,3 +82,5 @@ class GAT(BaseModel):
         if self.with_bn:
             for bn in self.bns:
                 bn.reset_parameters()
+
+

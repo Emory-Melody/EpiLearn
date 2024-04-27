@@ -2,6 +2,8 @@ import torch
 from torch_geometric.data import Data
 import numpy as np
 from .base import Dataset
+import warnings
+
 
 class UniversalDataset(Dataset):
     def __init__(   self,
@@ -111,3 +113,68 @@ class UniversalDataset(Dataset):
 
 
 
+class SpatialDataset(Dataset):
+    def __init__(   self,
+                    x = None,
+                    states = None,
+                    y = None,
+                    adj_m=None,
+                    edge_index = None,
+                    edge_attr = None
+                ):
+        
+        super().__init__()
+
+        self.x = x # N*D; L*D; L*N*D; 
+        self.y = y # N*1; L*1; L*N*1
+        self.adj_m = adj_m
+        self.edge_index = edge_index # None; 2*Links; L*2*Links
+        self.edge_attr = edge_attr # same as edge_index
+        self.states = states # same as x
+        self.output_dim = None
+        
+        
+        assert self.x is not None, "Input should not be NoneType!"
+        if self.y is not None:
+            assert len(self.x)==len(self.y), "Input and Output dim do not match!"
+            self.output_dim = self.y.shape
+            
+        
+        if self.edge_index is None and self.adj_m is None:
+            raise ValueError("There is no graph in Dataset, or you may specify your graph with parameter adj_m or edge_index!")
+            
+        if self.adj_m is not None and self.edge_index is not None:
+            raise ValueError("There may be conflicts between your parameter adj_m and edge_index!")
+        
+        if self.adj_m is not None and self.edge_index is None:
+            rows, cols = torch.where(self.adj_m != 0)
+            weights = self.adj_m[rows, cols]
+
+            edge_index = torch.stack([rows.long(), cols.long()], dim=0)
+            edge_weight = weights.clone().detach()
+            
+            self.edge_index, self.edge_attr = edge_index, edge_weight
+        
+        
+        self.data_list = []
+        
+        for index in range(len(self.x)):
+            if self.y is not None:
+                self.data_list.append(Data(x=self.x[index], y=self.y[index], 
+                                    edge_index=self.edge_index, edge_attr=self.edge_attr))
+            else:
+                self.data_list.append(Data(x=self.x[index],
+                                    edge_index=self.edge_index, edge_attr=self.edge_attr))
+            
+        
+
+        
+        
+    def __getitem__(self, index):
+        return self.data_list[index]
+        
+    
+    
+    def __len__(self):
+        return len(self.x)
+        

@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from copy import deepcopy
 import torch
+from tqdm import tqdm
+from torch_geometric.loader import DataLoader
 
 from ...utils.utils import *
 
@@ -10,85 +12,131 @@ from ...utils.utils import *
 class BaseModel(nn.Module):
     def __init__(self):
         super(BaseModel, self).__init__()
-        pass
+        self.device = "cpu"
+        self.best_model = None
+        self.best_output = None
 
-    def fit(self, pyg_data, train_iters=1000, initialize=True, verbose=False, patience=100, **kwargs):
+    def fit(self, train_dataset, val_dataset, epochs=1000, batch_size=10, initialize=True,
+            verbose=False, patience=100, lr=1e-3, shuffle=False, weight_decay=1e-3, **kwargs):
         if initialize:
             self.initialize()
+        
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay)
+        loss_fn = nn.MSELoss()
 
-        # self.data = pyg_data[0].to(self.device)
-        self.data = pyg_data.to(self.device)
-        # By default, it is trained with early stopping on validation
-        self.train_with_early_stopping(train_iters, patience, verbose)
-
-    def fit_with_val(self, pyg_data, train_iters=1000, initialize=True, patience=100, verbose=False, **kwargs):
-        if initialize:
-            self.initialize()
-
-        self.data = pyg_data.to(self.device)
-        self.data.train_mask = self.data.train_mask + self.data.val1_mask
-        self.data.val_mask = self.data.val2_mask
-        self.train_with_early_stopping(train_iters, patience, verbose)
-
-    def train_with_early_stopping(self, train_iters, patience, verbose):
-        """early stopping based on the validation loss
-        """
-        if verbose:
-            print(f'=== training {self.name} model ===')
-        optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-
-        labels = self.data.y
-        train_mask, val_mask = self.data.train_mask, self.data.val_mask
-
+        training_losses = []
+        validation_losses = []
         early_stopping = patience
-        best_loss_val = 100
-        best_acc_val = 0
-        best_epoch = 0
+        best_val = float('inf')
+        es_flag = False
+        for epoch in tqdm(range(epochs)):
+            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, 
+                                    batch_size = batch_size, device = self.device, shuffle=shuffle)
+            training_losses.append(loss)
 
-        x, edge_index = self.data.x, self.data.edge_index
-        for i in range(train_iters):
-            self.train()
-            optimizer.zero_grad()
+            val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, 
+                                             batch_size = batch_size, device = self.device, shuffle=shuffle)
+            validation_losses.append(val_loss)
 
-            output = self.forward(x, edge_index)
-
-            loss_train = F.nll_loss(output[train_mask], labels[train_mask])
-            loss_train.backward()
-            optimizer.step()
-
-            if verbose and i % 50 == 0:
-                print('Epoch {}, training loss: {}'.format(i, loss_train.item()))
-
-            self.eval()
-            output = self.forward(x, edge_index)
-            loss_val = F.nll_loss(output[val_mask], labels[val_mask])
-            acc_val = accuracy(output[val_mask], labels[val_mask])
-
-            if best_acc_val < acc_val:
-                best_acc_val = acc_val
-                self.output = output
-                weights = deepcopy(self.state_dict())
+            if best_val > val_loss:
+                best_epoch = epoch
+                best_train = loss
+                best_val = val_loss
+                self.best_output = output
+                best_weights = deepcopy(self.state_dict())
+                self.best_model = best_weights
                 patience = early_stopping
-                best_epoch = i
             else:
                 patience -= 1
 
-            if i > early_stopping and patience <= 0:
+
+            if verbose and epoch%1 == 0:
+                print(f"######### epoch:{epoch}")
+                print("Training loss: {}".format(training_losses[-1]))
+                print("Validation loss: {}".format(validation_losses[-1]))
+
+            if epoch > early_stopping and patience <= 0:
+                es_flag = True
+                #print(f"Early stop at Epoch {epoch}")
                 break
 
-        if verbose:
-             # print('=== early stopping at {0}, loss_val = {1} ==='.format(best_epoch, best_loss_val) )
-             print('=== early stopping at {0}, acc_val = {1} ==='.format(best_epoch, best_acc_val) )
-        self.load_state_dict(weights)
+            
 
-    def predict(self, x=None, edge_index=None, edge_weight=None):
+        if es_flag:
+            print(f"Early stop at Epoch {epoch}!")
+        print("\nFinal Training loss: {}".format(training_losses[-1]))
+        print("Final Validation loss: {}".format(validation_losses[-1]))
+        print("Best Epoch: {}".format(best_epoch))
+        print("Best Training loss: {}".format(best_train))
+        print("Best Validation loss: {}".format(best_val))
+
+        self.load_state_dict(best_weights)
+
+        
+    def train_epoch(self, optimizer, loss_fn, dataset, batch_size = 1, device = 'cpu', shuffle=False):
+        """
+        Trains one epoch with the given data.
+        :param feature: Training features of shape (num_samples, num_nodes,
+        num_timesteps_train, num_features).
+        :param target: Training targets of shape (num_samples, num_nodes,
+        num_timesteps_predict).
+        :param batch_size: Batch size to use during training.
+        :return: Average loss for this epoch.
+        """
+        
+        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+        
+        epoch_training_losses = []
+        for batch_data in train_loader:
+            self.train()
+            optimizer.zero_grad()
+            batch_data = batch_data.to(device)
+            y_batch = batch_data.y
+
+            out = self.forward(batch_data)
+            loss = loss_fn(out, y_batch)
+
+            loss.backward()
+            optimizer.step()
+            epoch_training_losses.append(loss)
+        return sum(epoch_training_losses)/len(epoch_training_losses)
+    
+    
+    def evaluate(self, loss_fn, dataset, batch_size=1, device = 'cpu', shuffle=False):
+        with torch.no_grad():
+            self.eval()
+            val_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+            val_losses = []
+            outs = []
+            for batch_data in val_loader:
+                batch_data = batch_data.to(device)
+                y_batch = batch_data.y
+
+                out = self.forward(batch_data)
+                val_loss = loss_fn(out, y_batch)
+
+                val_losses.append(val_loss)
+                outs.append(out)
+            
+            return sum(val_losses)/len(val_losses), torch.reshape(torch.cat(outs, dim=0), (dataset.output_dim))
+
+    def predict(self, dataset, batch_size=1, device = 'cpu', shuffle=False, output_dim=None):
         """
         Returns
         -------
         torch.FloatTensor
-            output (log probabilities)
         """
+        print("\nPredicting Progress...")
         self.eval()
-        if x is None or edge_index is None:
-            x, edge_index = self.data.x, self.data.edge_index
-        return self.forward(x, edge_index, edge_weight)
+        
+        test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+        outs = []
+        for batch_data in tqdm(test_loader, total=len(test_loader)):
+            batch_data = batch_data.to(device)
+            y_batch = batch_data.y
+
+            out = self.forward(batch_data)
+            outs.append(out)
+            
+        return torch.reshape(torch.cat(outs, dim=0), (len(dataset), *output_dim))
+    
