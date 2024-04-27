@@ -1,1 +1,1 @@
-from . import STGCN, ATMGNN, CNNRNN_Res, STAN, COLAGNN, Graph_LSTM
+from . import STGCN, ATMGNN, CNNRNN_Res, STAN, ColaGNN, Graph_LSTM, MepoGNN
