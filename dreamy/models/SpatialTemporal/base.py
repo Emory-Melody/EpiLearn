@@ -35,7 +35,7 @@ class BaseModel(nn.Module):
 
             if best_val > val_loss:
                 best_val = val_loss
-                self.output = output
+                self.best_output = output
                 best_weights = deepcopy(self.state_dict())
                 patience = early_stopping
             else:
