@@ -71,3 +71,51 @@ def normalize_adj(Adj):
 
 def diff(features):
     return torch.diff(features, dim=0)
+
+
+def Degree_Matrix(ST_matrix):
+
+    row_sum = torch.sum(ST_matrix, 0)
+
+    ## degree matrix
+    dim = len(ST_matrix)
+    D_matrix = torch.zeros(dim, dim)
+    for i in range(dim):
+        D_matrix[i, i] = 1 / max(torch.sqrt(row_sum[i]), 1)
+
+    return D_matrix
+
+"""
+The binary spatio-temporal adjacency matrix used in USTGCN
+"""
+def Static_full(n, t, A):
+    """
+    :param n: the dimension of the spatial adjacency matrix
+    :param t: the length of periods
+    :param A: the spatial adjacency matrix
+    :return: the full USTGCN spatio-temporal adjacency matrix
+    """
+    I_S = torch.diag_embed(torch.ones(n))
+    I_T = torch.diag_embed(torch.ones(t))
+
+    C_S = A
+    C_T = torch.tril(torch.ones(t, t), diagonal=-1)
+
+    S = I_S + C_S
+    A_ST = kronecker(C_T, S) + kronecker(I_T, C_S)
+
+    return A_ST
+
+
+"""
+Use kronecker product to construct the spatio-temporal adjacency matrix
+"""
+def kronecker(A, B):
+    """
+    :param A: the temporal adjacency matrix
+    :param B: the spatial adjacency matrix
+    :return: the adjacency matrix of one space-time neighboring block
+    """
+    AB = torch.einsum("ab,cd->acbd", A, B)
+    AB = AB.contiguous().view(A.size(0)*B.size(0), A.size(1)*B.size(1))
+    return AB

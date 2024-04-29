@@ -223,7 +223,8 @@ class MPNN_LSTM(BaseModel):
                 num_timesteps_input,
                 num_timesteps_output,
                 nhid = 256,
-                dropout = 0.5):
+                dropout = 0.5,
+                device = 'cpu'):
         """
         Parameters:
         nfeat (int): Number of features

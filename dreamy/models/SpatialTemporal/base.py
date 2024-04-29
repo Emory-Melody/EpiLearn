@@ -14,11 +14,27 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         self.device = device
 
-    def fit(self, train_input, train_target, train_states = None, train_graph = None, val_input = None, val_target = None, val_states = None, val_graph = None, loss = 'mse', epochs=1000, batch_size = 10, initialize=True, verbose = False, patience = 100, **kwargs):
+    def fit(self, 
+            train_input, 
+            train_target, 
+            train_states=None, 
+            train_graph=None, 
+            val_input=None, 
+            val_target=None,
+            val_states=None, 
+            val_graph= None, 
+            loss='mse', 
+            epochs=1000, 
+            batch_size=10,
+            lr=1e-3, 
+            initialize=True, 
+            verbose=False, 
+            patience=100, 
+            **kwargs):
         if initialize:
             self.initialize()
         
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
         loss_fn = get_loss(loss)
 
