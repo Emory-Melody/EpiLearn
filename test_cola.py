@@ -1,14 +1,14 @@
 import torch
 import os
 import matplotlib.pyplot as plt
-from dreamy.models.SpatialTemporal.STGCN import STGCN
-from dreamy.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
-from dreamy.models.SpatialTemporal.CNNRNN_Res import CNNRNN_Res
-from dreamy.models.SpatialTemporal.STAN import STAN
-from dreamy.models.SpatialTemporal.COLAGNN import COLAGNN
+from epilearn.models.SpatialTemporal.STGCN import STGCN
+from epilearn.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
+from epilearn.models.SpatialTemporal.CNNRNN_Res import CNNRNN_Res
+from epilearn.models.SpatialTemporal.STAN import STAN
+from epilearn.models.SpatialTemporal.COLAGNN import COLAGNN
 
-from dreamy.data import UniversalDataset
-from dreamy.utils import utils
+from epilearn.data import UniversalDataset
+from epilearn.utils import utils
 
 # initial settings
 device = torch.device('cpu')

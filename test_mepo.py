@@ -2,9 +2,9 @@ import torch
 import os
 import matplotlib.pyplot as plt
 
-from dreamy.models.SpatialTemporal.MepoGNN import MepoGNN
-from dreamy.data import UniversalDataset
-from dreamy.utils import utils
+from epilearn.models.SpatialTemporal.MepoGNN import MepoGNN
+from epilearn.data import UniversalDataset
+from epilearn.utils import utils
 
 # initial settings
 device = torch.device('cpu')
