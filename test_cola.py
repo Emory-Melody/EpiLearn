@@ -5,7 +5,7 @@ from epilearn.models.SpatialTemporal.STGCN import STGCN
 from epilearn.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
 from epilearn.models.SpatialTemporal.CNNRNN_Res import CNNRNN_Res
 from epilearn.models.SpatialTemporal.STAN import STAN
-from epilearn.models.SpatialTemporal.COLAGNN import COLAGNN
+from epilearn.models.SpatialTemporal.ColaGNN import COLAGNN
 
 from epilearn.data import UniversalDataset
 from epilearn.utils import utils

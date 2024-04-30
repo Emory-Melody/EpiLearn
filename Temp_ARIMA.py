@@ -4,8 +4,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dreamy.data import UniversalDataset
-from dreamy.utils import utils
+from epilearn.data import UniversalDataset
+from epilearn.utils import utils
 
 import pandas as pd
 from statsmodels.tsa.statespace.varmax import VARMAX
