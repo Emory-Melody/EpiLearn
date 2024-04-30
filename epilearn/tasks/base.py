@@ -1,8 +1,9 @@
 import torch
 
 class BaseTask:
-    def __init__(self, model, dataset, lookback, horizon, device='cpu'):
+    def __init__(self, prototype, model, dataset, lookback, horizon, device='cpu'):
         self.model = model
+        self.prototype = prototype
         self.dataset = dataset
         self.device = device
         self.lookback = lookback

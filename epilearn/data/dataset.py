@@ -106,8 +106,8 @@ class UniversalDataset(Data):
                     )
     
     def load_toy_dataset(self):
-        data1 = np.load("dreamy/data/graphs.npy")
-        data2 = np.load("dreamy/data/features.npy", allow_pickle= True)
+        data1 = np.load("epilearn/data/graphs.npy")
+        data2 = np.load("epilearn/data/features.npy", allow_pickle= True)
 
         self.x = torch.FloatTensor(data2.tolist()['node'])
         self.y = torch.FloatTensor(data2.tolist()['node'])[:,:,0]

@@ -4,8 +4,9 @@ from ..utils import utils
 from .base import BaseTask
 
 class Forecast(BaseTask):
-    def __init__(self, model, dataset = None, lookback = None, horizon = None, device = 'cpu'):
-        super().__init__(model, dataset, lookback, horizon, device)
+    def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, device = 'cpu'):
+        super().__init__(prototype, model, dataset, lookback, horizon, device)
+
 
     def train_model(self,
                     dataset=None,
@@ -43,7 +44,38 @@ class Forecast(BaseTask):
         if not hasattr(self, "model"):
             raise RuntimeError("model not exists, please use load_model() to load model first!")
 
-        train_split, val_split, test_split = self.get_splits(self.dataset, permute_dataset, train_rate, val_rate)
+        train_split, val_split, test_split, ((features, norm), adj_norm) = self.get_splits(self.dataset, train_rate, val_rate, permute_dataset)
+
+        # initialize model
+        self.model = self.prototype(
+            num_nodes=adj_norm.shape[0],
+            num_features=train_split[0].shape[3],
+            num_timesteps_input=self.lookback,
+            num_timesteps_output=self.horizon,
+            
+            ).to(device=self.device)
+
+        # train
+        self.model.fit(
+                train_input=train_split[0], 
+                train_target=train_split[1], 
+                train_states = train_split[2],
+                train_graph=adj_norm, 
+                val_input=val_split[0], 
+                val_target=val_split[1], 
+                val_states=val_split[2],
+                val_graph=adj_norm,
+                verbose=True,
+                batch_size=batch_size,
+                epochs=epochs)
+        
+        # evaluate
+        out = self.model.predict(feature=test_split[0], graph=adj_norm)
+        preds = out.detach().cpu()*norm[0]+norm[1]
+        targets = test_split[1].detach().cpu()*norm[0]+norm[1]
+        # MAE
+        mae = utils.get_MAE(preds, targets)
+        print(f"Test MAE: {mae.item()}")
 
 
 
@@ -80,10 +112,6 @@ class Forecast(BaseTask):
         features = features.to(self.device)
         adj_norm = adj_norm.to(self.device)
 
-        # prepare datasets
-        train_rate = 0.6 
-        val_rate = 0.2
-
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
@@ -91,22 +119,22 @@ class Forecast(BaseTask):
         val_original_data = features[split_line1:split_line2, :, :]
         test_original_data = features[split_line2:, :, :]
 
-        train_input, train_target = dataset.generate_dataset(X=train_original_data, 
+        train_input, train_target, train_states, train_adj = dataset.generate_dataset(X=train_original_data, 
                                                              Y=train_original_data[:, :, 0], 
                                                              lookback_window_size=self.lookback,
                                                              horizon_size=self.horizon, 
                                                              permute=permute)
-        val_input, val_target = dataset.generate_dataset(X=val_original_data, 
+        val_input, val_target, val_states, val_adj = dataset.generate_dataset(X=val_original_data, 
                                                          Y=val_original_data[:, :, 0], 
                                                          lookback_window_size=self.lookback, 
                                                          horizon_size=self.horizon, 
                                                          permute=permute)
-        test_input, test_target = dataset.generate_dataset(X=test_original_data, 
+        test_input, test_target, test_states, test_adj = dataset.generate_dataset(X=test_original_data, 
                                                            Y=test_original_data[:, :, 0], 
                                                            lookback_window_size=self.lookback, 
                                                            horizon_size=self.horizon, 
                                                            permute=permute)
 
-        return (train_input, train_target), (val_input, val_target), (test_input, test_target)
+        return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (std[0], mean[0])), adj_norm)
 
         
