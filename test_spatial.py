@@ -11,6 +11,8 @@ from dreamy.models.Spatial.DCRNN import DCRNN
 from dreamy.data import UniversalDataset, SpatialDataset
 from dreamy.utils import utils
 
+import torch_geometric
+
 
 # initial settings
 #device = torch.device('cpu')
@@ -73,28 +75,26 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, adj_m=adj_norm)
 
 
 
-model = GCN(input_dim=train_input.shape[2]*train_input.shape[3],
+'''model = GCN(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
         nlayers=2, with_bn=True,
-        dropout=0.3, device=device)
+        dropout=0.3, device=device)'''
 
 '''model = GAT(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
-        nlayers=1, with_bn=True, nheads=[3], concat=True,
+        nlayers=2, with_bn=True, nheads=[2,3], concat=False,
         dropout=0.3, device=device)'''
 
 '''model = SAGE(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
-        nlayers=2, with_bn=True, aggr=torch_geometric.nn.GRUAggregation,
+        nlayers=1, with_bn=True, aggr=torch_geometric.nn.GRUAggregation,
         dropout=0.3, device=device)'''
         
-        
-model = DCRNN(adj_norm, 
-              num_nodes=47,
-              input_dim=4,
+
+model = DCRNN(input_dim=train_input.shape[3],
               seq_len=lookback,
               output_dim=1,
               horizon=horizon,
@@ -102,6 +102,8 @@ model = DCRNN(adj_norm,
               filter_type="laplacian",
               num_rnn_layers=1, 
               rnn_units=1,
+              nonlinearity="tanh",
+              dropout=0.5,
               device=device)
 
 model = model.to(device)
@@ -119,7 +121,7 @@ model.fit(
 
 # evaluate
 output_dim=[47, horizon]
-test_dataset = SpatialDataset(x=test_input, edge_index=edge_index, edge_attr=edge_weight)
+test_dataset = SpatialDataset(x=test_input, adj_m=adj_norm)
 out = model.predict(dataset=test_dataset, batch_size=batch_size, device=device, output_dim=output_dim)
 print(out.shape)
 

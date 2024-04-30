@@ -154,24 +154,28 @@ class SpatialDataset(Dataset):
             edge_weight = weights.clone().detach()
             
             self.edge_index, self.edge_attr = edge_index, edge_weight
-        
-        
-        self.data_list = []
-        
-        for index in range(len(self.x)):
-            if self.y is not None:
-                self.data_list.append(Data(x=self.x[index], y=self.y[index], 
-                                    edge_index=self.edge_index, edge_attr=self.edge_attr))
-            else:
-                self.data_list.append(Data(x=self.x[index],
-                                    edge_index=self.edge_index, edge_attr=self.edge_attr))
             
         
-
-        
+        if self.adj_m is None and self.edge_index is not None:
+            num_nodes = self.x.shape[1] # or specify?
+            if self.edge_attr is None:
+                self.edge_attr = torch.ones(self.edge_index.shape[1], 1)
+            if len(self.edge_attr.shape) == 1:
+                self.edge_attr = torch.reshape(self.edge_attr, (self.edge_attr.shape[0], 1))
+            adj_matrix = torch.zeros((num_nodes, num_nodes, self.edge_attr.shape[1]))
+            for i in range(self.edge_index.shape[1]):
+                src = self.edge_index[0, i]
+                dest = self.edge_index[1, i]
+                adj_matrix[src, dest] = self.edge_attr[i]
+            self.adj_m = adj_matrix.squeeze()
+            #print(self.adj_m.shape)
+            
         
     def __getitem__(self, index):
-        return self.data_list[index]
+        if self.y is not None:
+            return Data(x=self.x[index], y=self.y[index], edge_index=self.edge_index, edge_attr=self.edge_attr, adj_m=self.adj_m)
+        else:
+            return Data(x=self.x[index], edge_index=self.edge_index, edge_attr=self.edge_attr, adj_m=self.adj_m)
         
     
     
