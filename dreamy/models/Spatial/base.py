@@ -94,6 +94,7 @@ class BaseModel(nn.Module):
             y_batch = batch_data.y
 
             out = self.forward(batch_data)
+            y_batch = torch.reshape(y_batch, out.shape)
             loss = loss_fn(out, y_batch)
 
             loss.backward()
@@ -113,6 +114,7 @@ class BaseModel(nn.Module):
                 y_batch = batch_data.y
 
                 out = self.forward(batch_data)
+                y_batch = torch.reshape(y_batch, out.shape)
                 val_loss = loss_fn(out, y_batch)
 
                 val_losses.append(val_loss)
