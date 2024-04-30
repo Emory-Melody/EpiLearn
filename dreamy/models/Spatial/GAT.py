@@ -20,20 +20,26 @@ class GAT(BaseModel):
         self.layers = nn.ModuleList([])
         if with_bn:
             self.bns = nn.ModuleList()
+            
+        
+        if concat:
+            for i in range(nlayers):
+                assert hidden_dim % nheads[i] == 0, "Hidden_dim should be divisible by nheads!"
+                #assert output_dim % nheads[i] == 0, "Output_dim should be divisible by nheads!"
         
         if concat:
             if nlayers == 1:
-                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
+                self.layers.append(GATConv(input_dim, hidden_dim//nheads[0], bias=with_bias, heads=nheads[0], concat=concat))
             else:
-                self.layers.append(GATConv(input_dim, hidden_dim, bias=with_bias, heads=nheads[0], concat=concat))
+                self.layers.append(GATConv(input_dim, hidden_dim//nheads[0], bias=with_bias, heads=nheads[0], concat=concat))
                 if with_bn:
-                    self.bns.append(nn.BatchNorm1d(nheads[0]*hidden_dim))
+                    self.bns.append(nn.BatchNorm1d(hidden_dim))
                         
                 for i in range(nlayers-2):
-                    self.layers.append(GATConv(nheads[i]*hidden_dim, hidden_dim, bias=with_bias, heads=nheads[i+1], concat=concat))
+                    self.layers.append(GATConv(hidden_dim, hidden_dim//nheads[i+1], bias=with_bias, heads=nheads[i+1], concat=concat))
                     if with_bn:
-                        self.bns.append(nn.BatchNorm1d(nheads[i+1]*hidden_dim))
-                self.layers.append(GATConv(nheads[-2]*hidden_dim, hidden_dim, bias=with_bias, heads=nheads[-1], concat=concat))
+                        self.bns.append(nn.BatchNorm1d(hidden_dim))
+                self.layers.append(GATConv(hidden_dim, hidden_dim//nheads[-1], bias=with_bias, heads=nheads[-1], concat=concat))
             
             
         else:
@@ -51,10 +57,7 @@ class GAT(BaseModel):
                 self.layers.append(GATConv(hidden_dim, hidden_dim, bias=with_bias, heads=nheads[-1], concat=concat))
                 
             
-        if concat:
-            self.fc = nn.Linear(nheads[-1]*hidden_dim, output_dim)
-        else:
-            self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc = nn.Linear(hidden_dim, output_dim)
             
         self.dropout = dropout
         self.with_bn = with_bn
