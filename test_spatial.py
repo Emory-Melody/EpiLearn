@@ -3,13 +3,14 @@ import os
 import matplotlib.pyplot as plt
 
 #os.sys.path.append("./Dreamy")
-from dreamy.models.SpatialTemporal.STGCN import STGCN
-from dreamy.models.Spatial.GCN import GCN
-from dreamy.models.Spatial.GAT import GAT
-from dreamy.models.Spatial.SAGE import SAGE
-from dreamy.models.Spatial.DCRNN import DCRNN
-from dreamy.data import UniversalDataset, SpatialDataset
-from dreamy.utils import utils
+from epilearn.models.SpatialTemporal.STGCN import STGCN
+from epilearn.models.Spatial.GCN import GCN
+from epilearn.models.Spatial.GAT import GAT
+from epilearn.models.Spatial.SAGE import SAGE
+from epilearn.models.Spatial.DCRNN import DCRNN
+from epilearn.models.Spatial.GIN import GIN
+from epilearn.data import UniversalDataset, SpatialDataset
+from epilearn.utils import utils
 
 import torch_geometric
 
@@ -84,7 +85,7 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, adj_m=adj_norm)
 '''model = GAT(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
-        nlayers=2, with_bn=True, nheads=[2,3], concat=False,
+        nlayers=2, with_bn=True, nheads=[2,4], concat=True,
         dropout=0.3, device=device)'''
 
 '''model = SAGE(input_dim=train_input.shape[2]*train_input.shape[3],
@@ -94,7 +95,7 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, adj_m=adj_norm)
         dropout=0.3, device=device)'''
         
 
-model = DCRNN(input_dim=train_input.shape[3],
+'''model = DCRNN(input_dim=train_input.shape[3],
               seq_len=lookback,
               output_dim=1,
               horizon=horizon,
@@ -104,7 +105,13 @@ model = DCRNN(input_dim=train_input.shape[3],
               rnn_units=1,
               nonlinearity="tanh",
               dropout=0.5,
-              device=device)
+              device=device)'''
+
+model = GIN(input_dim=train_input.shape[2]*train_input.shape[3],
+        hidden_dim=16,
+        output_dim=horizon,
+        nlayers=2, 
+        dropout=0.3, device=device)
 
 model = model.to(device)
 
