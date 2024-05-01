@@ -14,11 +14,27 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         self.device = device
 
-    def fit(self, train_input, train_target, train_states = None, graph = None, val_input = None, val_target = None, val_states = None, loss = 'mse', epochs=1000, batch_size = 10, initialize=True, verbose = False, patience = 100, **kwargs):
+    def fit(self, 
+            train_input, 
+            train_target, 
+            train_states=None, 
+            train_graph=None, 
+            val_input=None, 
+            val_target=None,
+            val_states=None, 
+            val_graph= None, 
+            loss='mse', 
+            epochs=1000, 
+            batch_size=10,
+            lr=1e-3, 
+            initialize=True, 
+            verbose=False, 
+            patience=100, 
+            **kwargs):
         if initialize:
             self.initialize()
         
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
         loss_fn = get_loss(loss)
 
@@ -27,15 +43,15 @@ class BaseModel(nn.Module):
         early_stopping = patience
         best_val = float('inf')
         for epoch in tqdm(range(epochs)):
-            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input, states = train_states, graph = graph, target = train_target, batch_size = batch_size, device = self.device)
+            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input, states = train_states, graph = train_graph, target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input, graph = graph, target = val_target, states = val_states, device = self.device)
+            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input, graph = val_graph, target = val_target, states = val_states, device = self.device)
             validation_losses.append(val_loss)
 
             if best_val > val_loss:
                 best_val = val_loss
-                self.output = output
+                self.best_output = output
                 best_weights = deepcopy(self.state_dict())
                 patience = early_stopping
             else:
@@ -76,16 +92,22 @@ class BaseModel(nn.Module):
             indices = permutation[i:i + batch_size]
             X_batch, y_batch = feature[indices], target[indices]
 
-            X_batch = X_batch.to(device=device)
-            y_batch = y_batch.to(device=device)
+            X_batch = X_batch.to(device)
+            y_batch = y_batch.to(device)
 
             if states is not None:
                 X_states = states[indices]
-                X_states = X_states.to(device=device)
+                X_states = X_states.to(device)
             else:
                 X_states = None
+            
+            if len(graph.shape) > 2:
+                batch_graph = graph[indices]
+                batch_graph = batch_graph.to(device)
+            else:
+                batch_graph = graph
 
-            out = self.forward(X_batch, graph, X_states)
+            out = self.forward(X_batch, batch_graph, X_states)
             loss = loss_fn(out, y_batch)
             loss.backward()
             optimizer.step()

@@ -30,7 +30,7 @@ class UniversalDataset(Data):
     def save(self):
         pass
 
-    def generate_dataset(self, X = None, Y = None, states = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
+    def generate_dataset(self, X = None, Y = None, states = None, dynamic_adj = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
         """
         Takes node features for the graph and divides them into multiple samples
         along the time-axis by sliding a window of size (num_timesteps_input+
@@ -51,35 +51,29 @@ class UniversalDataset(Data):
         if feat_idx is not None:
             X = X[:, :, feat_idx]
 
-        features, target = [], []
-        if states is not None:
-            input_states = []
-
         indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
-        
+        target = []
         for i, j in indices:
-            features.append(X[i: i + lookback_window_size])
             target.append(Y[i + lookback_window_size: j])
-            if states is not None:
-                input_states.append(states[i: i + lookback_window_size])
-        
-        features = torch.from_numpy(np.array(features))
-        targets = torch.from_numpy(np.array(target))
+        targets = torch.stack(target)
+        if permute:
+            targets = targets.transpose(1,2)
+
+        input_list = [[None, X], [None, states], [None, dynamic_adj]]
+        for m, inputs in enumerate(input_list):
+            if inputs[1] is not None:
+                tmp = []
+                for i, j in indices:
+                    tmp.append(inputs[1][i: i + lookback_window_size])
+                input_list[m][0] = torch.stack(tmp)
+                if permute:
+                    inputs[0] = inputs[0].transpose(1,2)
 
         if target_idx is not None:
             targets = targets[:,target_idx, :]
 
-        if permute:
-            features = features.transpose(1,2)
-            targets = targets.transpose(1,2)
 
-        if states is not None:
-            input_states = torch.from_numpy(np.array(input_states))
-            if permute:
-                input_states = input_states.transpose(1,2)
-            return features, targets, input_states
-        else:
-            return features, targets
+        return input_list[0][0], targets, input_list[1][0], input_list[2][0]
         
 
 
@@ -112,8 +106,8 @@ class UniversalDataset(Data):
                     )
     
     def load_toy_dataset(self):
-        data1 = np.load("dreamy/data/graphs.npy")
-        data2 = np.load("dreamy/data/features.npy", allow_pickle= True)
+        data1 = np.load("epilearn/data/graphs.npy")
+        data2 = np.load("epilearn/data/features.npy", allow_pickle= True)
 
         self.x = torch.FloatTensor(data2.tolist()['node'])
         self.y = torch.FloatTensor(data2.tolist()['node'])[:,:,0]
