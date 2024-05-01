@@ -78,23 +78,29 @@ class Forecast(BaseTask):
         print(f"Test MAE: {mae.item()}")
 
 
-
-
     def evaluate_model(self,
+                    model=None,
                     dataset=None,
                     config=None,
-                    permute_dataset=False,
-                    train_rate=0.6,
-                    val_rate=0.2,
-                    loss='mse', 
-                    epochs=1000, 
+                    features=None,
+                    graph=None,
+                    norm={"std":1, 'mean':0},
+                    states=None,
+                    targets=None,
                     batch_size=10,
-                    lr=1e-3, 
-                    initialize=True, 
-                    verbose=False, 
-                    patience=100, 
                     ):
-        pass
+        if model is None:
+            if not hasattr(self, "model"):
+                raise RuntimeError("model not exists, please use load_model() to load model first!")
+            model = self.model
+
+        # evaluate
+        out = self.model.predict(feature=features, graph=graph)
+        preds = out.detach().cpu()*norm['std']+norm['mean']
+        targets = targets[1].detach().cpu()*norm[0]+norm[1]
+        # MAE
+        mae = utils.get_MAE(preds, targets)
+        print(f"Test MAE: {mae.item()}")
     
 
 
