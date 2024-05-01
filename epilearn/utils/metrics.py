@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def get_loss(loss_name = 'mse'):
@@ -8,10 +9,18 @@ def get_loss(loss_name = 'mse'):
         return nn.MSELoss()
     elif loss_name == 'stan':
         return stan_loss
+    elif loss_name == 'epi_cola':
+        return epi_cola_loss
 
 
-def stan_loss(output, label, scale = 0.5):
+def stan_loss(output, label, scale=0.5):
     pred_IR, pred_phy_IR = output
     mse = nn.MSELoss()
     total_loss = mse(pred_IR, label) + scale*mse(pred_phy_IR, label)
+    return total_loss
+
+def epi_cola_loss(output, label, scale=0.5):
+    output, epi_output = output
+    mse = nn.MSELoss()
+    total_loss = F.l1_loss(output, label) + scale*mse(epi_output, label)
     return total_loss

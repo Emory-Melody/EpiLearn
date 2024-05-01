@@ -1,3 +1,5 @@
+# this code is adopted from https://github.com/littlecherry-art/DASTGN/blob/master/Code/model.py
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

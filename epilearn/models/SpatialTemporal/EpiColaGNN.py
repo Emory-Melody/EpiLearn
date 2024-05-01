@@ -1,10 +1,10 @@
-# this code is adopted from https://github.com/amy-deng/colagnn/blob/master/src/models.py
+# this code is adopted from: https://github.com/gigg1/CIKM2023EpiDL/blob/main/colagnn-master-Run-Epi/src/models.py
 
+import math
 import torch
 import torch.nn as nn
 from torch.nn import Parameter
 import torch.nn.functional as F
-import math
 
 from .base import BaseModel
 
@@ -38,48 +38,49 @@ class GraphConvLayer(nn.Module):
                + str(self.out_features) + ')' 
 
 
-class ColaGNN(BaseModel):  
+
+class EpiColaGNN(BaseModel):
     def __init__(self, 
                 num_nodes,
                 num_features,
                 num_timesteps_input,
                 num_timesteps_output,
                 nhid,
-                n_channels,
                 rnn_model = 'GRU',
                 n_layer = 1,
                 bidirect = False,
+                target_idx=0,
                 dropout = 0.5,
                 device='cpu'): 
-        
         super().__init__()
         self.device = device
         self.x_h = num_features 
         self.m = num_nodes
         self.w = num_timesteps_input
         self.h = num_timesteps_output
+        self.target_idx = target_idx
 
         self.dropout = dropout
         self.n_hidden = nhid
         half_hid = int(self.n_hidden/2)
-        self.V = Parameter(torch.Tensor(half_hid))
+        self.V = Parameter(torch.Tensor(half_hid, self.h))
         self.bv = Parameter(torch.Tensor(1))
         self.W1 = Parameter(torch.Tensor(half_hid, self.n_hidden))
         self.b1 = Parameter(torch.Tensor(half_hid))
         self.W2 = Parameter(torch.Tensor(half_hid, self.n_hidden))
         self.act = F.elu 
         self.Wb = Parameter(torch.Tensor(self.m,self.m))
-        self.wb = Parameter(torch.Tensor(1))
-        self.k = n_channels
-        self.conv = nn.Conv1d(self.x_h, self.k, self.w)
+        self.wb = Parameter(torch.Tensor(self.h))
+        self.conv = nn.Conv1d(self.x_h, self.h, self.w)
         long_kernal = self.w//2
-        self.conv_long = nn.Conv1d(self.x_h, self.k, long_kernal, dilation=2)
+        self.conv_long = nn.Conv1d(self.x_h, self.h, long_kernal, dilation=2)
         long_out = self.w-2*(long_kernal-1)
         self.n_spatial = 10  
 
-        self.conv1 = GraphConvLayer((1+long_out)*self.k, self.n_hidden) # self.k
+        self.conv1 = GraphConvLayer((1+long_out), self.n_hidden) # self.h
         self.conv2 = GraphConvLayer(self.n_hidden, self.n_spatial)
- 
+        self.conv_out = nn.Linear(self.h*self.n_spatial, self.n_spatial)
+
         if rnn_model == 'LSTM':
             self.rnn = nn.LSTM( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=dropout, batch_first=True, bidirectional=bidirect)
         elif rnn_model == 'GRU':
@@ -98,6 +99,26 @@ class ColaGNN(BaseModel):
             self.residual_window = min(self.residual_window, self.w)
             self.residual = nn.Linear(self.residual_window, 1) 
         self.init_weights()
+
+        #--------------------------------------------
+        # adding the epidemiological layer
+        self.GRU2 = nn.GRU(self.x_h, self.n_hidden, batch_first = True)
+        self.PredBeta = nn.Sequential(
+                                nn.Linear(self.n_hidden, 5),
+                                # nn.Sigmoid(),
+                                nn.ReLU(),
+                                nn.Linear(5, self.h),
+                                nn.Sigmoid(),
+                            )
+
+        self.GRU3 = nn.GRU(self.x_h, self.n_hidden, batch_first = True)
+        self.PredGamma = nn.Sequential(
+                                nn.Linear(self.n_hidden, 5),
+                                # nn.Sigmoid(),
+                                nn.ReLU(),
+                                nn.Linear(5, self.h),
+                                nn.Sigmoid(),
+                            )
      
     def init_weights(self):
         for p in self.parameters():
@@ -114,17 +135,18 @@ class ColaGNN(BaseModel):
         ''' 
         b, _,_,_ = x.size()
         orig_x = x 
+        ori_adj = adj
 
         x = x.transpose(2, 1).contiguous().flatten(0,1)
         r_out, hc = self.rnn(x, None)
         last_hid = r_out[:,-1,:]
         last_hid = last_hid.view(-1,self.m, self.n_hidden)
-        out_temporal = last_hid  # [b, m, 20]
+        out_temporal = last_hid
 
         hid_rpt_m = last_hid.repeat(1,self.m,1).view(b,self.m,self.m,self.n_hidden) # b,m,m,w continuous m
         hid_rpt_w = last_hid.repeat(1,1,self.m).view(b,self.m,self.m,self.n_hidden) # b,m,m,w continuous w one window data
         a_mx = self.act( hid_rpt_m @ self.W1.t()  + hid_rpt_w @ self.W2.t() + self.b1 ) @ self.V + self.bv # row, all states influence one state 
-        a_mx = F.normalize(a_mx, p=2, dim=1, eps=1e-12, out=None)
+        a_mx = F.normalize(a_mx, p=2, dim=1, eps=1e-12, out=None).permute(0,3,1,2)
 
         r_l = []
         r_long_l = []
@@ -138,22 +160,85 @@ class ColaGNN(BaseModel):
         r_l = torch.stack(r_l,dim=1)
         r_long_l = torch.stack(r_long_l,dim=1)
         r_l = torch.cat((r_l,r_long_l),-1)
-        r_l = r_l.view(r_l.size(0),r_l.size(1),-1)
-        r_l = torch.relu(r_l)
+        r_l = r_l.view(r_l.size(0), r_l.size(1), self.h, -1)
+        r_l = torch.relu(r_l).transpose(2, 1)
+
+
         adjs = adj.repeat(b,1)
-        adjs = adjs.view(b,self.m,self.m)
-        c = torch.sigmoid(a_mx @ self.Wb + self.wb)
+        adjs = adjs.view(b, 1, self.m, self.m)
+        c = torch.sigmoid(a_mx @ self.Wb + self.wb.view(1, -1, 1, 1))
         a_mx = adjs * c + a_mx * (1-c) 
-        adj = a_mx 
+        adj = a_mx
+
+
+        # Adj_soft = F.softmax(adj, dim=1)
+        Adj_soft = F.softmax(adj, dim=2)
+
+        # ---- for deep component
+        # adj_deep = adj
+        adj_deep = Adj_soft
         
-        x = r_l  
+        #--------------------------------------------
+        # ---- for epi component
+        # ---- sparse
+        IfAdjacent = ori_adj[:,:]
+        IfAdjacent[IfAdjacent>0]=1
+        Adj_Epi = torch.mul(Adj_soft, IfAdjacent) # dot mul
+        
+        # print ("----------Location-aware attention matrix:")
+        # print (Adj_Epi.shape)
+
+        # ---------- Predicted the 
+        ROut, HiddenBeta = self.GRU2(x)
+        # RoutFinalStep: #batch*location / #hidden
+        RoutFinalStep = ROut[:,-1,:]
+        Beta = self.PredBeta(RoutFinalStep).view(b, self.h, self.m)
+
+        ROut, HiddenGamma = self.GRU3(x)
+        RoutFinalStep = ROut[:,-1,:]
+        Gamma = self.PredGamma(RoutFinalStep).view(b, self.h, self.m)
+
+        BetaDiag = torch.Tensor(b, self.h, self.m, self.m)
+        GammaDiag = torch.Tensor(b, self.h, self.m, self.m)
+
+        for batch in range(0,b):
+            for h in range(self.h):
+                BetaDiag[batch, h] = torch.diag(Beta[batch, h])
+                GammaDiag[batch, h] = torch.diag(Gamma[batch, h])
+
+        A = torch.Tensor(b, self.h, self.m, self.m)
+        for batch in range(0, b):
+            for h in range(self.h):
+                Sparse_adj_diagValue = torch.diag(torch.diagonal(Adj_Epi[batch, h]))
+                W = torch.diag(torch.sum(Adj_Epi[batch, h],dim=0))-Sparse_adj_diagValue
+                A[batch, h] = ((Adj_Epi[batch, h].T - Sparse_adj_diagValue) - W)
+
+        tmp1 = (GammaDiag - A)
+        tmp1[tmp1 > 1] = 1
+
+        NextGenerationMatrix = BetaDiag.view(-1, self.m, self.m).bmm(tmp1.view(-1, self.m, self.m).inverse())
+
+        # #sample * 1 * #location
+        X_vector_t = orig_x[:,-1,:, self.target_idx].repeat(self.h, 1).view(-1, 1, self.m)
+        # transpose: #sample * #location * #location
+        # NGMT = (NextGenerationMatrix ** self.h).permute(0,2,1)
+        NGMT = (NextGenerationMatrix).transpose(2,1)
+
+        y_vector_t = X_vector_t.bmm(NGMT).view(b, self.h, -1)
+
+
+        x = r_l.contiguous().view(b*self.h, self.m, -1)
+        adj = adj_deep.view(b*self.h, self.m, self.m)
+        # ---- not softmax
         x = F.relu(self.conv1(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-
+        # ---- not softmax
         out_spatial = F.relu(self.conv2(x, adj))
+        out_spatial = out_spatial.view(b, self.h, self.m, -1)
+        out_spatial = self.conv_out(out_spatial.transpose(1,2).contiguous().view(b*self.m, -1)).view(b, self.m, -1)
         out = torch.cat((out_spatial, out_temporal),dim=-1)
         out = self.out(out)
-        out = torch.squeeze(out)
+        out = torch.squeeze(out).transpose(2,1)
 
         if (self.residual_window > 0):
             z = orig_x[:, -self.residual_window:, :]; #Step backward # [batch, res_window, m]
@@ -162,8 +247,9 @@ class ColaGNN(BaseModel):
             z = z.view(-1,self.m); #[batch, m]
             out = out * self.ratio + z; #[batch, m]
 
-        return out.view(-1, self.h, self.m)
+        return out, y_vector_t #, Beta, Gamma, outputNGMT
     
+
     def initialize(self):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
