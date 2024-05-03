@@ -79,28 +79,28 @@ class GCN(BaseModel):
                 bn.reset_parameters()
 
 
-if __name__ == "__main__":
-    from deeprobust.graph.data import Dataset, Dpr2Pyg
-    # from deeprobust.graph.defense import GCN
-    data = Dataset(root='/tmp/', name='citeseer', setting='prognn')
-    adj, features, labels = data.adj, data.features, data.labels
-    idx_train, idx_val, idx_test = data.idx_train, data.idx_val, data.idx_test
-    model = GCN(nfeat=features.shape[1],
-          nhid=16,
-          nclass=labels.max().item() + 1,
-          dropout=0.5, device='cuda')
-    model = model.to('cuda')
-    pyg_data = Dpr2Pyg(data)[0]
-
-    # model.fit(features, adj, labels, idx_train, train_iters=200, verbose=True)
-    # model.test(idx_test)
-
-    from utils import get_dataset
-    pyg_data = get_dataset('citeseer', True, if_dpr=False)[0]
-
-    import ipdb
-    ipdb.set_trace()
-
-    model.fit(pyg_data, verbose=True) # train with earlystopping
-    model.test()
-    print(model.predict())
+# if __name__ == "__main__":
+#     from deeprobust.graph.data import Dataset, Dpr2Pyg
+#     # from deeprobust.graph.defense import GCN
+#     data = Dataset(root='/tmp/', name='citeseer', setting='prognn')
+#     adj, features, labels = data.adj, data.features, data.labels
+#     idx_train, idx_val, idx_test = data.idx_train, data.idx_val, data.idx_test
+#     model = GCN(nfeat=features.shape[1],
+#           nhid=16,
+#           nclass=labels.max().item() + 1,
+#           dropout=0.5, device='cuda')
+#     model = model.to('cuda')
+#     pyg_data = Dpr2Pyg(data)[0]
+#
+#     # model.fit(features, adj, labels, idx_train, train_iters=200, verbose=True)
+#     # model.test(idx_test)
+#
+#     from utils import get_dataset
+#     pyg_data = get_dataset('citeseer', True, if_dpr=False)[0]
+#
+#     import ipdb
+#     ipdb.set_trace()
+#
+#     model.fit(pyg_data, verbose=True) # train with earlystopping
+#     model.test()
+#     print(model.predict())
