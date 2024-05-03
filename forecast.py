@@ -34,7 +34,7 @@ batch_size = 50 # training batch size
 dataset = UniversalDataset()
 dataset.load_toy_dataset()
 
-task = Forecast(prototype=GraphLSTM, dataset=None, lookback=lookback, horizon=horizon, device='cpu')
+task = Forecast(prototype=STGCN, dataset=None, lookback=lookback, horizon=horizon, device='cpu')
 
 
 config = None
