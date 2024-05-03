@@ -57,4 +57,4 @@ class XGBModel:
 
         return torch.tensor(prediction)
 
-# Example usage of the class could go here
+
