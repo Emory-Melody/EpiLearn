@@ -84,7 +84,7 @@ class BaseModel(nn.Module):
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
-
+        
         self.load_state_dict(best_weights)
 
         

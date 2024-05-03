@@ -19,29 +19,34 @@ class CNNRNN_Res(BaseModel):
                 dropout=0.5,
                 device='cpu'):
         super(CNNRNN_Res, self).__init__()
+        self.nfeat = num_features
         self.ratio = residual_ratio
         self.device = device
         self.P = num_timesteps_input
         self.n_out = num_timesteps_output
         self.m = num_nodes
         self.hidR = nhid
-        self.GRU = nn.GRU(self.m, self.hidR)
+        self.GRU = nn.GRU(self.m, self.hidR, batch_first=True)
         self.residual_window = residual_window
         self.mask_mat = Parameter(torch.Tensor(self.m, self.m))
+
+        self.squeeze_features = nn.Linear(self.nfeat, 1)
 
         self.dropout = nn.Dropout(p=dropout)
         self.linear = nn.Linear(self.hidR, self.m)
         if (self.residual_window > 0):
             self.residual_window = min(self.residual_window, self.P)
             self.residual = nn.Linear(self.residual_window, 1)
+        
+        self.out = nn.Linear(1, self.n_out)
 
     def forward(self, x, adj, states=None, dynamic_adj=None, **kargs):
         # first transform
         masked_adj = adj * self.mask_mat
-        x = x.matmul(masked_adj)
+        x = torch.matmul(masked_adj, x)
         # RNN
         # r: window (self.P) x batch x #signal (m)
-        r = x.permute(1, 0, 2).contiguous()
+        r = self.squeeze_features(x).contiguous().view(-1, self.P, self.m)
         _, r = self.GRU(r)
         r = self.dropout(torch.squeeze(r, 0))
 
@@ -55,9 +60,9 @@ class CNNRNN_Res(BaseModel):
             z = z.view(-1,self.m)
             res = res * self.ratio + z
 
-        res = F.sigmoid(res).float()
+        res = F.sigmoid(self.out(res.unsqueeze(-1))).float()
 
-        return res
+        return res.transpose(2,1)
     
     def initialize(self):
         for layer in self.children():
