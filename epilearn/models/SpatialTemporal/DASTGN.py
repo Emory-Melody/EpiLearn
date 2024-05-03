@@ -297,7 +297,8 @@ class GConv(nn.Module):
     
 
 class DASTGN(BaseModel):
-    def __init__(self, num_nodes,
+    def __init__(self, 
+                num_nodes,
                 num_features,
                 num_timesteps_input,
                 num_timesteps_output,
@@ -334,7 +335,7 @@ class DASTGN(BaseModel):
             if len(param.size()) == 2:
                 nn.init.xavier_uniform_(param)
 
-    def forward(self, x, adj, states = None, **kwargs):     # dim(his_raw_features)=(Time, Space, Feat)
+    def forward(self, x, adj, states=None, dynamic_adj=None, **kwargs):     # dim(his_raw_features)=(Time, Space, Feat)
         batch, w, n, f = x.shape
         x = x[..., :self.input_size]              # delete time and intervention variables
 

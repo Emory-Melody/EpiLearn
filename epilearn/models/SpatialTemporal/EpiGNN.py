@@ -146,8 +146,18 @@ class RegionAwareConv(nn.Module):
 
 
 class EpiGNN(BaseModel):
-    def __init__(self, num_nodes, num_features, num_timesteps_input,
-                 num_timesteps_output, k = 8, hidA = 64, hidR = 40, hidP=1, n_layer = 2, dropout = 0.5, device = 'cpu'):
+    def __init__(self, 
+                num_nodes, 
+                num_features, 
+                num_timesteps_input,
+                num_timesteps_output, 
+                k = 8, 
+                hidA = 64, 
+                hidR = 40, 
+                hidP=1, 
+                n_layer = 2, 
+                dropout = 0.5, 
+                device = 'cpu'):
         super().__init__()
         # arguments setting
         self.device = device
@@ -214,13 +224,13 @@ class EpiGNN(BaseModel):
                 stdv = 1. / math.sqrt(p.size(0))
                 p.data.uniform_(-stdv, stdv)
     
-    def forward(self, x, adj, states = None, index = None):
+    def forward(self, X, adj, states=None, dynamic_adj=None, index=None):
         adj = adj.bool().float()
         #print(index.shape) batch_size
-        batch_size = x.shape[0] # batchsize, w, m, feat
+        batch_size = X.shape[0] # batchsize, w, m, feat
 
         # step 1: Use multi-scale convolution to extract feature embedding (SEFNet => RAConv).
-        temp_emb = self.backbone(x)
+        temp_emb = self.backbone(X)
 
         # step 2: generate global transmission risk encoding.
         query = self.WQ(temp_emb) # batch, N, hidden
@@ -302,7 +312,7 @@ class EpiGNN(BaseModel):
         res = self.output(node_state).squeeze(2)
         # highway means autoregressive model
         if self.hw > 0:
-            z = x[:, -self.hw:, :]
+            z = X[:, -self.hw:, :]
             z = z.permute(0, 2, 1).contiguous().view(-1, self.hw)
             z = self.highway(z)
             z = z.view(-1, self.m)

@@ -61,16 +61,21 @@ class Forecast(BaseTask):
                 train_target=train_split[1], 
                 train_states = train_split[2],
                 train_graph=adj_norm, 
+                train_dynamic_graph=train_split[3],
                 val_input=val_split[0], 
                 val_target=val_split[1], 
                 val_states=val_split[2],
                 val_graph=adj_norm,
+                val_dynamic_graph=val_split[3],
                 verbose=True,
                 batch_size=batch_size,
-                epochs=epochs)
+                epochs=epochs,
+                loss=loss)
         
         # evaluate
-        out = self.model.predict(feature=test_split[0], graph=adj_norm)
+        out = self.model.predict(feature=test_split[0], graph=adj_norm, states=test_split[2], dynamic_graph=test_split[3])
+        if type(out) is tuple:
+            out = out[0]
         preds = out.detach().cpu()*norm[0]+norm[1]
         targets = test_split[1].detach().cpu()*norm[0]+norm[1]
         # MAE
@@ -84,10 +89,10 @@ class Forecast(BaseTask):
                     config=None,
                     features=None,
                     graph=None,
+                    dynamic_graph=None,
                     norm={"std":1, 'mean':0},
                     states=None,
                     targets=None,
-                    batch_size=10,
                     ):
         if model is None:
             if not hasattr(self, "model"):
@@ -95,7 +100,7 @@ class Forecast(BaseTask):
             model = self.model
 
         # evaluate
-        out = self.model.predict(feature=features, graph=graph)
+        out = self.model.predict(feature=features, graph=graph, states=states, dynamic_graph=dynamic_graph)
         preds = out.detach().cpu()*norm['std']+norm['mean']
         targets = targets[1].detach().cpu()*norm[0]+norm[1]
         # MAE
@@ -114,9 +119,11 @@ class Forecast(BaseTask):
         # preprocessing
         features, mean, std = utils.normalize(dataset.x)
         adj_norm = utils.normalize_adj(dataset.graph)
+        adj_dynamic_norm = utils.normalize_adj(dataset.dynamic_graph)
 
         features = features.to(self.device)
         adj_norm = adj_norm.to(self.device)
+        adj_dynamic_norm = adj_dynamic_norm.to(self.device)
 
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
@@ -125,21 +132,34 @@ class Forecast(BaseTask):
         val_original_data = features[split_line1:split_line2, :, :]
         test_original_data = features[split_line2:, :, :]
 
-        train_input, train_target, train_states, train_adj = dataset.generate_dataset(X=train_original_data, 
-                                                             Y=train_original_data[:, :, 0], 
-                                                             lookback_window_size=self.lookback,
-                                                             horizon_size=self.horizon, 
-                                                             permute=permute)
-        val_input, val_target, val_states, val_adj = dataset.generate_dataset(X=val_original_data, 
-                                                         Y=val_original_data[:, :, 0], 
-                                                         lookback_window_size=self.lookback, 
-                                                         horizon_size=self.horizon, 
-                                                         permute=permute)
-        test_input, test_target, test_states, test_adj = dataset.generate_dataset(X=test_original_data, 
-                                                           Y=test_original_data[:, :, 0], 
-                                                           lookback_window_size=self.lookback, 
-                                                           horizon_size=self.horizon, 
-                                                           permute=permute)
+        train_original_states = dataset.states[:split_line1, :, :]
+        val_original_states = dataset.states[split_line1:split_line2, :, :]
+        test_original_states = dataset.states[split_line2:, :, :]
+
+        train_input, train_target, train_states, train_adj = dataset.generate_dataset(
+                                                                                        X=train_original_data, 
+                                                                                        Y=train_original_data[:, :, 0], 
+                                                                                        states=train_original_states,
+                                                                                        dynamic_adj = adj_dynamic_norm,
+                                                                                        lookback_window_size=self.lookback,
+                                                                                        horizon_size=self.horizon, 
+                                                                                        permute=permute)
+        val_input, val_target, val_states, val_adj = dataset.generate_dataset(
+                                                                                X=val_original_data, 
+                                                                                Y=val_original_data[:, :, 0], 
+                                                                                states=val_original_states,
+                                                                                dynamic_adj = adj_dynamic_norm,
+                                                                                lookback_window_size=self.lookback, 
+                                                                                horizon_size=self.horizon, 
+                                                                                permute=permute)
+        test_input, test_target, test_states, test_adj = dataset.generate_dataset(
+                                                                                    X=test_original_data, 
+                                                                                    Y=test_original_data[:, :, 0], 
+                                                                                    states=test_original_states,
+                                                                                    dynamic_adj = adj_dynamic_norm,
+                                                                                    lookback_window_size=self.lookback, 
+                                                                                    horizon_size=self.horizon, 
+                                                                                    permute=permute)
 
         return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (std[0], mean[0])), adj_norm)
 

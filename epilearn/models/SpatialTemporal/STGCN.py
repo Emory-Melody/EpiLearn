@@ -129,14 +129,14 @@ class STGCN(BaseModel):
         self.fully = nn.Linear((num_timesteps_input - 2 * 5) * 64,
                                num_timesteps_output)
 
-    def forward(self, X, A_hat, states=None, **kargs):
+    def forward(self, X, adj, states=None, dynamic_adj=None, **kargs):
         """
         :param X: Input data of shape (batch_size, num_nodes, num_timesteps,
         num_features=in_channels).
         :param A_hat: Normalized adjacency matrix.
         """
-        out1 = self.block1(X, A_hat)
-        out2 = self.block2(out1, A_hat)
+        out1 = self.block1(X, adj)
+        out2 = self.block2(out1, adj)
         out3 = self.last_temporal(out2)
         out4 = self.fully(out3.reshape((out3.shape[0], out3.shape[1], -1)))
         return out4

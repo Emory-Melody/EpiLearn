@@ -10,13 +10,14 @@ from .base import BaseModel
 class CNNRNN_Res(BaseModel):
     def __init__(self, 
                 num_nodes, 
+                num_features,
                 num_timesteps_input,
                 num_timesteps_output,
-                nhid,
-                residual_ratio = 0,
-                residual_window = 0,
-                dropout = 0.5,
-                device = 'cpu'):
+                nhid=32,
+                residual_ratio=0,
+                residual_window=0,
+                dropout=0.5,
+                device='cpu'):
         super(CNNRNN_Res, self).__init__()
         self.ratio = residual_ratio
         self.device = device
@@ -34,10 +35,8 @@ class CNNRNN_Res(BaseModel):
             self.residual_window = min(self.residual_window, self.P)
             self.residual = nn.Linear(self.residual_window, 1)
 
-    def forward(self, x, adj, **kargs):
-        # x: batch x window (self.P) x #signal (m)
+    def forward(self, x, adj, states=None, dynamic_adj=None, **kargs):
         # first transform
-
         masked_adj = adj * self.mask_mat
         x = x.matmul(masked_adj)
         # RNN

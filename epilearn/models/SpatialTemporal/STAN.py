@@ -70,7 +70,17 @@ class MultiHeadGATLayer(nn.Module):
             return torch.mean(torch.stack(head_outs))
         
 class STAN(BaseModel):
-    def __init__(self, num_nodes, num_features, num_timesteps_input, num_timesteps_output, population, gat_dim1, gat_dim2, gru_dim, num_heads = 1, device = 'cpu'):
+    def __init__(self, 
+                 num_nodes, 
+                 num_features, 
+                 num_timesteps_input, 
+                 num_timesteps_output, 
+                 population=1e10, 
+                 gat_dim1=32, 
+                 gat_dim2=32, 
+                 gru_dim=32, 
+                 num_heads=1, 
+                 device = 'cpu'):
         super(STAN, self).__init__()
         self.n_nodes = num_nodes
         self.nfeat = num_features
@@ -94,7 +104,7 @@ class STAN(BaseModel):
         self.gru_dim = gru_dim
         self.device = device
 
-    def forward(self, X, adj, states, N = None, h = None):
+    def forward(self, X, adj, states, dynamic_adj=None, N = None, h = None):
         last_diff_I = X[:, -1, :, 1].unsqueeze(2)
         last_diff_R = X[:, -1, :, 2].unsqueeze(2)
         X = X.transpose(1,2).flatten(2,3)

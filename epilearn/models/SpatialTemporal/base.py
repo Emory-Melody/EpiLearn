@@ -19,10 +19,12 @@ class BaseModel(nn.Module):
             train_target, 
             train_states=None, 
             train_graph=None, 
+            train_dynamic_graph=None,
             val_input=None, 
             val_target=None,
             val_states=None, 
             val_graph= None, 
+            val_dynamic_graph=None,
             loss='mse', 
             epochs=1000, 
             batch_size=10,
@@ -43,10 +45,24 @@ class BaseModel(nn.Module):
         early_stopping = patience
         best_val = float('inf')
         for epoch in tqdm(range(epochs)):
-            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input, states = train_states, graph = train_graph, target = train_target, batch_size = batch_size, device = self.device)
+            loss = self.train_epoch(optimizer=optimizer, 
+                                    loss_fn=loss_fn, 
+                                    feature=train_input, 
+                                    states=train_states, 
+                                    graph=train_graph, 
+                                    dynamic_graph=train_dynamic_graph, 
+                                    target=train_target, 
+                                    batch_size=batch_size, 
+                                    device=self.device)
             training_losses.append(loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input, graph = val_graph, target = val_target, states = val_states, device = self.device)
+            val_loss, output = self.evaluate(loss_fn=loss_fn, 
+                                             feature=val_input, 
+                                             graph=val_graph, 
+                                             dynamic_graph=val_dynamic_graph,
+                                             target=val_target, 
+                                             states=val_states, 
+                                             device=self.device)
             validation_losses.append(val_loss)
 
             if best_val > val_loss:
@@ -72,7 +88,7 @@ class BaseModel(nn.Module):
         self.load_state_dict(best_weights)
 
         
-    def train_epoch(self, optimizer, loss_fn, feature, states = None, graph = None, target = None, batch_size = 1, device = 'cpu'):
+    def train_epoch(self, optimizer, loss_fn, feature, states=None, graph=None, dynamic_graph=None, target=None, batch_size=1, device='cpu'):
         """
         Trains one epoch with the given data.
         :param feature: Training features of shape (num_samples, num_nodes,
@@ -101,37 +117,36 @@ class BaseModel(nn.Module):
             else:
                 X_states = None
             
-            if len(graph.shape) > 2:
-                batch_graph = graph[indices]
+            if dynamic_graph is not None:
+                batch_graph = dynamic_graph[indices]
                 batch_graph = batch_graph.to(device)
             else:
-                batch_graph = graph
+                batch_graph = None
 
-            out = self.forward(X_batch, batch_graph, X_states)
+            out = self.forward(X_batch, graph, X_states, batch_graph)
             loss = loss_fn(out, y_batch)
             loss.backward()
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
         return sum(epoch_training_losses)/len(epoch_training_losses)
     
-    def evaluate(self, loss_fn, feature, graph = None, target = None, states = None, device = 'cpu'):
+    def evaluate(self, loss_fn, feature, graph = None, dynamic_graph=None, target = None, states = None, device = 'cpu'):
         with torch.no_grad():
             self.eval()
             feature = feature.to(device=device)
             target = target.to(device=device)
 
-            out = self.forward(feature, graph, states)
+            out = self.forward(feature, graph, states, dynamic_graph)
             val_loss = loss_fn(out, target).to(device="cpu")
             val_loss = val_loss.detach().numpy().item()
             
             return val_loss, out
 
-    def predict(self, feature, states = None, graph = None):
+    def predict(self, feature, graph=None, states=None, dynamic_graph=None):
         """
         Returns
         -------
         torch.FloatTensor
         """
         self.eval()
-
-        return self.forward(feature, graph, states)
+        return self.forward(feature, graph, states, dynamic_graph)

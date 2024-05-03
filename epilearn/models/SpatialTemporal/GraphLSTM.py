@@ -308,7 +308,7 @@ class GraphLinear(torch.nn.Linear):
         return super(GraphLinear, self).forward(input)
 
 
-class Graph_LSTM(BaseModel):
+class GraphLSTM(BaseModel):
     """
     Base class for Recurrent Neural Networks (LSTM or GRU).
     Initialization to this class contains all variables for variation of the model.
@@ -319,7 +319,19 @@ class Graph_LSTM(BaseModel):
         dim: int - number of features of embedding for each node
         module: torch.nn.Module - to be used in the LSTM to calculate each gate
     """
-    def __init__(self, node_features=1, output=1, dim=32, module=GraphLinear, rnn=LSTM, gnn=WeightedSAGEConv, gnn_2=WeightedSAGEConv, rnn_depth=1, name="RNN", edge_count=423, skip_connection=True):
+    def __init__(self, 
+                num_nodes, 
+                num_features,
+                num_timesteps_input,
+                num_timesteps_output, 
+                dim=32, 
+                module=GraphLinear, 
+                rnn=LSTM, 
+                gnn=WeightedSAGEConv, 
+                gnn_2=WeightedSAGEConv, 
+                rnn_depth=1, 
+                name="RNN", 
+                skip_connection=True):
         super(Graph_LSTM, self).__init__()
         self.dim = dim
         self.rnn_depth = rnn_depth
@@ -329,9 +341,9 @@ class Graph_LSTM(BaseModel):
         # Ensure that matrix multiplication sizes match up based on whether GNNs and RNN are used
         if gnn:
             if skip_connection:
-                self.gnn = gnn(node_features, dim)
+                self.gnn = gnn(num_features, dim)
             else:
-                self.gnn = gnn(node_features, dim * 2)
+                self.gnn = gnn(num_features, dim * 2)
             if rnn:
                 if skip_connection:
                     self.recurrent = rnn(dim, dim, module=module)
@@ -342,25 +354,25 @@ class Graph_LSTM(BaseModel):
         else:
             self.gnn = None
             if rnn:
-                self.recurrent = rnn(node_features, dim, module=module)
+                self.recurrent = rnn(num_features, dim, module=module)
             else:
                 self.recurrent = None
         if gnn_2:
             if gnn:
                 self.gnn_2 = gnn_2(dim * 2, dim * 2)
             else:
-                self.gnn_2 = gnn_2(dim + node_features, dim * 2)
+                self.gnn_2 = gnn_2(dim + num_features, dim * 2)
         else:
             self.gnn_2 = None
 
         self.lin1 = torch.nn.Linear(2 * dim, dim)
-        self.lin2 = torch.nn.Linear(dim, output)
+        self.lin2 = torch.nn.Linear(dim, num_timesteps_output)
         self.act1 = torch.nn.ReLU()
         self.act2 = torch.nn.ReLU()
 
-    def forward(self, data, h=None, c=None):
+    def forward(self, X, adj, states=None, dynamic_adj=None, h=None, c=None):
         # Get data from snapshot
-        x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
+        x, edge_index, edge_attr = X, adj.to_sparse_coo().indices(), None
 
         # First GNN Layer
         if self.gnn:

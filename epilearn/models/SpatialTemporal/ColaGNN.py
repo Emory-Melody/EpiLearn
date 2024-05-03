@@ -44,8 +44,8 @@ class ColaGNN(BaseModel):
                 num_features,
                 num_timesteps_input,
                 num_timesteps_output,
-                nhid,
-                n_channels,
+                nhid=32,
+                n_channels=1,
                 rnn_model = 'GRU',
                 n_layer = 1,
                 bidirect = False,
@@ -107,7 +107,7 @@ class ColaGNN(BaseModel):
                 stdv = 1. / math.sqrt(p.size(0))
                 p.data.uniform_(-stdv, stdv)
 
-    def forward(self, x, adj, states = None):
+    def forward(self, x, adj, states=None, dynamic_adj=None):
         '''
         Args:  x: (batch, time_step, n_nodes, feat)
         Returns: (batch, time_step, n_nodes)

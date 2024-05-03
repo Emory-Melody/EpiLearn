@@ -193,8 +193,22 @@ class SIRcell(nn.Module):
 
 
 class MepoGNN(BaseModel):
-    def __init__(self, num_nodes, num_features, num_timesteps_input, num_timesteps_output, glm_type, adapt_graph = None, dropout=0.5, residual_channels=32,
-                 dilation_channels=32, skip_channels=256, end_channels=512, kernel_size=2, blocks=2, layers=3, device = 'cpu'):
+    def __init__(self,
+                 num_nodes, 
+                 num_features, 
+                 num_timesteps_input, 
+                 num_timesteps_output, 
+                 glm_type='Dynamic', 
+                 adapt_graph=None, 
+                 dropout=0.5, 
+                 residual_channels=32,
+                 dilation_channels=32, 
+                 skip_channels=256, 
+                 end_channels=512, 
+                 kernel_size=2, 
+                 blocks=2, 
+                 layers=3, 
+                 device = 'cpu'):
         super(MepoGNN, self).__init__()
         self.stcell = stcell(num_nodes, dropout, num_features, num_timesteps_output, residual_channels, dilation_channels,
                              skip_channels, end_channels, kernel_size, blocks, layers)
@@ -217,7 +231,11 @@ class MepoGNN(BaseModel):
         else:
             raise NotImplementedError('Invalid graph type.')
 
-    def forward(self, x_node, od, SIR, max_od = 1e6):
+    def forward(self, x, adj, states, dynamic_adj, max_od = 1e6):
+        x_node = x
+        od = dynamic_adj
+        SIR = states
+
         x_node = x_node.transpose(1,3)
         if self.glm_type == 'Adaptive':
             mob = torch.exp(torch.relu(self.g_rescaled*self.max_log))
