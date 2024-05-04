@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+#——————————————————————————losses
 
 def get_loss(loss_name = 'mse'):
     loss_name = loss_name.lower()
@@ -24,3 +25,12 @@ def epi_cola_loss(output, label, scale=0.5):
     mse = nn.MSELoss()
     total_loss = F.l1_loss(output, label) + scale*mse(epi_output, label)
     return total_loss
+
+
+#--------------------metrics------------------
+def get_MAE(pred, target):
+    return torch.mean(torch.absolute(pred - target))
+
+def get_RMSE(pred, target):
+    mse_loss = nn.MSELoss(reduction='mean')
+    return torch.sqrt(mse_loss(pred, target))

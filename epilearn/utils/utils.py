@@ -26,9 +26,6 @@ def accuracy(output, labels):
     return correct / len(labels)
 
 
-def get_MAE(pred, target):
-    return torch.mean(torch.absolute(pred - target))
-
 def normalize(X):
     if len(X.shape) == 3:
         means = torch.mean(X, axis=(0, 1))

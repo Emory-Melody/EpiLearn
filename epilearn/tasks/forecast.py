@@ -1,6 +1,6 @@
 import torch
 
-from ..utils import utils
+from ..utils import utils, metrics  
 from .base import BaseTask
 
 class Forecast(BaseTask):
@@ -78,9 +78,11 @@ class Forecast(BaseTask):
             out = out[0]
         preds = out.detach().cpu()*norm[0]+norm[1]
         targets = test_split[1].detach().cpu()*norm[0]+norm[1]
-        # MAE
-        mae = utils.get_MAE(preds, targets)
+        # metrics
+        mae = metrics.get_MAE(preds, targets)
+        rmse = metrics.get_RMSE(preds, targets)
         print(f"Test MAE: {mae.item()}")
+        print(f"Test RMSE: {rmse.item()}")
 
 
     def evaluate_model(self,
@@ -103,9 +105,11 @@ class Forecast(BaseTask):
         out = self.model.predict(feature=features, graph=graph, states=states, dynamic_graph=dynamic_graph)
         preds = out.detach().cpu()*norm['std']+norm['mean']
         targets = targets[1].detach().cpu()*norm[0]+norm[1]
-        # MAE
-        mae = utils.get_MAE(preds, targets)
+        # metrics
+        mae = metrics.get_MAE(preds, targets)
+        rmse = metrics.get_RMSE(preds, targets)
         print(f"Test MAE: {mae.item()}")
+        print(f"Test RMSE: {rmse.item()}")
     
 
 
