@@ -26,21 +26,28 @@ permute = True
 epochs = 50 # training epochs
 batch_size = 50 # training batch size
 
-# load toy dataset
-# raw_data = torch.load("datasets/benchmark.pt")
-# data = raw_data['Brazil']
-# data = raw_data['Austria']
-# data  = raw_data['China']
-
-dataset = UniversalDataset()
-dataset.load_toy_dataset()
-# dataset.x = data['features']
-# dataset.y = data['features'][:,:,-1]
-# dataset.x = data['features']
-
 task = Forecast(prototype=STGCN, dataset=None, lookback=lookback, horizon=horizon, device='cpu')
 
 config = None
 # for epicolagnn, loss='epi_cola', else loss='mse
 # for STGCN, permute_dataset=True
-model = task.train_model(dataset=dataset, config=config, loss='mse', epochs=5, permute_dataset=True) # instead of config, we can also dircetly input some parameters
+
+# load toy dataset
+datasets = []
+dataset0 = UniversalDataset()
+dataset0.load_toy_dataset()
+
+raw_data = torch.load("datasets/benchmark.pt")
+for name in ['Brazil', 'Austria', 'China']:
+    data = raw_data[name]
+    dataset = UniversalDataset()
+    dataset.x = data['features']
+    dataset.y = data['features'][:,:,0]
+    dataset.graph = data['graph']
+    dataset.states = data['features']
+    dataset.dynamic_graph = None
+    datasets.append(dataset)
+datasets.append(dataset0)
+for i, dataset in enumerate(datasets):
+    print(f"dataset {i}")
+    model = task.train_model(dataset=dataset, config=config, loss='mse', epochs=5, permute_dataset=True) # instead of config, we can also dircetly input some parameters

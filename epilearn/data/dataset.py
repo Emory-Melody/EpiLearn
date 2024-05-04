@@ -10,6 +10,7 @@ class UniversalDataset(Data):
                 x=None, # timestep * Num nodes * features 
                 states=None,
                 y=None,
+                dynamic_graph=None,
                 edge_index=None,
                 edge_weight=None,
                 edge_attr = None
@@ -19,6 +20,7 @@ class UniversalDataset(Data):
 
         self.x = x # N*D; L*D; L*N*D; 
         self.y = y # N*1; L*1; L*N*1
+        self.dynamic_graph = dynamic_graph
         self.edge_index = edge_index # None; 2*Links; L*2*Links
         self.edge_weight = edge_weight # same as edge_index
         self.edge_attr = edge_attr # same as edge_index

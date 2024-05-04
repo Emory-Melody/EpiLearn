@@ -32,7 +32,7 @@ def normalize(X):
         X = X - means.unsqueeze(0).unsqueeze(0)
         stds = torch.std(X, axis=(0, 1))
         X = X / stds.unsqueeze(0).unsqueeze(0)
-    
+    X[torch.where(torch.isnan(X))]=0
     return X, means, stds
 
 
@@ -40,6 +40,8 @@ def normalize_adj(Adj):
     """
     Returns the degree normalized adjacency matrix.
     """
+    if Adj is None:
+        return None
     try:
         Adj = Adj.numpy()
     except:

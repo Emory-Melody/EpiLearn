@@ -123,11 +123,14 @@ class Forecast(BaseTask):
         # preprocessing
         features, mean, std = utils.normalize(dataset.x)
         adj_norm = utils.normalize_adj(dataset.graph)
-        adj_dynamic_norm = utils.normalize_adj(dataset.dynamic_graph)
-
         features = features.to(self.device)
         adj_norm = adj_norm.to(self.device)
-        adj_dynamic_norm = adj_dynamic_norm.to(self.device)
+
+        if hasattr(dataset, "dynamic_graph"):
+            adj_dynamic_norm = utils.normalize_adj(dataset.dynamic_graph)
+            adj_dynamic_norm = adj_dynamic_norm.to(self.device)
+        else:
+            adj_dynamic_norm = None
 
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
