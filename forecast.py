@@ -9,7 +9,7 @@ from epilearn.models.SpatialTemporal.DASTGN import DASTGN
 from epilearn.models.SpatialTemporal.ColaGNN import ColaGNN
 from epilearn.models.SpatialTemporal.EpiColaGNN import EpiColaGNN
 from epilearn.models.SpatialTemporal.CNNRNN_Res import CNNRNN_Res
-from epilearn.models.SpatialTemporal.ATMGNN import ATMGNN
+from epilearn.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
 
 from epilearn.models.Temporal.Dlinear import DlinearModel
 from epilearn.models.Temporal.LSTM import LSTMModel
@@ -56,7 +56,7 @@ datasets.append(dataset0)
 #     print(f"dataset {i}")
 #     model = task.train_model(dataset=dataset, config=config, loss='mse', epochs=50, batch_size=50, permute_dataset=True) # instead of config, we can also dircetly input some parameters
 
-mae, rmse = task.train_model(dataset=datasets[-1], config=config, loss='mse', epochs=50, batch_size=50, permute_dataset=False)
+results = task.train_model(dataset=datasets[-1], config=config, loss='mse', epochs=50, batch_size=50, permute_dataset=False)
 
 # mae_list=[]
 # rmse_list=[]

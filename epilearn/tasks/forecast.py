@@ -92,7 +92,8 @@ class Forecast(BaseTask):
         rmse = metrics.get_RMSE(preds, targets)
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
-        return mae, rmse
+        
+        return {"mae":mae, "rmse":rmse}
 
 
     def evaluate_model(self,

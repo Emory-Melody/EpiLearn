@@ -3,19 +3,18 @@ from torch import nn
 
 
 class SIR(nn.Module):
-    def __init__(self, infection_rate = None, recovery_rate = None, population = None):
+    def __init__(self, horizon=None, infection_rate=0.01, recovery_rate=0.038, population=None):
         super(SIR, self).__init__()
         self.pop = population
+        self.horizon = horizon
 
         self.beta = nn.Linear(1, 1, bias = False)
         self.gamma = nn.Linear(1, 1, bias = False)
 
-        if infection_rate is not None:
-            assert self.beta.weight.data >= 0
+        if infection_rate is not None: 
             self.beta.weight.data = torch.FloatTensor([infection_rate])
 
         if recovery_rate is not None:
-            assert self.gamma.weight.data >= 0
             self.gamma.weight.data = torch.FloatTensor([recovery_rate])
         
     def forward(self, x, steps = 1):
@@ -23,6 +22,8 @@ class SIR(nn.Module):
             pop = self.pop
         else:
             pop = x.sum()
+        if self.horizon is not None:
+            steps = self.horizon
 
         assert len(x.shape) == 1 and x.shape[0] == 3
 
@@ -48,20 +49,21 @@ class SIR(nn.Module):
             #     output.data[i][2] = 0
         return output[1:]
 
+
+
 class SIS(nn.Module):
-    def __init__(self, infection_rate = None, recovery_rate = None, population = None):
+    def __init__(self, horizon=None, infection_rate = None, recovery_rate = None, population = None):
         super(SIS, self).__init__()
         self.pop = population
+        self.horizon = horizon
 
         self.beta = nn.Linear(1, 1, bias = False)
         self.gamma = nn.Linear(1, 1, bias = False)
 
         if infection_rate is not None:
-            assert self.beta.weight.data >= 0
             self.beta.weight.data = torch.FloatTensor([infection_rate])
 
         if recovery_rate is not None:
-            assert self.gamma.weight.data >= 0
             self.gamma.weight.data = torch.FloatTensor([recovery_rate])
         
     def forward(self, x, steps = 1):
@@ -69,6 +71,8 @@ class SIS(nn.Module):
             pop = self.pop
         else:
             pop = x.sum()
+        if self.horizon is not None:
+            steps = self.horizon
 
         assert len(x.shape) == 1 and x.shape[0] == 2
 
@@ -83,7 +87,7 @@ class SIS(nn.Module):
         return output[1:]
 
 class SEIR(nn.Module):
-    def __init__(self, infection_rate = None, recovery_rate = None, cure_rate = None, latency = None, population = None, ):
+    def __init__(self, horizon=None, infection_rate = None, recovery_rate = None, cure_rate = None, latency = None, population = None):
         super(SEIR, self).__init__()
         self.pop = population
 
@@ -93,19 +97,15 @@ class SEIR(nn.Module):
         self.a = nn.Linear(1, 1, bias = False)
 
         if infection_rate is not None:
-            assert self.beta.weight.data >= 0
             self.beta.weight.data = torch.FloatTensor([infection_rate])
 
         if recovery_rate is not None:
-            assert self.gamma.weight.data >= 0
             self.gamma.weight.data = torch.FloatTensor([recovery_rate])
 
         if cure_rate is not None:
-            assert self.mu.weight.data >= 0
             self.mu.weight.data = torch.FloatTensor([cure_rate])
 
         if latency is not None:
-            assert self.a.weight.data >= 0
             self.a.weight.data = torch.FloatTensor([latency])
         
     def forward(self, x, steps = 1):
@@ -113,6 +113,8 @@ class SEIR(nn.Module):
             pop = self.pop
         else:
             pop = x.sum()
+        if self.horizon is not None:
+            steps = self.horizon
 
         assert len(x.shape) == 1 and x.shape[0] == 4
 
