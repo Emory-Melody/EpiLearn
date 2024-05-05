@@ -93,7 +93,7 @@ class Forecast(BaseTask):
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mae":mae, "rmse":rmse}
+        return {"mae":mae.item(), "rmse":rmse.item()}
 
 
     def evaluate_model(self,
