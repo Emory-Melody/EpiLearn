@@ -309,7 +309,7 @@ class EpiGNN(BaseModel):
 
         # Final prediction
         node_state = torch.cat([node_state, feat_emb], dim=-1)
-        res = self.output(node_state).squeeze(2)
+        res = self.output(node_state)
         # highway means autoregressive model
         if self.hw > 0:
             z = X[:, -self.hw:, :]

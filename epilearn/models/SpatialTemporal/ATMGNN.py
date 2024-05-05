@@ -204,7 +204,7 @@ class ATMGNN(BaseModel):
 
         x = self.relu(self.fc1(x))
         x = self.dropout(x)
-        x = self.relu(self.fc2(x)).squeeze()
+        x = self.relu(self.fc2(x))
         x = x.view(-1, x.shape[-1], self.n_nodes)
 
         return x

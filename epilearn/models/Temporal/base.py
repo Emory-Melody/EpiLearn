@@ -6,20 +6,37 @@ import torch
 from tqdm import tqdm
 
 from ...utils.utils import *
-
-
+from ...utils.metrics import get_loss
 
 class BaseModel(nn.Module):
     def __init__(self, device = 'cpu'):
         super(BaseModel, self).__init__()
         self.device = device
 
-    def fit(self, train_input, train_target, val_input = None, val_target = None, epochs=1000, batch_size = 10, initialize=True, verbose = False, patience = 100, **kwargs):
+    def fit(self, 
+            train_input, 
+            train_target, 
+            train_states=None, 
+            train_graph=None, 
+            train_dynamic_graph=None,
+            val_input=None, 
+            val_target=None,
+            val_states=None, 
+            val_graph= None, 
+            val_dynamic_graph=None,
+            loss='mse', 
+            epochs=1000, 
+            batch_size=10,
+            lr=1e-3, 
+            initialize=True, 
+            verbose=False, 
+            patience=100, 
+            **kwargs):
         if initialize:
             self.initialize()
         
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        loss_fn = nn.MSELoss()
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        loss_fn = get_loss(loss)
 
         training_losses = []
         validation_losses = []
@@ -96,7 +113,7 @@ class BaseModel(nn.Module):
             
             return val_loss, out
 
-    def predict(self, feature):
+    def predict(self, feature, graph=None, states=None, dynamic_graph=None):
         """
         Returns
         -------

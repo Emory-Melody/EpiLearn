@@ -238,7 +238,7 @@ class EpiColaGNN(BaseModel):
         out_spatial = self.conv_out(out_spatial.transpose(1,2).contiguous().view(b*self.m, -1)).view(b, self.m, -1)
         out = torch.cat((out_spatial, out_temporal),dim=-1)
         out = self.out(out)
-        out = torch.squeeze(out).transpose(2,1)
+        out = out.transpose(2,1)
 
         if (self.residual_window > 0):
             z = orig_x[:, -self.residual_window:, :]; #Step backward # [batch, res_window, m]
