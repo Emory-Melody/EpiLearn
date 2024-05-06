@@ -47,7 +47,7 @@ class SIR(nn.Module):
             #     output.data[i][1] = 0
             # if output.data[i][2] < 0:
             #     output.data[i][2] = 0
-        return output[1:]
+        return output
 
 
 
@@ -84,7 +84,7 @@ class SIS(nn.Module):
             output.data[i][1] = output.data[i-1][1] + self.beta((output.data[i-1][0] * output.data[i-1][1]).unsqueeze(0))/pop - self.gamma(output.data[i-1][1].unsqueeze(0)) 
             
 
-        return output[1:]
+        return output
 
 class SEIR(nn.Module):
     def __init__(self, horizon=None, infection_rate = None, recovery_rate = None, cure_rate = None, latency = None, population = None):
@@ -127,4 +127,4 @@ class SEIR(nn.Module):
             output.data[i][2] = output.data[i-1][2] + self.a(output.data[i-1][1]) - self.gamma(output.data[i-1][2]) - self.mu(output.data[i-1][2])# I
             output.data[i][3] = output.data[i-1][3] + self.gamma(output.data[i-1][2]) - self.mu(output.data[i-1][3])# R
 
-        return output[1:]
+        return output
