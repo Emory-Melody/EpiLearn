@@ -42,7 +42,7 @@ class BaseModel(nn.Module):
             if epoch > early_stopping and patience <= 0:
                 break
 
-            if verbose and epoch%50 == 0:
+            if verbose and epoch%1 == 0:
                 print(f"######### epoch:{epoch}")
                 print("Training loss: {}".format(training_losses[-1]))
                 print("Validation loss: {}".format(validation_losses[-1]))

@@ -9,6 +9,7 @@ from epilearn.models.Spatial.GAT import GAT
 from epilearn.models.Spatial.SAGE import SAGE
 from epilearn.models.Spatial.DCRNN import DCRNN
 from epilearn.models.Spatial.GIN import GIN
+from epilearn.models.SpatialTemporal.GraphWaveNet import gwnet
 from epilearn.data import UniversalDataset, SpatialDataset
 from epilearn.utils import utils
 
@@ -72,8 +73,7 @@ edge_weight = weights.clone().detach().to(device)
 
 
 train_dataset = SpatialDataset(x=train_input, y=train_target, adj_m=adj_norm)
-val_dataset = SpatialDataset(x=val_input, y=val_target, adj_m=adj_norm)
-
+val_dataset = SpatialDataset(x=val_input, y=val_target, edge_index=edge_index, edge_attr=edge_weight)
 
 
 '''model = GCN(input_dim=train_input.shape[2]*train_input.shape[3],
@@ -107,16 +107,32 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, adj_m=adj_norm)
               dropout=0.5,
               device=device)'''
 
-model = GIN(input_dim=train_input.shape[2]*train_input.shape[3],
+'''model = GIN(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
         nlayers=2, 
-        dropout=0.3, device=device)
+        dropout=0.3, device=device)'''
+
+
+train_input = torch.permute(train_input, (0, 2, 1, 3))
+train_input = train_input.transpose(1, 3)
+
+val_input = torch.permute(val_input, (0, 2, 1, 3))
+val_input = val_input.transpose(1, 3)
+
+supports = [i.clone().detach().to(device).unsqueeze(0) for i in adj_norm]
+model = gwnet(device, 
+              num_nodes=47, dropout=0.3, 
+              supports=supports, gcn_bool=True, 
+              addaptadj=True, aptinit=None, 
+              in_dim=train_input.shape[1], out_dim=horizon, 
+              residual_channels=32, dilation_channels=32, 
+              skip_channels=32 * 8, end_channels=32 * 16)
 
 model = model.to(device)
 
 
-model.fit(
+'''model.fit(
         train_dataset = train_dataset, 
         val_dataset = val_dataset, 
         verbose = True, 
@@ -124,7 +140,23 @@ model.fit(
         lr=1e-3,
         shuffle=False,
         patience=5,
-        epochs = epochs)
+        epochs = epochs)'''
+        
+print(train_input.shape)
+#train_input = torch.reshape(train_input, (train_input.shape[0], train_input.shape[1], -1))
+
+
+model.fit(
+        train_input=train_input, 
+        train_target=train_target, 
+        graph=adj_norm, 
+        val_input=val_input, 
+        val_target=val_target, 
+        verbose=True,
+        batch_size=batch_size,
+        epochs=epochs)
+
+
 
 # evaluate
 output_dim=[47, horizon]

@@ -1,1 +1,1 @@
-from . import STGCN
+from . import STGCN, GraphWaveNet
