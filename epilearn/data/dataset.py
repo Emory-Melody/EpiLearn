@@ -4,12 +4,13 @@ import numpy as np
 
 from .base import Dataset
 
-class UniversalDataset(Data):
+class UniversalDataset(Dataset):
     def __init__(
                 self,
                 x=None, # timestep * Num nodes * features 
                 states=None,
                 y=None,
+                graph=None,
                 dynamic_graph=None,
                 edge_index=None,
                 edge_weight=None,
@@ -20,11 +21,33 @@ class UniversalDataset(Data):
 
         self.x = x # N*D; L*D; L*N*D; 
         self.y = y # N*1; L*1; L*N*1
+        self.graph = graph
         self.dynamic_graph = dynamic_graph
         self.edge_index = edge_index # None; 2*Links; L*2*Links
         self.edge_weight = edge_weight # same as edge_index
         self.edge_attr = edge_attr # same as edge_index
         self.states = states # same as x
+        self.output_dim = None
+
+        if self.y is not None:
+            self.output_dim = self.y.shape
+        
+        if self.graph is not None and self.edge_index is None:
+            sparse_adj = self.graph.to_sparse()
+            self.edge_index = sparse_adj.indices()
+            self.edge_weight = sparse_adj.values()
+
+    def __getitem__(self, index):
+        batch_y = None if self.y is None else self.y[index].unsqueeze(0)
+        batch_dynamic = None if self.dynamic_graph is None else self.dynamic_graph[index].unsqueeze(0)
+
+        if self.y is not None:
+            return Data(x=self.x[index].unsqueeze(0), y=batch_y, edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
+        else:
+            return Data(x=self.x[index].unsqueeze(0), edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
+        
+    def __len__(self):
+        return len(self.x)
 
     def download(self):
         pass
@@ -74,38 +97,8 @@ class UniversalDataset(Data):
         if target_idx is not None:
             targets = targets[:,target_idx, :]
 
-
         return input_list[0][0], targets, input_list[1][0], input_list[2][0]
-        
 
-
-    def get_slice(self, timestamp):
-        try:
-            x = self.x[timestamp]
-        except:
-            x = None
-        try:
-            y= self.y[timestamp]
-        except:
-            y = None
-        try:
-            states = self.states[timestamp]
-        except:
-            states = None
-        try:
-            edge_index = self.edge_index[timestamp]
-        except:
-            edge_index = None
-        try:
-            edge_attr = self.edge_attr[timestamp]
-        except:
-            edge_attr = None
-        return Data(x = x,
-                    y = y,
-                    edge_index = edge_index,
-                    edge_attr = edge_attr,
-                    states = states 
-                    )
     
     def load_toy_dataset(self):
         data1 = np.load("epilearn/data/graphs.npy")
@@ -120,6 +113,106 @@ class UniversalDataset(Data):
         self.graph = data1
         self.edge_index = torch.FloatTensor(data1).to_sparse_coo().indices()
         self.edge_weight = torch.FloatTensor(data1).to_sparse_coo().values()
+    
+
+    # def get_slice(self, timestamp):
+    #     try:
+    #         x = self.x[timestamp]
+    #     except:
+    #         x = None
+    #     try:
+    #         y= self.y[timestamp]
+    #     except:
+    #         y = None
+    #     try:
+    #         states = self.states[timestamp]
+    #     except:
+    #         states = None
+    #     try:
+    #         edge_index = self.edge_index[timestamp]
+    #     except:
+    #         edge_index = None
+    #     try:
+    #         edge_attr = self.edge_attr[timestamp]
+    #     except:
+    #         edge_attr = None
+    #     return Data(x = x,
+    #                 y = y,
+    #                 edge_index = edge_index,
+    #                 edge_attr = edge_attr,
+    #                 states = states 
+    #                 )
+
+    
+
+class SpatialDataset(Dataset):
+    def __init__(   self,
+                    x = None,
+                    states = None,
+                    y = None,
+                    adj_m=None,
+                    edge_index = None,
+                    edge_attr = None
+                ):
+        
+        super().__init__()
+
+        self.x = x # N*D; L*D; L*N*D; 
+        self.y = y # N*1; L*1; L*N*1
+        self.adj_m = adj_m
+        self.edge_index = edge_index # None; 2*Links; L*2*Links
+        self.edge_attr = edge_attr # same as edge_index
+        self.states = states # same as x
+        self.output_dim = None
+        
+        
+        assert self.x is not None, "Input should not be NoneType!"
+        if self.y is not None:
+            assert len(self.x)==len(self.y), "Input and Output dim do not match!"
+            self.output_dim = self.y.shape
+            
+        
+        if self.edge_index is None and self.adj_m is None:
+            raise ValueError("There is no graph in Dataset, or you may specify your graph with parameter adj_m or edge_index!")
+            
+        if self.adj_m is not None and self.edge_index is not None:
+            raise ValueError("There may be conflicts between your parameter adj_m and edge_index!")
+        
+        if self.adj_m is not None and self.edge_index is None:
+            rows, cols = torch.where(self.adj_m != 0)
+            weights = self.adj_m[rows, cols]
+
+            edge_index = torch.stack([rows.long(), cols.long()], dim=0)
+            edge_weight = weights.clone().detach()
+            
+            self.edge_index, self.edge_attr = edge_index, edge_weight
+            
+        
+        if self.adj_m is None and self.edge_index is not None:
+            num_nodes = self.x.shape[1] # or specify?
+            if self.edge_attr is None:
+                self.edge_attr = torch.ones(self.edge_index.shape[1], 1)
+            if len(self.edge_attr.shape) == 1:
+                self.edge_attr = torch.reshape(self.edge_attr, (self.edge_attr.shape[0], 1))
+            adj_matrix = torch.zeros((num_nodes, num_nodes, self.edge_attr.shape[1]))
+            for i in range(self.edge_index.shape[1]):
+                src = self.edge_index[0, i]
+                dest = self.edge_index[1, i]
+                adj_matrix[src, dest] = self.edge_attr[i]
+            self.adj_m = adj_matrix.squeeze()
+            #print(self.adj_m.shape)
+            
+        
+    def __getitem__(self, index):
+        if self.y is not None:
+            return Data(x=self.x[index], y=self.y[index], edge_index=self.edge_index, edge_attr=self.edge_attr, adj_m=self.adj_m)
+        else:
+            return Data(x=self.x[index], edge_index=self.edge_index, edge_attr=self.edge_attr, adj_m=self.adj_m)
+        
+    
+    
+    def __len__(self):
+        return len(self.x)
         
 
 

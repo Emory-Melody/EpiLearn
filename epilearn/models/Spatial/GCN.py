@@ -1,75 +1,58 @@
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
-from torch_sparse import SparseTensor
+import torch
 
 from .base import BaseModel
 
 class GCN(BaseModel):
 
-    def __init__(self, nfeat, nhid, nclass, nlayers=2, dropout=0.5, lr=0.01,
-                with_bn=False, weight_decay=5e-4, with_bias=True, device=None):
+    def __init__(self, num_features, hidden_dim=16, num_classes=2, nlayers=2, dropout=0.5,
+                with_bn=False, with_bias=True, device='cpu'):
 
         super(GCN, self).__init__()
 
         assert device is not None, "Please specify 'device'!"
         self.device = device
+        self.hid = hidden_dim
+        self.out_dim = num_classes
 
         self.layers = nn.ModuleList([])
         if with_bn:
             self.bns = nn.ModuleList()
 
+
         if nlayers == 1:
-            self.layers.append(GCNConv(nfeat, nclass, bias=with_bias))
+            self.layers.append(GCNConv(num_features, hidden_dim, bias=with_bias))
         else:
-            self.layers.append(GCNConv(nfeat, nhid, bias=with_bias))
+            self.layers.append(GCNConv(num_features, hidden_dim, bias=with_bias))
             if with_bn:
-                self.bns.append(nn.BatchNorm1d(nhid))
+                self.bns.append(nn.BatchNorm1d(hidden_dim))
             for i in range(nlayers-2):
-                self.layers.append(GCNConv(nhid, nhid, bias=with_bias))
+                self.layers.append(GCNConv(hidden_dim, hidden_dim, bias=with_bias))
                 if with_bn:
-                    self.bns.append(nn.BatchNorm1d(nhid))
-            self.layers.append(GCNConv(nhid, nclass, bias=with_bias))
-
+                    self.bns.append(nn.BatchNorm1d(hidden_dim))
+            self.layers.append(GCNConv(hidden_dim, hidden_dim, bias=with_bias))
+        
+        self.fc = nn.Linear(hidden_dim, num_classes)
         self.dropout = dropout
-        self.weight_decay = weight_decay
-        self.lr = lr
-        self.output = None
-        self.best_model = None
-        self.best_output = None
         self.with_bn = with_bn
-        self.name = 'GCN'
 
-    def forward(self, x, edge_index, edge_weight=None):
-        x, edge_index, edge_weight = self._ensure_contiguousness(x, edge_index, edge_weight)
-        for ii, layer in enumerate(self.layers):
+    def forward(self, x, edge_index, edge_weight):
+        b, n, _= x.shape
+    
+        for i, layer in enumerate(self.layers):
             if edge_weight is not None:
-                adj = SparseTensor.from_edge_index(edge_index, edge_weight, sparse_sizes=2 * x.shape[:1]).t()
-                x = layer(x, adj)
+                x = layer(x, edge_index=edge_index, edge_weight=edge_weight)
             else:
                 x = layer(x, edge_index)
-            if ii != len(self.layers) - 1:
+            if i != len(self.layers) - 1:
                 if self.with_bn:
-                    x = self.bns[ii](x)
+                    x = self.bns[i](x.view(-1, self.hid)).view(b, n, self.hid)
                 x = F.relu(x)
                 x = F.dropout(x, p=self.dropout, training=self.training)
-        return F.log_softmax(x, dim=1)
-
-    def get_embed(self, x, edge_index, edge_weight=None):
-        x, edge_index, edge_weight = self._ensure_contiguousness(x, edge_index, edge_weight)
-        for ii, layer in enumerate(self.layers):
-            if ii == len(self.layers) - 1:
-                return x
-            if edge_weight is not None:
-                adj = SparseTensor.from_edge_index(edge_index, edge_weight, sparse_sizes=2 * x.shape[:1]).t()
-                x = layer(x, adj)
-            else:
-                x = layer(x, edge_index)
-            if ii != len(self.layers) - 1:
-                if self.with_bn:
-                    x = self.bns[ii](x)
-                x = F.relu(x)
-        return x
+        return self.fc(x).squeeze() #F.log_softmax(x, dim=1)
 
     def initialize(self):
         for m in self.layers:
@@ -77,30 +60,3 @@ class GCN(BaseModel):
         if self.with_bn:
             for bn in self.bns:
                 bn.reset_parameters()
-
-
-# if __name__ == "__main__":
-#     from deeprobust.graph.data import Dataset, Dpr2Pyg
-#     # from deeprobust.graph.defense import GCN
-#     data = Dataset(root='/tmp/', name='citeseer', setting='prognn')
-#     adj, features, labels = data.adj, data.features, data.labels
-#     idx_train, idx_val, idx_test = data.idx_train, data.idx_val, data.idx_test
-#     model = GCN(nfeat=features.shape[1],
-#           nhid=16,
-#           nclass=labels.max().item() + 1,
-#           dropout=0.5, device='cuda')
-#     model = model.to('cuda')
-#     pyg_data = Dpr2Pyg(data)[0]
-#
-#     # model.fit(features, adj, labels, idx_train, train_iters=200, verbose=True)
-#     # model.test(idx_test)
-#
-#     from utils import get_dataset
-#     pyg_data = get_dataset('citeseer', True, if_dpr=False)[0]
-#
-#     import ipdb
-#     ipdb.set_trace()
-#
-#     model.fit(pyg_data, verbose=True) # train with earlystopping
-#     model.test()
-#     print(model.predict())

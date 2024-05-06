@@ -1,2 +1,2 @@
 from .base import Dataset
-from .dataset import UniversalDataset
+from .dataset import UniversalDataset, SpatialDataset

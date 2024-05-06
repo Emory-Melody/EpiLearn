@@ -7,14 +7,13 @@ class Detection(BaseTask):
     def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, device = 'cpu'):
         super().__init__(prototype, model, dataset, lookback, horizon, device)
 
-
     def train_model(self,
                     dataset=None,
                     config=None,
-                    permute_dataset=False,
+                    permute_dataset=True,
                     train_rate=0.6,
                     val_rate=0.2,
-                    loss='mse', 
+                    loss='ce', 
                     epochs=1000, 
                     batch_size=10,
                     lr=1e-3, 
@@ -48,21 +47,29 @@ class Detection(BaseTask):
         train_split, val_split, test_split, ((features, norm), adj_norm) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
 
         try:
-        # initialize model
             self.model = self.prototype(
-                num_nodes=adj_norm.shape[0],
-                num_features=train_split[0].shape[3],
-                num_timesteps_input=self.lookback,
-                num_timesteps_output=self.horizon,
-                
-                ).to(device=self.device)
+                                        num_nodes=adj_norm.shape[0],
+                                        num_features=train_split[0].shape[-1],
+                                        num_timesteps_input=self.lookback,
+                                        num_timesteps_output=self.horizon,
+                                        device=self.device
+                                        ).to(device=self.device)
             print("spatial-temporal model loaded!")
         except:
-            self.model = self.prototype( num_features=train_split[0].shape[2],
-                                    num_timesteps_input=self.lookback,
-                                    num_timesteps_output=self.horizon)
-
-            print("temporal model loaded!")
+            try:
+                self.model = self.prototype( 
+                                        num_features=train_split[0].shape[2],
+                                        num_timesteps_input=self.lookback,
+                                        num_timesteps_output=self.horizon,
+                                        device=self.device).to(device=self.device)
+                                        
+                print("temporal model loaded!")
+            except:
+                self.model = self.prototype(
+                                        num_features=train_split[0].shape[-1],
+                                        num_classes=self.horizon,
+                                        device=self.device).to(device=self.device)
+                print("spatial model loaded!")
 
         # train
         self.model.fit(
@@ -85,15 +92,12 @@ class Detection(BaseTask):
         out = self.model.predict(feature=test_split[0], graph=adj_norm, states=test_split[2], dynamic_graph=test_split[3])
         if type(out) is tuple:
             out = out[0]
-        preds = out.detach().cpu()*norm[0]+norm[1]
-        targets = test_split[1].detach().cpu()*norm[0]+norm[1]
+        preds = out.detach().cpu().argmax(2)
         # metrics
-        mae = metrics.get_MAE(preds, targets)
-        rmse = metrics.get_RMSE(preds, targets)
-        print(f"Test MAE: {mae.item()}")
-        print(f"Test RMSE: {rmse.item()}")
+        acc = metrics.get_ACC(preds, test_split[1])
+        print(f"Test ACC: {acc.item()}")
         
-        return {"mae":mae.item(), "rmse":rmse.item()}
+        return {'acc': acc}
 
 
     def evaluate_model(self,
@@ -114,30 +118,33 @@ class Detection(BaseTask):
 
         # evaluate
         out = self.model.predict(feature=features, graph=graph, states=states, dynamic_graph=dynamic_graph)
-        preds = out.detach().cpu()*norm['std']+norm['mean']
-        targets = targets[1].detach().cpu()*norm[0]+norm[1]
+        preds = out.detach().cpu().argmax(1)
         # metrics
-        mae = metrics.get_MAE(preds, targets)
-        rmse = metrics.get_RMSE(preds, targets)
-        print(f"Test MAE: {mae.item()}")
-        print(f"Test RMSE: {rmse.item()}")
+        acc = metrics.get_ACC(preds, targets)
+        print(f"Test ACC: {acc.item()}")
     
 
 
-    def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
+    def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
         if dataset is None:
             try:
                 dataset = self.dataset
             except:
                 raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
-            
+        dataset.x = dataset.x.float()
         # preprocessing
-        features, mean, std = utils.normalize(dataset.x)
-        adj_norm = utils.normalize_adj(dataset.graph)
-        features = features.to(self.device)
-        adj_norm = adj_norm.to(self.device)
+        if preprocess:
+            features, mean, std = utils.normalize(dataset.x)
+            adj_norm = utils.normalize_adj(dataset.graph)
+            features = features.to(self.device)
+            adj_norm = adj_norm.to(self.device)
+        else:
+            features = dataset.x.to(self.device)
+            adj_norm = dataset.graph.to(self.device)
+            mean = [0]
+            std = [1]
 
-        if hasattr(dataset, "dynamic_graph"):
+        if hasattr(dataset, "dynamic_graph") and dataset.dynamic_graph is not None:
             adj_dynamic_norm = utils.normalize_adj(dataset.dynamic_graph)
             adj_dynamic_norm = adj_dynamic_norm.to(self.device)
         else:
@@ -146,56 +153,31 @@ class Detection(BaseTask):
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
-        train_original_data = features[:split_line1, :, :]
-        val_original_data = features[split_line1:split_line2, :, :]
-        test_original_data = features[split_line2:, :, :]
+        train_feature = features[:split_line1, :, :]
+        val_feature  = features[split_line1:split_line2, :, :]
+        test_feature  = features[split_line2:, :, :]
 
-        train_original_states = dataset.states[:split_line1, :, :]
-        val_original_states = dataset.states[split_line1:split_line2, :, :]
-        test_original_states = dataset.states[split_line2:, :, :]
+        train_target = dataset.y[:split_line1, :]
+        val_target = dataset.y[split_line1:split_line2, :]
+        test_target = dataset.y[split_line2:, :]
+        try:
+            train_states = dataset.states[:split_line1, :, :]
+            val_states = dataset.states[split_line1:split_line2, :, :]
+            test_states = dataset.states[split_line2:, :, :]
+        except:
+            train_states = None
+            val_states = None
+            test_states = None
 
+        if hasattr(dataset, 'dynamic_graph') and dataset.dynamic_graph is not None:
+            train_graph = dataset.dynamic_graph[:split_line1, :, :]
+            val_graph = dataset.dynamic_graph[split_line1:split_line2, :, :]
+            test_graph = dataset.dynamic_graph[split_line2:, :, :]
+        else:
+            train_graph = None
+            val_graph = None
+            test_graph = None
 
-        train_input, train_target, train_states, train_adj = dataset.generate_dataset(
-                                                                                        X=train_original_data, 
-                                                                                        Y=train_original_data[:, :, 0], 
-                                                                                        states=train_original_states,
-                                                                                        dynamic_adj = adj_dynamic_norm,
-                                                                                        lookback_window_size=self.lookback,
-                                                                                        horizon_size=self.horizon, 
-                                                                                        permute=permute)
-        val_input, val_target, val_states, val_adj = dataset.generate_dataset(
-                                                                                X=val_original_data, 
-                                                                                Y=val_original_data[:, :, 0], 
-                                                                                states=val_original_states,
-                                                                                dynamic_adj = adj_dynamic_norm,
-                                                                                lookback_window_size=self.lookback, 
-                                                                                horizon_size=self.horizon, 
-                                                                                permute=permute)
-        test_input, test_target, test_states, test_adj = dataset.generate_dataset(
-                                                                                    X=test_original_data, 
-                                                                                    Y=test_original_data[:, :, 0], 
-                                                                                    states=test_original_states,
-                                                                                    dynamic_adj = adj_dynamic_norm,
-                                                                                    lookback_window_size=self.lookback, 
-                                                                                    horizon_size=self.horizon, 
-                                                                                    permute=permute)
-        
-        if region_idx is not None:
-            train_input = train_input[:,:,region_idx,:]
-            val_input = val_input[:,:,region_idx,:]
-            test_input = test_input[:,:,region_idx,:]
-
-            train_target = train_target[:,:,region_idx]
-            val_target = val_target[:,:,region_idx]
-            test_target = test_target[:,:,region_idx]
-
-            train_states = train_states[:,:,region_idx]
-            val_states = val_states[:,:,region_idx]
-            test_states = test_states[:,:,region_idx]
-
-            features = features[:,region_idx,:]
-
-
-        return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (std[0], mean[0])), adj_norm)
+        return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (std[0], mean[0])), adj_norm)
 
         

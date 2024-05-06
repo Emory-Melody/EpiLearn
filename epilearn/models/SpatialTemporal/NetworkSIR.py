@@ -24,9 +24,9 @@ class NetSIR(nn.Module):
         
     def forward(self, x, adj, steps = 1):
         '''
-        Args:  x: (n_nodes, states)
+        Args:  x: (n_nodes, one-hot encoding of states)
                adj: (n_nodes, n_nodes)
-        Returns: (time_step, n_nodes, states)
+        Returns: (time_step, n_nodes, probability of states) 
         ''' 
         if self.pop is not None:
             pop = self.pop
