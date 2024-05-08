@@ -140,6 +140,23 @@ def get_random_graph(num_nodes=None, connect_prob=None, block_sizes=None, num_ed
     adj = edge_to_adj(edges, num_nodes)
     return adj
 
+def get_graph_from_features(features, adj=None, G=1):
+    """
+    features: [num_nodes, feat]
+    adj: [num_nodes, num_nodes]; adj[i,j] denotes distance between node i and j
+    """
+    n_nodes = len(features)
+    graph = torch.zeros(n_nodes, n_nodes)
+    for i in range(n_nodes):
+        for j in range(n_nodes):
+            if adj is not None:
+                graph[i, j] = (torch.nn.functional.cosine_similarity(features[i], features[j], dim=0)/adj[i,j]).item()
+            else:
+                graph[i, j] = torch.nn.functional.cosine_similarity(features[i], features[j], dim=0).item()
+    return graph
+
+    
+
 
 
 

@@ -11,7 +11,7 @@ def plot_series(x : np.array, columns : list):
         data[s] = x[:, i]
     sb.relplot(data, kind = "line", legend = columns)
 
-def plot_series(states: np.array, graph : np.array, classes=None, layout=None):
+def plot_graph(states: np.array, graph : np.array, classes=None, layout=None):
 
     graph = [(graph[0, i], graph[1, i]) for i in range(len(graph[0]))]
 
@@ -40,7 +40,9 @@ def plot_series(states: np.array, graph : np.array, classes=None, layout=None):
         nx.draw(g, pos = pos, node_color=colors, font_size=10, node_size=25)
     # 创建图例的图标
     patches = []
-    for item in color_map.items():
+    for i, item in enumerate(color_map.items()):
+        if i>=len(classes):
+            break
         patches.append(mpatches.Patch(color=item[1], label=classes[item[0]]))
 
     # 添加图例
