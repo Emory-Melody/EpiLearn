@@ -9,9 +9,10 @@ from epilearn.models.Spatial.GAT import GAT
 from epilearn.models.Spatial.SAGE import SAGE
 from epilearn.models.Spatial.DCRNN import DCRNN
 from epilearn.models.Spatial.GIN import GIN
-from epilearn.models.SpatialTemporal.GraphWaveNet import gwnet
+from epilearn.models.SpatialTemporal.GraphWaveNet import GraphWaveNet
 from epilearn.data import UniversalDataset, SpatialDataset
 from epilearn.utils import utils
+from epilearn.transforms import transforms
 
 import torch_geometric
 
@@ -71,16 +72,23 @@ edge_index = torch.stack([rows.long(), cols.long()], dim=0).to(device)
 edge_weight = weights.clone().detach().to(device)
 
 
+transform_list = torch.nn.Sequential(transforms.ABS_TIM_EMB())
+transform = transforms.Compose(transform_list, device)
+
+train_input = transform(train_input)
+val_input = transform(val_input)
+
+print("transform: ", train_input.shape)
 
 train_dataset = SpatialDataset(x=train_input, y=train_target, adj_m=adj_norm)
 val_dataset = SpatialDataset(x=val_input, y=val_target, edge_index=edge_index, edge_attr=edge_weight)
 
 
-'''model = GCN(input_dim=train_input.shape[2]*train_input.shape[3],
+model = GCN(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         output_dim=horizon,
         nlayers=2, with_bn=True,
-        dropout=0.3, device=device)'''
+        dropout=0.3, device=device)
 
 '''model = GAT(input_dim=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
@@ -92,6 +100,12 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, edge_index=edge_index, e
         hidden_dim=16,
         output_dim=horizon,
         nlayers=1, with_bn=True, aggr=torch_geometric.nn.GRUAggregation,
+        dropout=0.3, device=device)'''
+
+'''model = GIN(input_dim=train_input.shape[2]*train_input.shape[3],
+        hidden_dim=16,
+        output_dim=horizon,
+        nlayers=2, 
         dropout=0.3, device=device)'''
         
 
@@ -107,32 +121,20 @@ val_dataset = SpatialDataset(x=val_input, y=val_target, edge_index=edge_index, e
               dropout=0.5,
               device=device)'''
 
-'''model = GIN(input_dim=train_input.shape[2]*train_input.shape[3],
-        hidden_dim=16,
-        output_dim=horizon,
-        nlayers=2, 
-        dropout=0.3, device=device)'''
-
-
-train_input = torch.permute(train_input, (0, 2, 1, 3))
-train_input = train_input.transpose(1, 3)
-
-val_input = torch.permute(val_input, (0, 2, 1, 3))
-val_input = val_input.transpose(1, 3)
-
-supports = [i.clone().detach().to(device).unsqueeze(0) for i in adj_norm]
-model = gwnet(device, 
-              num_nodes=47, dropout=0.3, 
-              supports=supports, gcn_bool=True, 
+'''model = GraphWaveNet(device, 
+              dropout=0.3, 
+              adj_m=adj_norm, gcn_bool=True, 
               addaptadj=True, aptinit=None, 
-              in_dim=train_input.shape[1], out_dim=horizon, 
+              input_dim=train_input.shape[3], output_dim=horizon, 
+              blocks=4, nlayers=2,
               residual_channels=32, dilation_channels=32, 
-              skip_channels=32 * 8, end_channels=32 * 16)
+              skip_channels=32 * 8, end_channels=32 * 16)'''
 
 model = model.to(device)
 
 
-'''model.fit(
+
+model.fit(
         train_dataset = train_dataset, 
         val_dataset = val_dataset, 
         verbose = True, 
@@ -140,21 +142,30 @@ model = model.to(device)
         lr=1e-3,
         shuffle=False,
         patience=5,
-        epochs = epochs)'''
+        epochs = epochs)
         
-print(train_input.shape)
-#train_input = torch.reshape(train_input, (train_input.shape[0], train_input.shape[1], -1))
+        
+        
+'''print("original: ", train_input.shape)
+transform_lists = torch.nn.Sequential(transforms.convert_to_frequency(), transforms.test_seq())
+#transform_list = [transforms.convert_to_frequency()]
+transform_list = [transforms.ABS_TIM_EMB()]
+transform = transforms.Compose(transform_list, device)
+#transform_test = transforms.convert_to_frequency()
+print("frequency: ",transform(train_input).shape)'''
 
 
-model.fit(
-        train_input=train_input, 
+'''model.fit(
+        train_input=transform(train_input), 
         train_target=train_target, 
         graph=adj_norm, 
-        val_input=val_input, 
+        val_input=transform(val_input), 
         val_target=val_target, 
         verbose=True,
         batch_size=batch_size,
-        epochs=epochs)
+        epochs=epochs,
+        patience=5
+        )'''
 
 
 
@@ -162,6 +173,7 @@ model.fit(
 output_dim=[47, horizon]
 test_dataset = SpatialDataset(x=test_input, adj_m=adj_norm)
 out = model.predict(dataset=test_dataset, batch_size=batch_size, device=device, output_dim=output_dim)
+#out = model.predict(feature=test_input, graph=adj_norm)
 print(out.shape)
 
 preds = out.detach().cpu() * std[0] + mean[0]
