@@ -11,8 +11,7 @@ from epilearn.models.Spatial.DCRNN import DCRNN
 from epilearn.models.Spatial.GIN import GIN
 from epilearn.models.SpatialTemporal.GraphWaveNet import GraphWaveNet
 from epilearn.data import UniversalDataset, SpatialDataset
-from epilearn.utils import utils
-from epilearn.transforms import transforms
+from epilearn.utils import utils, transforms
 
 import torch_geometric
 
