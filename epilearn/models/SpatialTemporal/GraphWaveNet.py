@@ -46,14 +46,16 @@ class gcn(nn.Module):
         return h
 
 
-class gwnet(BaseModel):
-    def __init__(self, device, num_nodes, dropout=0.3, supports=None, gcn_bool=True, addaptadj=True, aptinit=None, in_dim=2,out_dim=12,residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,layers=2):
-        super(gwnet, self).__init__()
-        
+class GraphWaveNet(BaseModel):
+    def __init__(self, device, dropout=0.3, gcn_bool=True, addaptadj=True, aptinit=None, input_dim=2,output_dim=12,
+                 residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,nlayers=2, adj_m=None):
+        super(GraphWaveNet, self).__init__()
+
+        num_nodes = adj_m.shape[0]
         self.device = device
         self.dropout = dropout
         self.blocks = blocks
-        self.layers = layers
+        self.layers = nlayers
         self.gcn_bool = gcn_bool
         self.addaptadj = addaptadj
 
@@ -64,11 +66,16 @@ class gwnet(BaseModel):
         self.bn = nn.ModuleList()
         self.gconv = nn.ModuleList()
 
-        self.start_conv = nn.Conv2d(in_channels=in_dim,
+        self.start_conv = nn.Conv2d(in_channels=input_dim,
                                     out_channels=residual_channels,
                                     kernel_size=(1,1))
+        if adj_m is not None:
+            supports = [i.clone().detach().to(device).unsqueeze(0) for i in adj_m] #supports
+        else:
+            supports = None
         self.supports = supports
-
+        
+        
         receptive_field = 1
 
         self.supports_len = 0
@@ -98,7 +105,7 @@ class gwnet(BaseModel):
         for b in range(blocks):
             additional_scope = kernel_size - 1
             new_dilation = 1
-            for i in range(layers):
+            for i in range(nlayers):
                 # dilated convolutions
                 self.filter_convs.append(nn.Conv2d(in_channels=residual_channels,
                                                    out_channels=dilation_channels,
@@ -132,7 +139,7 @@ class gwnet(BaseModel):
                                   bias=True)
 
         self.end_conv_2 = nn.Conv2d(in_channels=end_channels,
-                                    out_channels=out_dim,
+                                    out_channels=output_dim,
                                     kernel_size=(1,1),
                                     bias=True)
 
@@ -142,6 +149,9 @@ class gwnet(BaseModel):
 
     def forward(self, graph, input):
         #print(input)
+        input = torch.permute(input, (0, 2, 1, 3))
+        input = input.transpose(1, 3)
+
         in_len = input.size(3)
         if in_len<self.receptive_field:
             x = nn.functional.pad(input,(self.receptive_field-in_len,0,0,0))
