@@ -97,7 +97,7 @@ class BaseModel(nn.Module):
             y_batch = torch.reshape(y_batch, out.shape)
             loss = loss_fn(out, y_batch)
 
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
             epoch_training_losses.append(loss)
         return sum(epoch_training_losses)/len(epoch_training_losses)
