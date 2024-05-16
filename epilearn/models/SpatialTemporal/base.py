@@ -78,7 +78,7 @@ class BaseModel(nn.Module):
 
             out = self.forward(graph, X_batch)
             loss = loss_fn(out, y_batch)
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
         return sum(epoch_training_losses)/len(epoch_training_losses)

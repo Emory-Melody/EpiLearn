@@ -72,7 +72,12 @@ edge_index = torch.stack([rows.long(), cols.long()], dim=0).to(device)
 edge_weight = weights.clone().detach().to(device)
 
 
-transform_list = torch.nn.Sequential(transforms.ABS_TIM_EMB())
+
+print("original: ", train_input.shape)
+transform_lists = torch.nn.Sequential(transforms.convert_to_frequency(ftype="fft"), transforms.test_seq())
+#transform_list = [transforms.convert_to_frequency()]
+transform_list = torch.nn.Sequential(transforms.add_time_embedding(timesteps=13,embedding_dim=10))
+#transform_list = torch.nn.Sequential(transforms.ABS_TIM_EMB(embedding_dim=10))
 transform = transforms.Compose(transform_list, device)
 
 train_input = transform(train_input)
@@ -143,23 +148,14 @@ model.fit(
         shuffle=False,
         patience=5,
         epochs = epochs)
-        
-        
-        
-'''print("original: ", train_input.shape)
-transform_lists = torch.nn.Sequential(transforms.convert_to_frequency(), transforms.test_seq())
-#transform_list = [transforms.convert_to_frequency()]
-transform_list = [transforms.ABS_TIM_EMB()]
-transform = transforms.Compose(transform_list, device)
-#transform_test = transforms.convert_to_frequency()
-print("frequency: ",transform(train_input).shape)'''
+
 
 
 '''model.fit(
-        train_input=transform(train_input), 
+        train_input=train_input, 
         train_target=train_target, 
         graph=adj_norm, 
-        val_input=transform(val_input), 
+        val_input=val_input, 
         val_target=val_target, 
         verbose=True,
         batch_size=batch_size,
@@ -171,6 +167,7 @@ print("frequency: ",transform(train_input).shape)'''
 
 # evaluate
 output_dim=[47, horizon]
+test_input = transform(test_input)
 test_dataset = SpatialDataset(x=test_input, adj_m=adj_norm)
 out = model.predict(dataset=test_dataset, batch_size=batch_size, device=device, output_dim=output_dim)
 #out = model.predict(feature=test_input, graph=adj_norm)
