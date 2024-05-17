@@ -44,9 +44,9 @@ class GCN(BaseModel):
     
         for i, layer in enumerate(self.layers):
             if edge_weight is not None:
-                x = layer(x, edge_index=edge_index, edge_weight=edge_weight)
+                x = layer(x.float(), edge_index=edge_index, edge_weight=edge_weight)
             else:
-                x = layer(x, edge_index)
+                x = layer(x.float(), edge_index)
             if i != len(self.layers) - 1:
                 if self.with_bn:
                     x = self.bns[i](x.view(-1, self.hid)).view(b, n, self.hid)

@@ -29,7 +29,8 @@ def epi_cola_loss(output, label, scale=0.5):
     return total_loss
 
 def cross_entropy_loss(output, label):
-    # label = label.bool().float()
+    label = (((label-label.min())/(label.max()-label.min()+1))*output.shape[-1]).int()
+    label
     ce = nn.CrossEntropyLoss()
     return ce(output.float().view(-1, output.shape[-1]), label.long().view(-1))
 

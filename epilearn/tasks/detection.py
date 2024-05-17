@@ -124,31 +124,24 @@ class Detection(BaseTask):
         print(f"Test ACC: {acc.item()}")
     
 
-
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
         if dataset is None:
             try:
                 dataset = self.dataset
             except:
                 raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
-        dataset.x = dataset.x.float()
-        # preprocessing
-        if preprocess:
-            features, mean, std = utils.normalize(dataset.x)
-            adj_norm = utils.normalize_adj(dataset.graph)
-            features = features.to(self.device)
-            adj_norm = adj_norm.to(self.device)
-        else:
-            features = dataset.x.to(self.device)
-            adj_norm = dataset.graph.to(self.device)
-            mean = [0]
-            std = [1]
 
-        if hasattr(dataset, "dynamic_graph") and dataset.dynamic_graph is not None:
-            adj_dynamic_norm = utils.normalize_adj(dataset.dynamic_graph)
-            adj_dynamic_norm = adj_dynamic_norm.to(self.device)
-        else:
-            adj_dynamic_norm = None
+        # preprocessing
+        features, adj, adj_dynamic, states = dataset.get_transformed()
+        feat_mean, feat_std = dataset.transforms.feat_mean, dataset.transforms.feat_std
+
+        features = features.to(self.device)
+        adj = adj.to(self.device)
+
+        if adj_dynamic is not None:
+            adj_dynamic = adj_dynamic.to(self.device)
+        if states is not None:
+            states = states.to(self.device)
 
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
@@ -161,23 +154,24 @@ class Detection(BaseTask):
         val_target = dataset.y[split_line1:split_line2, :]
         test_target = dataset.y[split_line2:, :]
         try:
-            train_states = dataset.states[:split_line1, :, :]
-            val_states = dataset.states[split_line1:split_line2, :, :]
-            test_states = dataset.states[split_line2:, :, :]
+            train_states = states[:split_line1, :, :]
+            val_states = states[split_line1:split_line2, :, :]
+            test_states = states[split_line2:, :, :]
         except:
             train_states = None
             val_states = None
             test_states = None
 
-        if hasattr(dataset, 'dynamic_graph') and dataset.dynamic_graph is not None:
-            train_graph = dataset.dynamic_graph[:split_line1, :, :]
-            val_graph = dataset.dynamic_graph[split_line1:split_line2, :, :]
-            test_graph = dataset.dynamic_graph[split_line2:, :, :]
+        if dataset.dynamic_graph is not None: # hasattr(dataset, 'dynamic_graph') and 
+            train_graph = adj_dynamic[:split_line1, :, :]
+            val_graph = adj_dynamic[split_line1:split_line2, :, :]
+            test_graph = adj_dynamic[split_line2:, :, :]
         else:
             train_graph = None
             val_graph = None
             test_graph = None
 
-        return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (std[0], mean[0])), adj_norm)
+        return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (feat_std, feat_mean)), adj)
 
         
+

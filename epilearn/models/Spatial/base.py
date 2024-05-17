@@ -109,16 +109,16 @@ class BaseModel(nn.Module):
         """
         
         train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
-        edge_index = dataset.edge_index
-        edge_weight = dataset.edge_weight
+        edge_index = dataset.edge_index.long()
+        edge_weight = dataset.edge_weight.float()
         
         epoch_training_losses = []
         for batch_data in train_loader:
             self.train()
             optimizer.zero_grad()
             batch_data = batch_data.to(device)
-            y_batch = batch_data.y
-            x_batch = batch_data.x
+            y_batch = batch_data.y.long()
+            x_batch = batch_data.x.float()
 
             out = self.forward(x_batch, edge_index, edge_weight)
             loss = loss_fn(out, y_batch)
