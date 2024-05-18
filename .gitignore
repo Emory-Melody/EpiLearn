@@ -4,3 +4,6 @@ test.ipynb
 **/__pycache__
 **/.vscode
 .idea
+/build
+/dist
+/epilearn.egg-info

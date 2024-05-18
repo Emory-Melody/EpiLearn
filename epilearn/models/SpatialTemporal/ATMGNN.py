@@ -7,7 +7,6 @@ from torch_geometric.nn import GCNConv
 
 from .base import BaseModel
 
-import ipdb
 
 class MPNN_Encoder(nn.Module):
     def __init__(self, nfeat, nhid, nout, n_nodes, dropout):
