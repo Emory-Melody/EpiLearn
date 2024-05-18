@@ -26,6 +26,10 @@ setuptools.setup(
           'seaborn>=0.13.2',
           'xgboost>=2.0.3',
           'statsmodels>=0.14.2',
+          'streamlit',
+          'pyvis',
+          'plotly',
+          
       ],
     packages=setuptools.find_packages(),
     classifiers=[

@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def accuracy(output, labels):
     """Return accuracy of output compared to labels.
@@ -124,6 +126,23 @@ def edge_to_adj(edge_index, num_nodes):
     adj[edge_index[0], edge_index[1]] = 1
     adj[edge_index[1], edge_index[0]] = 1
     return adj
+
+
+# def tensor_to_networkx(features, graph):
+#     G = nx.Graph()
+#     nodes = list(range(len(graph)))
+#     G.add_nodes_from(nodes)
+#     edges = []
+#     for i in nodes:
+#         for j in nodes:
+#             if graph[i, j] > 0:
+#                 edges.append((i, j))
+#     G.add_edges_from(edges)
+
+#     cmap = plt.cm.get_cmap('Reds')
+#     node_weights = features.view(-1).tolist()  
+
+    
 
 
 
