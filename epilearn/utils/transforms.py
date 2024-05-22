@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from utils import *
+import os
+from tqdm import tqdm
+from fastdtw import fastdtw
 
 class Compose:
     """Composes several transforms together. This transform does not support torchscript.
@@ -213,3 +217,57 @@ class add_time_embedding(nn.Module):
 
         #print(data_with_time_embeddings.shape)  
         return data_with_time_embeddings
+
+
+
+    class seasonality_and_trend_decompose(nn.Module):
+        def __init__(self, decompose_type = "dynamic", moving_avg=25, kernel_size= [4, 8, 12]):
+            super().__init__()
+            self.decompose_type = decompose_type
+            if self.decompose_type == "dynamic":
+                self.seasonality_model = FourierLayer(pred_len=0, k=3)
+                self.trend_model = series_decomp_multi(kernel_size=kernel_size)
+            if self.decompose_type == "static":
+                self.decompsition = series_decomp(moving_avg)
+
+        def forward(self, data, **kwarg):
+            num_graphs = data.shape[0]
+            num_nodes = data.shape[1]
+            timesteps = data.shape[2]
+            time_middle_data = data.permute(0, 2, 1).contiguous()
+            if self.decompose_type == "dynamic":
+                _, trend = self.trend_model(time_middle_data)
+                seasonality, _ = self.seasonality_model(time_middle_data)
+            if self.decompose_type == "static":
+                seasonality, trend = self.decompsition(time_middle_data)
+            return [seasonality, trend]
+
+
+class calculate_dtw_matrix(nn.Module):
+
+    def __init__(self, dataset_name):
+        super().__init__()
+        self.dataset = dataset_name
+    def forward(self, data, **kwarg):
+        # data format -> np.narray
+        all_time = data.shape[0]
+        num_nodes = data.shape[1]
+
+        cache_path = './dtw_' + self.dataset + '.npy'
+        if os.path.exists(cache_path):
+            dtw_matrix = np.load(cache_path)
+            print('Loaded DTW matrix from {}'.format(cache_path))
+        else:
+            data_mean = data.reshape(all_time,num_nodes,1)
+            dtw_matrix = np.zeros((num_nodes, num_nodes))
+            for i in tqdm(range(num_nodes)):
+                for j in range(i, num_nodes):
+                    dtw_distance, _ = fastdtw(data_mean[:, i, :], data_mean[:, j, :], radius=6)
+                    dtw_matrix[i][j] = dtw_distance
+
+            for i in range(num_nodes):
+                for j in range(i):
+                    dtw_matrix[i][j] = dtw_matrix[j][i]
+
+            np.save(cache_path, dtw_matrix)
+            print('Saved DTW matrix to {}'.format(cache_path))
