@@ -271,3 +271,5 @@ class calculate_dtw_matrix(nn.Module):
 
             np.save(cache_path, dtw_matrix)
             print('Saved DTW matrix to {}'.format(cache_path))
+
+        return dtw_matrix
