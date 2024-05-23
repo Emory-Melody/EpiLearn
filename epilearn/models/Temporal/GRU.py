@@ -5,7 +5,7 @@ import torch
 
 class GRUModel(BaseModel):
     """
-        Single-layer Gated Recurrent Unit (GRU) Network.
+        Single-layer Gated Recurrent Unit (GRU) Network
 
         Parameters
         ----------
@@ -22,21 +22,12 @@ class GRUModel(BaseModel):
         use_norm : bool, optional
             Whether to use Layer Normalization after the GRU layer. Default: False.
 
-        Examples
-        --------
-        >>> model = GRUModel(
-                num_features=train_input.shape[2],
-                num_timesteps_input=lookback,
-                num_timesteps_output=horizon
-                ).to(device='cpu')
-        >>> model.fit(
-                train_input = train_input, 
-                train_target = train_target, 
-                val_input = val_input, 
-                val_target = val_target, 
-                verbose = True,
-                batch_size = batch_size,
-                epochs = epochs)
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+            Each element corresponds to a predicted value for a future timestep.
+            
         """
     def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False):
         super(GRUModel, self).__init__()
@@ -76,6 +67,7 @@ class GRUModel(BaseModel):
 
         # Output layer to predict the next steps
         output = self.out(gru_out)
+        
         return output
 
     def initialize(self):
