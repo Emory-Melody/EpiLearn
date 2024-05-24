@@ -8,6 +8,36 @@ from torch.nn import Parameter
 from .base import BaseModel
 
 class CNNRNN_Res(BaseModel):
+    """
+    Combined Convolutional Neural Network and Recurrent Neural Network with Residual Connections (CNNRNN_Res)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample (window size).
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    nhid : int, optional
+        Number of hidden units in the GRU layer. Default: 32.
+    residual_ratio : float, optional
+        Proportion of the residual connection compared to the GRU output. Default: 0.
+    residual_window : int, optional
+        Number of timesteps to include in the residual connection. Default: 0.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, 
                 num_nodes, 
                 num_features,
