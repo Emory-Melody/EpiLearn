@@ -8,7 +8,7 @@ from .base import BaseModel
 
 class SAGE(BaseModel):
     """
-    GraphSAGE (Graph Sample and Aggregate)
+    Graph Sample and Aggregate (SAGE)
 
     Parameters
     ----------
