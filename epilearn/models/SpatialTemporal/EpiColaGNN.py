@@ -40,6 +40,40 @@ class GraphConvLayer(nn.Module):
 
 
 class EpiColaGNN(BaseModel):
+    """
+    Epidemiological Convolutional-Layer Graph Neural Network (EpiColaGNN)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    nhid : int, optional
+        Number of hidden units in the RNN and GNN layers. Default: 32.
+    rnn_model : str, optional
+        Type of RNN model to use ('LSTM', 'GRU', 'RNN'). Default: 'GRU'.
+    n_layer : int, optional
+        Number of layers in the RNN model. Default: 1.
+    bidirect : bool, optional
+        Whether the RNN layers are bidirectional. Default: False.
+    target_idx : int, optional
+        Index of the target variable in the feature set. Default: 0.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, 
                 num_nodes,
                 num_features,
