@@ -6,7 +6,37 @@ import torch
 from .base import BaseModel
 
 class GAT(BaseModel):
+    """
+    Graph Attention Network (GAT)
+    
+    Parameters
+    ----------
+    input_dim : int
+        Number of input features per node.
+    hidden_dim : int
+        Dimension of hidden layers.
+    output_dim : int
+        Number of output features per node.
+    nlayers : int, optional
+        Number of layers in the GAT. Default: 2.
+    nheads : list of int
+        Number of attention heads in each GAT layer. Length must match `nlayers`.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    with_bn : bool, optional
+        Specifies whether batch normalization should be included. Default: False.
+    with_bias : bool, optional
+        Specifies whether to include bias parameters in the attention calculations. Default: True.
+    device : torch.device
+        The device (cpu or gpu) on which the model will be run.
+    concat : bool, optional
+        Specifies whether to concatenate the outputs of the attention heads instead of averaging them. Default: False.
 
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted values for each node over future timesteps.
+    """
     def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, nheads=[1, 1], dropout=0.5,
                 with_bn=False, with_bias=True, device=None, concat=False):
 
