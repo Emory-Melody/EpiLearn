@@ -7,7 +7,33 @@ import torch
 from .base import BaseModel
 
 class GCN(BaseModel):
+    """
+    Graph Convolutional Network (GCN)
 
+    Parameters
+    ----------
+    num_features : int
+        Number of input features per node.
+    hidden_dim : int, optional
+        Dimension of hidden layers. Default: 16.
+    num_classes : int, optional
+        Number of output classes for each node. Default: 2.
+    nlayers : int, optional
+        Number of layers in the GCN. Default: 2.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    with_bn : bool, optional
+        Specifies whether batch normalization should be included. Default: False.
+    with_bias : bool, optional
+        Specifies whether to include bias parameters in the GCN layers. Default: True.
+    device : str
+        The device (cpu or gpu) on which the model will be run.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, num_classes), representing the predicted outcomes for each node after passing through the GCN.
+    """
     def __init__(self, num_features, hidden_dim=16, num_classes=2, nlayers=2, dropout=0.5,
                 with_bn=False, with_bias=True, device='cpu'):
 
