@@ -247,7 +247,7 @@ class ATMGNN(BaseModel):
 
 class MPNN_LSTM(BaseModel):
     """
-    Message Passing Neural Network (MPNN) combined with Long Short-Term Memory (LSTM) Model
+    Message Passing Neural Network combined with Long Short-Term Memory (MPNN_LSTM)
     
     Parameters
     ----------
