@@ -7,7 +7,35 @@ from torch_geometric.utils import sort_edge_index
 from .base import BaseModel
 
 class SAGE(BaseModel):
+    """
+    GraphSAGE (Graph Sample and Aggregate)
 
+    Parameters
+    ----------
+    input_dim : int
+        Number of input features per node.
+    hidden_dim : int
+        Dimension of hidden layers.
+    output_dim : int
+        Number of output features per node.
+    nlayers : int, optional
+        Number of layers in the GraphSAGE model. Default: 2.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    with_bn : bool, optional
+        Specifies whether batch normalization should be included. Default: False.
+    with_bias : bool, optional
+        Specifies whether to include bias parameters in the GraphSAGE layers. Default: True.
+    device : str
+        The device (cpu or gpu) on which the model will be run. Must be specified.
+    aggr : str or callable, optional
+        The aggregation function to use ('mean', 'sum', 'max', etc.), or a callable that returns a custom aggregation function. Default: 'mean'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GraphSAGE model.
+    """
     def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, dropout=0.5,
                 with_bn=False, with_bias=True, device=None, aggr="mean"):
 
