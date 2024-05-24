@@ -246,6 +246,34 @@ class ATMGNN(BaseModel):
     
 
 class MPNN_LSTM(BaseModel):
+    """
+    Message Passing Neural Network (MPNN) combined with Long Short-Term Memory (LSTM) Model
+    
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features in each timestep of the input data.
+    num_timesteps_input : int
+        Window size; number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    nhid : int, optional
+        Number of hidden units in the LSTM and the number of output channels in GCN layers. Default: 256.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+
+    """
     def __init__(self, 
                 num_nodes,
                 num_features,
