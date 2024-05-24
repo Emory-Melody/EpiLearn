@@ -61,6 +61,36 @@ class MPNN_Encoder(nn.Module):
 
 
 class ATMGNN(BaseModel):
+    """
+    Attention-based Temporal Multiresolution Graph Neural Network (ATMGNN) 
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample (window size).
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    nhid : int, optional
+        Number of hidden units in the network and the output size of graph convolution layers. Default: 256.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    nhead : int, optional
+        Number of heads in the multi-head attention mechanism. Default: 1.
+    num_clusters : list, optional
+        List of integers defining the number of clusters for each multiresolution layer. Default: [10, 5].
+    use_norm : bool, optional
+        Whether to use normalization on outputs from each layer. Default: False.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, 
                 num_nodes,
                 num_features,
