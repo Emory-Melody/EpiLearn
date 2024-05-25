@@ -3,6 +3,34 @@ from torch import nn
 
 
 class SIR(nn.Module):
+    """
+    Susceptible-Infected-Recovered (SIR) Model
+
+    Parameters
+    ----------
+    horizon : int, optional
+        Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.
+    infection_rate : float, optional
+        Initial infection rate parameter, representing the rate at which susceptible individuals become infected. Default: 0.01.
+    recovery_rate : float, optional
+        Initial recovery rate parameter, representing the rate at which infected individuals recover. Default: 0.038.
+    population : int, optional
+        Total population considered in the model. If None, the sum of the initial conditions (susceptible, infected, recovered) is used as the total population.
+
+    Attributes
+    ----------
+    beta : torch.nn.Linear
+        Linear layer with no bias to model the infection rate dynamically.
+    gamma : torch.nn.Linear
+        Linear layer with no bias to model the recovery rate dynamically.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (horizon, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep.
+        Each row corresponds to a timestep, with the columns representing susceptible, infected, and recovered counts respectively.
+
+    """
     def __init__(self, horizon=None, infection_rate=0.01, recovery_rate=0.038, population=None):
         super(SIR, self).__init__()
         self.pop = population
@@ -34,24 +62,39 @@ class SIR(nn.Module):
             output.data[i][0] = output.data[i-1][0] - self.beta((output.data[i-1][0] * output.data[i-1][1]).unsqueeze(0))/pop
             output.data[i][1] = output.data[i-1][1] + self.beta((output.data[i-1][0] * output.data[i-1][1]).unsqueeze(0))/pop - self.gamma(output.data[i-1][1].unsqueeze(0)) 
             output.data[i][2] = output.data[i-1][2] + self.gamma(output.data[i-1][1].unsqueeze(0))
-            # if self.fixed_pop:
-            #     if output.data[i][0] > pop:
-            #         output.data[i][0] = pop
-            #     if output.data[i][1] > pop:
-            #         output.data[i][1] = pop
-            #     if output.data[i][2] > pop:
-            #         output.data[i][2] = pop
-            # if output.data[i][0] < 0:
-            #     output.data[i][0] = 0
-            # if output.data[i][1] < 0:
-            #     output.data[i][1] = 0
-            # if output.data[i][2] < 0:
-            #     output.data[i][2] = 0
         return output
 
 
 
 class SIS(nn.Module):
+    """
+    Susceptible-Infected-Susceptible (SIS) Model
+
+    Parameters
+    ----------
+    horizon : int, optional
+        Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.
+    infection_rate : float, optional
+        Infection rate parameter, representing the rate at which susceptible individuals become infected. If None, must be initialized separately.
+    recovery_rate : float, optional
+        Recovery rate parameter, representing the rate at which infected individuals recover and return to the susceptible state. If None, must be initialized separately.
+    population : int, optional
+        Total population considered in the model. If None, the sum of the initial conditions (susceptible and infected) is used as the total population.
+
+    Attributes
+    ----------
+    beta : torch.nn.Linear
+        Linear layer with no bias to model the infection rate dynamically.
+    gamma : torch.nn.Linear
+        Linear layer with no bias to model the recovery rate dynamically.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (horizon, 2), representing the predicted number of susceptible and infected individuals at each timestep.
+        Each row corresponds to a timestep, with the columns representing the susceptible and infected counts respectively.
+
+    """
     def __init__(self, horizon=None, infection_rate = None, recovery_rate = None, population = None):
         super(SIS, self).__init__()
         self.pop = population
@@ -87,6 +130,42 @@ class SIS(nn.Module):
         return output
 
 class SEIR(nn.Module):
+    """
+    Susceptible-Exposed-Infected-Recovered (SEIR) Model
+
+    Parameters
+    ----------
+    horizon : int, optional
+        Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.
+    infection_rate : float, optional
+        Infection rate parameter, representing the rate at which susceptible individuals become exposed. If None, must be initialized separately.
+    recovery_rate : float, optional
+        Recovery rate parameter, representing the rate at which infected individuals recover. If None, must be initialized separately.
+    cure_rate : float, optional
+        Natural immunity rate parameter, representing the rate at which individuals (across S, E, I, R compartments) return to susceptible due to loss of immunity. If None, must be initialized separately.
+    latency : float, optional
+        Latency rate parameter, representing the rate at which exposed individuals become infected. If None, must be initialized separately.
+    population : int, optional
+        Total population considered in the model. If None, the sum of the initial conditions (susceptible, exposed, infected, recovered) is used as the total population.
+
+    Attributes
+    ----------
+    beta : torch.nn.Linear
+        Linear layer with no bias to dynamically model the infection rate.
+    gamma : torch.nn.Linear
+        Linear layer with no bias to dynamically model the recovery rate.
+    mu : torch.nn.Linear
+        Linear layer with no bias to model the natural immunity rate.
+    a : torch.nn.Linear
+        Linear layer with no bias to model the latency rate.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (horizon, 4), representing the predicted number of susceptible, exposed, infected, and recovered individuals at each timestep.
+        Each row corresponds to a timestep, with the columns representing the counts of susceptible, exposed, infected, and recovered individuals respectively.
+
+    """
     def __init__(self, horizon=None, infection_rate = None, recovery_rate = None, cure_rate = None, latency = None, population = None):
         super(SEIR, self).__init__()
         self.pop = population

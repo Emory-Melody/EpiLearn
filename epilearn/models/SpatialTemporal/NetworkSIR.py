@@ -2,6 +2,28 @@ import torch
 import torch.nn as nn
 
 class NetSIR(nn.Module):
+    """
+    Network-based SIR (Susceptible-Infected-Recovered) 
+
+    Parameters
+    ----------
+    num_nodes : int, optional
+        Number of nodes in the graph representing individuals or groups. Default: None.
+    horizon : int, optional
+        Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.
+    infection_rate : float, optional
+        Initial infection rate parameter, representing the rate at which susceptible individuals become infected. Default: 0.01.
+    recovery_rate : float, optional
+        Initial recovery rate parameter, representing the rate at which infected individuals recover. Default: 0.038.
+    population : int, optional
+        Total population considered in the model. If None, the sum of the initial conditions (susceptible, infected, recovered) is used as the total population.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (time_step, num_nodes, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep for each node.
+        Each row corresponds to a timestep, with the columns representing the susceptible, infected, and recovered counts respectively for each node.
+    """
     def __init__(self, num_nodes = None, horizon=None, infection_rate=0.01, recovery_rate=0.038, population=None):
         super(NetSIR, self).__init__()
         self.pop = population

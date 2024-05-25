@@ -5,6 +5,29 @@ import numpy as np
 from .base import Dataset
 
 class UniversalDataset(Dataset):
+    """
+    UniversalDataset class is designed to handle various types of graph data,
+    enabling operations on datasets that include features, states, dynamic graphs, and edge attributes.
+
+    Parameters
+    ----------
+    x : torch.Tensor, optional
+        Node features tensor of shape (num_samples, num_nodes, num_features). Represents the node features over multiple timesteps.
+    states : torch.Tensor, optional
+        Tensor representing various states of nodes, similar in structure to node features.
+    y : torch.Tensor, optional
+        Tensor representing target labels or values for each node, structured similar to node features.
+    graph : torch.Tensor or scipy.sparse matrix, optional
+        Static graph structure as an adjacency matrix.
+    dynamic_graph : torch.Tensor, optional
+        Dynamic graph information over time, providing evolving adjacency matrices.
+    edge_index : torch.LongTensor, optional
+        Tensor containing edge indices, typically of shape (2, num_edges), for defining which nodes are connected.
+    edge_weight : torch.Tensor, optional
+        Edge weights corresponding to the edge_index, providing the strength or capacity of connections.
+    edge_attr : torch.Tensor, optional
+        Attributes or features for each edge, aligned with the structure defined in edge_index.
+    """
     def __init__(
                 self,
                 x=None, # timestep * Num nodes * features 

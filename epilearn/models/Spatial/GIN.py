@@ -7,7 +7,31 @@ import torch
 from .base import BaseModel
 
 class GIN(BaseModel):
+    """
+    Graph Isomorphism Network (GIN)
 
+    Parameters
+    ----------
+    input_dim : int
+        Number of input features per node.
+    hidden_dim : int
+        Dimension of hidden layers.
+    output_dim : int
+        Number of output features per node.
+    nlayers : int, optional
+        Number of layers in the GIN. Default: 2.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    with_bias : bool, optional
+        Specifies whether to include bias parameters in the MLP layers. Default: True.
+    device : str
+        The device (cpu or gpu) on which the model will be run. Must be specified.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GIN. 
+    """
     def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, dropout=0.5,
                 with_bias=True, device=None):
 

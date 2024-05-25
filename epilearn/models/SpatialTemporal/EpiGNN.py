@@ -146,6 +146,40 @@ class RegionAwareConv(nn.Module):
 
 
 class EpiGNN(BaseModel):
+    """
+    Epidemiological Graph Neural Network (EpiGNN)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    k : int, optional
+        Number of local neighborhoods to consider in the graph learning layer. Default: 8.
+    hidA : int, optional
+        Dimension of attention in the model. Default: 64.
+    hidR : int, optional
+        Dimension of hidden layers in the recurrent neural network part. Default: 40.
+    hidP : int, optional
+        Dimension of positional encoding in the model. Default: 1.
+    n_layer : int, optional
+        Number of layers in the graph neural network. Default: 2.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, 
                 num_nodes, 
                 num_features, 

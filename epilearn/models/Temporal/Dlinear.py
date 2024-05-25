@@ -39,6 +39,32 @@ class series_decomp(nn.Module):
 
 
 class DlinearModel(BaseModel):
+    """
+    Dynamic Linear Model
+
+    Parameters
+    ----------
+    num_features : int
+        Number of features in each timestep of the input data.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+
+    Attributes
+    ----------
+    decomposition : function
+        Method to decompose the time series data into seasonal and trend components.
+    Linear_Transform : torch.nn.Linear
+        Linear transformation layer to project the decomposed input data to the output space.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+        Each element corresponds to a predicted value for a specific future timestep. The output is averaged across the feature dimension to reduce it to a single predictive value per timestep.
+
+    """
     def __init__(self, num_features, num_timesteps_input, num_timesteps_output):
         super(DlinearModel, self).__init__()
         self.num_features = num_features

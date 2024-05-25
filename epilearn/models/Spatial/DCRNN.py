@@ -335,6 +335,39 @@ class DecoderModel(nn.Module, Seq2SeqAttrs):
 
 
 class DCRNN(BaseModel, Seq2SeqAttrs):
+    """
+    Diffusion Convolutional Recurrent Neural Network (DCRNN) 
+
+    Parameters
+    ----------
+    input_dim : int
+        Number of input features per node.
+    seq_len : int
+        Number of past time steps used as input by the network.
+    output_dim : int
+        Number of output features per node.
+    horizon : int
+        Number of future time steps to predict.
+    max_diffusion_step : int
+        Maximum number of diffusion steps in the graph convolution operations. Default: 2.
+    filter_type : str
+        Type of filter used in graph convolutions, e.g., 'laplacian'. Default: "laplacian".
+    num_rnn_layers : int
+        Number of recurrent neural network layers. Default: 1.
+    rnn_units : int
+        Number of units per recurrent layer. Default: 1.
+    nonlinearity : str
+        Type of nonlinearity function used in RNN. Default: "tanh".
+    dropout : float
+        Dropout rate applied in the network to prevent overfitting. Default: 0.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, horizon), representing the predicted values for each node over future timesteps.
+    """
     def __init__(self,
               input_dim=1,
               seq_len=5,

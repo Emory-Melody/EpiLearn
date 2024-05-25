@@ -70,6 +70,37 @@ class MultiHeadGATLayer(nn.Module):
             return torch.mean(torch.stack(head_outs))
         
 class STAN(BaseModel):
+    """
+    Spatio-Temporal Attention Network (STAN)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    population : float, optional
+        Total population considered in the model. Default: 1e10.
+    gat_dim1 : int
+        Dimension of the output space for the first GAT layer. Default: 32.
+    gat_dim2 : int
+        Dimension of the output space for the second GAT layer. Default: 32.
+    gru_dim : int
+        Dimension of the hidden state for the GRU layer. Default: 32.
+    num_heads : int
+        Number of attention heads in the first GAT layer. Default: 1.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    tuple of torch.Tensor
+        A tuple containing two tensors, each of shape (batch_size, num_timesteps_output, num_nodes, 1), representing the predicted values for newly infected and recovered individuals respectively for each node over future timesteps. The second tensor contains the physical model predictions.
+    """
     def __init__(self, 
                  num_nodes, 
                  num_features, 

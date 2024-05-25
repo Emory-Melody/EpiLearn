@@ -297,6 +297,30 @@ class GConv(nn.Module):
     
 
 class DASTGN(BaseModel):
+    """
+    Dynamic and Adaptive Spatio-Temporal Graph Network (DASTGN) 
+    
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    GNN_layers : int, optional
+        Number of Graph Neural Network layers to use. Default: 2.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, 
                 num_nodes,
                 num_features,

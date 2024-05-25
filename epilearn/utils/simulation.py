@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import random
 import math
+import time
 
 from .utils import edge_to_adj
 
@@ -50,10 +51,7 @@ class Time_geo(object):
         self.pop_num = pop_num
 
         self.sample_region = region_input
-        # p_t_raw = p_t_raw if p_t_raw is not None else np.load('./timegeo/rhythm.npy', allow_pickle=True)
-        p_t_raw = p_t_raw if p_t_raw is not None else np.load('Code/data/rhythm.npy', allow_pickle=True)
-        
-        
+        p_t_raw = p_t_raw if p_t_raw is not None else np.load("epilearn/data/rhythm.npy", allow_pickle=True)        
         self.p_t = np.array(p_t_raw).reshape(-1, (time_slot // 10)).sum(axis=1)
         self.region_num = self.sample_region.shape[0]
         self.home_location = np.random.choice(len(pop_input), pop_num, p=pop_input)

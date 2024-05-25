@@ -50,11 +50,41 @@ class TimeBlock(nn.Module):
 
 class STGCNBlock(nn.Module):
     """
-    Neural network block that applies a temporal convolution on each node in
-    isolation, followed by a graph convolution, followed by another temporal
-    convolution on each node.
-    """
+    Spatio-temporal graph convolutional network as described in
+    https://arxiv.org/abs/1709.04875v3 by Yu et al.
 
+    Spatio-Temporal Graph Convolutional Network (STGCN)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Attributes
+    ----------
+    block1 : STGCNBlock
+        First STGCN block which applies spatial and temporal convolutions.
+    block2 : STGCNBlock
+        Second STGCN block which applies further spatial and temporal convolutions.
+    last_temporal : TimeBlock
+        Temporal convolution block that processes the output of the last STGCN block.
+    fully : torch.nn.Linear
+        Fully connected layer to reshape the output into the desired number of future time steps.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, num_timesteps_output), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, in_channels, spatial_channels, out_channels,
                  num_nodes):
         """

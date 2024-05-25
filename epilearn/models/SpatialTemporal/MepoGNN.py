@@ -193,6 +193,48 @@ class SIRcell(nn.Module):
 
 
 class MepoGNN(BaseModel):
+    """
+    Meta-Population Graph Neural Network (MepoGNN)
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    num_features : int
+        Number of features per node per timestep.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    glm_type : str, optional
+        Type of graph learning model ('Dynamic', 'Adaptive'). Default: 'Dynamic'.
+    adapt_graph : tensor, optional
+        Initial tensor for adaptive adjacency matrix. Only needed if glm_type is 'Adaptive'. Default: None.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.5.
+    residual_channels : int
+        Number of channels in residual layers.
+    dilation_channels : int
+        Number of channels in dilation layers.
+    skip_channels : int
+        Number of channels in skip connection layers.
+    end_channels : int
+        Number of channels in the final convolution layers.
+    kernel_size : int
+        Kernel size for the convolution layers.
+    blocks : int
+        Number of blocks in the WaveNet architecture.
+    layers : int
+        Number of layers in each block.
+    device : str, optional
+        The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self,
                  num_nodes, 
                  num_features, 

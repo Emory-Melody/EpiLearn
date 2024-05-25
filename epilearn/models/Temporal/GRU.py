@@ -4,6 +4,31 @@ import torch.nn.init as init
 import torch
 
 class GRUModel(BaseModel):
+    """
+        Single-layer Gated Recurrent Unit (GRU) Network
+
+        Parameters
+        ----------
+        num_features : int
+            Number of features in the input data.
+        num_timesteps_input : int
+            Number of input timesteps.
+        num_timesteps_output : int
+            Number of output timesteps to predict.
+        nhid : int, optional
+            Number of hidden units in the GRU layer. Default: 256.
+        dropout : float, optional
+            Dropout rate for the GRU layer. Default: 0.5.
+        use_norm : bool, optional
+            Whether to use Layer Normalization after the GRU layer. Default: False.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+            Each element corresponds to a predicted value for a future timestep.
+            
+        """
     def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False):
         super(GRUModel, self).__init__()
         self.num_features = num_features
@@ -28,10 +53,8 @@ class GRUModel(BaseModel):
 
     def forward(self, x):
         # x should have the shape (batch_size, num_timesteps_input, num_features)
-        # print(x.shape)
 
         gru_out, _ = self.gru(x)
-
 
         if self.use_norm:
             gru_out = self.norm(gru_out)
@@ -44,6 +67,7 @@ class GRUModel(BaseModel):
 
         # Output layer to predict the next steps
         output = self.out(gru_out)
+        
         return output
 
     def initialize(self):

@@ -48,6 +48,48 @@ class gcn(nn.Module):
 
 
 class GraphWaveNet(BaseModel):
+    """
+    Graph Convolutional Wave Network (GraphWaveNet)
+
+    Parameters
+    ----------
+    device : str
+        The device (cpu or gpu) on which the model will be run.
+    dropout : float, optional
+        Dropout rate for regularization during training to prevent overfitting. Default: 0.3.
+    gcn_bool : bool, optional
+        Indicates whether to include graph convolution layers. Default: True.
+    addaptadj : bool, optional
+        Indicates whether to include an adaptive adjacency matrix. Default: True.
+    aptinit : tensor, optional
+        Initial tensor for adaptive adjacency matrix. Default: None.
+    input_dim : int
+        Number of input features per node.
+    output_dim : int
+        Number of output features per node.
+    residual_channels : int
+        Number of channels in residual layers. Default: 32.
+    dilation_channels : int
+        Number of channels in dilation layers. Default: 32.
+    skip_channels : int
+        Number of channels in skip connection layers. Default: 256.
+    end_channels : int
+        Number of channels in the final convolution layers. Default: 512.
+    kernel_size : int
+        Kernel size for the convolution layers. Default: 2.
+    blocks : int
+        Number of blocks in the WaveNet architecture. Default: 4.
+    nlayers : int
+        Number of layers in each block. Default: 2.
+    adj_m : tensor
+        Initial adjacency matrix if static graph structure is used. Default: None.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted values for each node over future timesteps.
+        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+    """
     def __init__(self, device, dropout=0.3, gcn_bool=True, addaptadj=True, aptinit=None, input_dim=2,output_dim=12,
                  residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,nlayers=2, adj_m=None):
         super(GraphWaveNet, self).__init__()

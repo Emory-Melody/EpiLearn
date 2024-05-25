@@ -4,13 +4,29 @@ import torch.nn.init as init
 import torch
 
 class VARMAXModel:
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False):
+    """
+    Vector Autoregression Moving-Average with eXogenous variables (VARMAX) Model
+
+    Parameters
+    ----------
+    num_features : int
+        Number of features in each timestep of the input data.
+    num_timesteps_input : int
+        Number of timesteps considered for each input sample.
+    num_timesteps_output : int
+        Number of output timesteps to predict.
+    
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+        Each element corresponds to a predicted value for a future timestep.
+
+    """
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output):
         self.num_features = num_features
         self.num_timesteps_input = num_timesteps_input
         self.num_timesteps_output = num_timesteps_output
-        self.nhid = nhid
-        self.dropout = dropout
-        self.use_norm = use_norm
         self.model = None
         self.order = (1, 0)
         self.trend = 'c'
