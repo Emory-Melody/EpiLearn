@@ -29,7 +29,8 @@ setuptools.setup(
           'streamlit==1.34.0',
           'pyvis==0.3.2',
           'plotly==5.22.0',
-          'fastdtw==0.3.4'
+          'fastdtw==0.3.4',
+          'einops==0.8.0'
           
       ],
     packages=setuptools.find_packages(),

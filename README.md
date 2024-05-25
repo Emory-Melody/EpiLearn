@@ -24,6 +24,10 @@ Installation
 ```bash
 git clone https://github.com/Emory-Melody/EpiLearn.git
 cd EpiLearn
+
+conda create -n epilearn python=3.9
+conda activate epilearn
+
 python setup.py install
 pip install pytorch_geometric
 ```

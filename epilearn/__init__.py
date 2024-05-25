@@ -2,7 +2,8 @@ from . import (
     data,
     models,
     utils,
-    visualize
+    visualize,
+    tasks
 )
 
 __version__ = "0.0.1"
