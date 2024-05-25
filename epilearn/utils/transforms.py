@@ -39,6 +39,7 @@ class Compose:
         for key, d in data.items():
             if data[key] is not None:
                 data[key] = torch.Tensor(data[key])
+                
         for dt, ts in self.transforms.items():
             for t in ts:
                 t = t.to(self.device)
