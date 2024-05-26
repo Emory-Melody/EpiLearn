@@ -73,6 +73,11 @@ class normalize_feat(nn.Module):
             X = X - means.unsqueeze(0).unsqueeze(0)
             stds = torch.std(X, axis=(0, 1))
             X = X / stds.unsqueeze(0).unsqueeze(0)
+        elif len(X.shape) == 4:
+            means = torch.mean(X, dim=(0, 1, 2))
+            X = X - means.unsqueeze(0).unsqueeze(0).unsqueeze(0)
+            stds = torch.std(X, dim=(0, 1, 2))
+            X = X / stds.unsqueeze(0).unsqueeze(0).unsqueeze(0)
         X[torch.where(torch.isnan(X))]=0
         self.means = means
         self.stds = stds
@@ -159,20 +164,10 @@ class convert_to_frequency(nn.Module):
             stft_results = stft_results.view(num_graph, num_node, features, num_frequencies, num_timeframes)
             
             return stft_results
-        
 
-class test_seq(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-
-    def forward(self, data, **kwarg):
-        print("test!", data.shape)
-                    
-        return data[0]
     
 
-class ABS_TIM_EMB(nn.Module):
+class add_time_embedding(nn.Module):
 
     def __init__(self, embedding_dim=13, fourier=False):
         super().__init__()
@@ -183,7 +178,7 @@ class ABS_TIM_EMB(nn.Module):
         num_graphs = data.shape[0]
         num_nodes = data.shape[1]
         timesteps = data.shape[2]
-            
+        
         x = torch.arange(timesteps).float().unsqueeze(0).unsqueeze(1).to(kwarg['device'])
 
         a = torch.div(torch.arange(0.0, self.embedding_dim), 2, rounding_mode='floor').to(kwarg['device']) * 2 / self.embedding_dim
@@ -195,13 +190,18 @@ class ABS_TIM_EMB(nn.Module):
         c[:, :, 1::2] = b[:, :, 1::2].cos()
         c = c.expand(num_graphs, num_nodes, -1, -1)
 
-        data_with_time_embeddings = torch.cat((data, c), dim=-1) 
+        if len(data.shape) == 3:
+            data = data.unsqueeze(-1)
+            data_with_time_embeddings = torch.cat((data, c), dim=-1) 
+            #data_with_time_embeddings = torch.permute(data_with_time_embeddings, (0, 1, 3, 2))
+        else:
+            data_with_time_embeddings = torch.cat((data, c), dim=-1) 
         return data_with_time_embeddings
     
     
-class add_time_embedding(nn.Module):
+class learnable_time_embedding(nn.Module):
     def __init__(self, timesteps=13, embedding_dim=13):
-        super(add_time_embedding, self).__init__()
+        super(learnable_time_embedding, self).__init__()
         self.add_embedding = nn.Embedding(timesteps, embedding_dim)
 
     def forward(self, data, **kwarg):
@@ -241,6 +241,7 @@ class seasonality_and_trend_decompose(nn.Module):
         if self.decompose_type == "static":
             seasonality, trend = self.decompsition(time_middle_data)
         return [seasonality, trend]
+
 
 
 class calculate_dtw_matrix(nn.Module):

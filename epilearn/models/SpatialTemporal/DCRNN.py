@@ -142,7 +142,7 @@ class DCGRUCell(nn.Module):
 
     def forward(self, inputs, hx, adj_mx, num_nodes):
         """Gated recurrent unit (GRU) with Graph Convolution.
-        :param inputs: (B, num_nodes * input_dim)
+        :param inputs: (B, num_nodes * num_features)
         :param hx: (B, num_nodes * rnn_units)
 
         :return
@@ -185,7 +185,7 @@ class DCGRUCell(nn.Module):
 
 
     def _gconv(self, inputs, state, output_size, bias_start=0.0):
-        # Reshape input and state to (batch_size, num_nodes, input_dim/state_dim)
+        # Reshape input and state to (batch_size, num_nodes, num_features/state_dim)
         batch_size = inputs.shape[0]
         inputs = torch.reshape(inputs, (batch_size, self._num_nodes, -1))
         state = torch.reshape(state, (batch_size, self._num_nodes, -1))
@@ -245,12 +245,12 @@ class Seq2SeqAttrs:
 class EncoderModel(nn.Module, Seq2SeqAttrs):
     def __init__(self, 
                  max_diffusion_step, filter_type, num_rnn_layers, rnn_units,
-                 input_dim, seq_len, nonlinearity='tanh', device="cpu"):
+                 num_features, num_timesteps_input, nonlinearity='tanh', device="cpu"):
         nn.Module.__init__(self)
         Seq2SeqAttrs.__init__(self, max_diffusion_step, filter_type,
                               num_rnn_layers, rnn_units)
-        self.input_dim = input_dim
-        self.seq_len = seq_len
+        self.num_features = num_features
+        self.num_timesteps_input = num_timesteps_input
         self.dcgru_layers = nn.ModuleList(
             [DCGRUCell(self.rnn_units, self.max_diffusion_step, nonlinearity=nonlinearity,
                        filter_type=self.filter_type, device=device) for _ in range(self.num_rnn_layers)])
@@ -260,7 +260,7 @@ class EncoderModel(nn.Module, Seq2SeqAttrs):
         """
         Encoder forward pass.
 
-        :param inputs: shape (batch_size, self.num_nodes * self.input_dim)
+        :param inputs: shape (batch_size, self.num_nodes * self.num_features)
         :param hidden_state: (num_layers, batch_size, self.hidden_state_size)
                optional, zeros if not provided
         :return: output: # shape (batch_size, self.hidden_state_size)
@@ -291,14 +291,14 @@ class EncoderModel(nn.Module, Seq2SeqAttrs):
 class DecoderModel(nn.Module, Seq2SeqAttrs):
     def __init__(self,
                  max_diffusion_step, filter_type, num_rnn_layers, rnn_units,
-                 output_dim, horizon, nonlinearity='tanh', device="cpu"):
+                 num_classes, num_timesteps_output, nonlinearity='tanh', device="cpu"):
         # super().__init__(is_training, adj_mx, **model_kwargs)
         nn.Module.__init__(self)
         Seq2SeqAttrs.__init__(self, max_diffusion_step, filter_type,
                               num_rnn_layers, rnn_units)
-        self.output_dim = output_dim
-        self.horizon = horizon
-        self.projection_layer = nn.Linear(self.rnn_units, self.output_dim)
+        self.num_classes = num_classes
+        self.num_timesteps_output = num_timesteps_output
+        self.projection_layer = nn.Linear(self.rnn_units, self.num_classes)
         self.dcgru_layers = nn.ModuleList(
             [DCGRUCell(self.rnn_units, self.max_diffusion_step,
                        filter_type=self.filter_type, nonlinearity=nonlinearity, device=device) for _ in range(self.num_rnn_layers)])
@@ -307,10 +307,10 @@ class DecoderModel(nn.Module, Seq2SeqAttrs):
         """
         Decoder forward pass.
 
-        :param inputs: shape (batch_size, self.num_nodes * self.output_dim)
+        :param inputs: shape (batch_size, self.num_nodes * self.num_classes)
         :param hidden_state: (num_layers, batch_size, self.hidden_state_size)
                optional, zeros if not provided
-        :return: output: # shape (batch_size, self.num_nodes * self.output_dim)
+        :return: output: # shape (batch_size, self.num_nodes * self.num_classes)
                  hidden_state # shape (num_layers, batch_size, self.hidden_state_size)
                  (lower indices mean lower layers)
         """
@@ -324,7 +324,7 @@ class DecoderModel(nn.Module, Seq2SeqAttrs):
                 output = F.dropout(output, p=dropout, training=self.training)
 
         projected = self.projection_layer(output.view(-1, self.rnn_units))
-        output = projected.view(-1, num_nodes * self.output_dim)
+        output = projected.view(-1, num_nodes * self.num_classes)
 
         return output, torch.stack(hidden_states)
     
@@ -340,13 +340,13 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
 
     Parameters
     ----------
-    input_dim : int
+    num_features : int
         Number of input features per node.
-    seq_len : int
+    num_timesteps_input : int
         Number of past time steps used as input by the network.
-    output_dim : int
+    num_classes : int
         Number of output features per node.
-    horizon : int
+    num_timesteps_output : int
         Number of future time steps to predict.
     max_diffusion_step : int
         Maximum number of diffusion steps in the graph convolution operations. Default: 2.
@@ -369,10 +369,10 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         A tensor of shape (batch_size, num_nodes, horizon), representing the predicted values for each node over future timesteps.
     """
     def __init__(self,
-              input_dim=1,
-              seq_len=5,
-              output_dim=1,
-              horizon=1,
+              num_features=1,
+              num_timesteps_input=5,
+              num_classes=1,
+              num_timesteps_output=1,
               max_diffusion_step=2, 
               filter_type="laplacian",
               num_rnn_layers=1, 
@@ -388,16 +388,16 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         
         self.encoder_model = EncoderModel(max_diffusion_step=max_diffusion_step, filter_type=filter_type,
                                           num_rnn_layers=num_rnn_layers, rnn_units=rnn_units,
-                                          input_dim=input_dim, seq_len=seq_len, nonlinearity=nonlinearity, device=device)
+                                          num_features=num_features, num_timesteps_input=num_timesteps_input, nonlinearity=nonlinearity, device=device)
         self.decoder_model = DecoderModel(max_diffusion_step=max_diffusion_step, filter_type=filter_type,
                                           num_rnn_layers=num_rnn_layers, rnn_units=rnn_units,
-                                          output_dim=output_dim, horizon=horizon, nonlinearity=nonlinearity, device=device)
+                                          num_classes=num_classes, num_timesteps_output=num_timesteps_output, nonlinearity=nonlinearity, device=device)
         
         self.device = device
-        self.input_dim = input_dim
-        self.seq_len = seq_len
-        self.output_dim = output_dim
-        self.horizon = horizon
+        self.num_features = num_features
+        self.num_timesteps_input = num_timesteps_input
+        self.num_classes = num_classes
+        self.num_timesteps_output = num_timesteps_output
         self.dropout = dropout
 
 
@@ -405,11 +405,11 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
     def encoder(self, inputs, adj_mx, num_nodes):
         """
         encoder forward pass on t time steps
-        :param inputs: shape (seq_len, batch_size, num_sensor * input_dim)
+        :param inputs: shape (num_timesteps_input, batch_size, num_sensor * num_features)
         :return: encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)
         """
         encoder_hidden_state = None
-        for t in range(self.encoder_model.seq_len):
+        for t in range(self.encoder_model.num_timesteps_input):
             _, encoder_hidden_state = self.encoder_model(inputs[t], encoder_hidden_state, adj_mx, num_nodes, self.dropout)
 
         return encoder_hidden_state
@@ -418,19 +418,19 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         """
         Decoder forward pass
         :param encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)
-        :param labels: (self.horizon, batch_size, self.num_nodes * self.output_dim) [optional, not exist for inference]
+        :param labels: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes) [optional, not exist for inference]
         :param batches_seen: global step [optional, not exist for inference]
-        :return: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)
+        :return: output: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes)
         """
         batch_size = encoder_hidden_state.size(1)
-        go_symbol = torch.zeros((batch_size, num_nodes * self.decoder_model.output_dim),
+        go_symbol = torch.zeros((batch_size, num_nodes * self.decoder_model.num_classes),
                                 device=self.device)
         decoder_hidden_state = encoder_hidden_state
         decoder_input = go_symbol
 
         outputs = []
 
-        for t in range(self.decoder_model.horizon):
+        for t in range(self.decoder_model.num_timesteps_output):
             decoder_output, decoder_hidden_state = self.decoder_model(decoder_input,
                                                                       decoder_hidden_state, adj_mx, num_nodes, self.dropout)
             decoder_input = decoder_output
@@ -439,41 +439,41 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         outputs = torch.stack(outputs)
         return outputs
 
-    def forward(self, data):
+    def forward(self, X_batch, graph, X_states, batch_graph):
         """
-        original input shape: [batch_size, num_node, seq_len, input_dim]
+        original input shape: [batch_size, num_node, num_timesteps_input, num_features]
         seq2seq forward pass
-        :param inputs: shape (seq_len, batch_size, num_sensor * input_dim)
-        :param labels: shape (horizon, batch_size, num_sensor * output)
+        :param inputs: shape (num_timesteps_input, batch_size, num_sensor * num_features)
+        :param labels: shape (num_timesteps_output, batch_size, num_sensor * output)
         :param batches_seen: batches seen till now
-        :return: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)
+        :return: output: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes)
         """
-        inputs = data.x
-        batch_size = data.batch[-1] + 1
+        inputs = X_batch
+        batch_size = X_batch.shape[0] #data.batch[-1] + 1
         
         # reshape geometric dataloader format to real format
-        num_graphs = data.num_graphs
+        '''num_graphs = data.num_graphs
         individual_graphs = []
         for i in range(num_graphs):
             mask = data.batch == i
             node_features = data.x[mask]
             individual_graphs.append(node_features)
             adj_m = data.adj_m[mask]
-        new_inputs = torch.stack(individual_graphs, dim=0)
+        new_inputs = torch.stack(individual_graphs, dim=0)'''
         
-        inputs = torch.permute(new_inputs,(2, 0, 1, 3))
-        inputs = torch.reshape(new_inputs, (inputs.shape[0], inputs.shape[1], 
+        inputs = torch.permute(inputs,(2, 0, 1, 3))
+        inputs = torch.reshape(inputs, (inputs.shape[0], inputs.shape[1], 
                                             inputs.shape[2]*inputs.shape[3]))
         
         
-        num_nodes = adj_m.shape[0]
-        encoder_hidden_state = self.encoder(inputs, adj_m, num_nodes)
-        outputs = self.decoder(encoder_hidden_state, adj_m, num_nodes)
+        num_nodes = graph.shape[0]
+        encoder_hidden_state = self.encoder(inputs, graph, num_nodes)
+        outputs = self.decoder(encoder_hidden_state, graph, num_nodes)
         
-        outputs = torch.reshape(outputs, (self.horizon, batch_size, 
-                                            num_nodes, self.output_dim))
-        outputs = torch.permute(outputs, (1, 2, 0, 3))
-        outputs = torch.reshape(outputs, (-1, outputs.shape[2], outputs.shape[3]))
+        outputs = torch.reshape(outputs, (self.num_timesteps_output, batch_size, 
+                                            num_nodes, self.num_classes))
+        outputs = torch.permute(outputs, (1, 2, 0, 3)).squeeze(-1)
+        #outputs = torch.reshape(outputs, (-1, outputs.shape[2], outputs.shape[3]))
         return outputs
     
     

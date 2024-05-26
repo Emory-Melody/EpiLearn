@@ -65,17 +65,26 @@ class Detection(BaseTask):
                                         
                 print("temporal model loaded!")
             except:
+                if len(train_split[0].shape) == 4:
+                    num_features = train_split[0].shape[-1] * train_split[0].shape[-2]
+                else:
+                    num_features = train_split[0].shape[-1]
                 self.model = self.prototype(
-                                        num_features=train_split[0].shape[-1],
+                                        num_features=num_features,
                                         num_classes=self.horizon,
                                         device=self.device).to(device=self.device)
                 print("spatial model loaded!")
+
+        #print(train_split[0].shape) # torch.Size([323, 47, 4])
+        #print(train_split[1].shape) # torch.Size([323, 47])
+        # torch.Size([323, 47, 2])
+        
 
         # train
         self.model.fit(
                 train_input=train_split[0], 
                 train_target=train_split[1], 
-                train_states = train_split[2],
+                train_states=train_split[2],
                 train_graph=adj_norm, 
                 train_dynamic_graph=train_split[3],
                 val_input=val_split[0], 

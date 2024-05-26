@@ -12,11 +12,11 @@ class SAGE(BaseModel):
 
     Parameters
     ----------
-    input_dim : int
+    num_features : int
         Number of input features per node.
     hidden_dim : int
         Dimension of hidden layers.
-    output_dim : int
+    num_classes : int
         Number of output features per node.
     nlayers : int, optional
         Number of layers in the GraphSAGE model. Default: 2.
@@ -36,7 +36,7 @@ class SAGE(BaseModel):
     torch.Tensor
         A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GraphSAGE model.
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, dropout=0.5,
+    def __init__(self, num_features, hidden_dim, num_classes, nlayers=2, dropout=0.5,
                 with_bn=False, with_bias=True, device=None, aggr="mean"):
 
         super(SAGE, self).__init__()
@@ -51,19 +51,19 @@ class SAGE(BaseModel):
         if nlayers == 1:
             if callable(aggr):
                 try:
-                    self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr(input_dim, input_dim)))
+                    self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr(num_features, num_features)))
                 except:
-                    self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr()))
+                    self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr()))
             else:
-                self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr))
+                self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr))
         else:
             if callable(aggr):
                 try:
-                    self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr(input_dim, input_dim)))
+                    self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr(num_features, num_features)))
                 except:
-                    self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr()))
+                    self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr()))
             else:
-                self.layers.append(SAGEConv(input_dim, hidden_dim, bias=with_bias, aggr=aggr))
+                self.layers.append(SAGEConv(num_features, hidden_dim, bias=with_bias, aggr=aggr))
 
             if with_bn:
                 self.bns.append(nn.BatchNorm1d(hidden_dim))
@@ -86,13 +86,13 @@ class SAGE(BaseModel):
             else:
                 self.layers.append(SAGEConv(hidden_dim, hidden_dim, bias=with_bias, aggr=aggr))
 
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc = nn.Linear(hidden_dim, num_classes)
         self.dropout = dropout
         self.with_bn = with_bn
 
-    def forward(self, data):
+    def forward(self, x, edge_index, edge_weight):
         
-        x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
+        #x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
         x = torch.reshape(x, (x.shape[0], -1))
 
         edge_index = sort_edge_index(edge_index, sort_by_row=False)

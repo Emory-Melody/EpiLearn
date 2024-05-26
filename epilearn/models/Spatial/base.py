@@ -17,6 +17,7 @@ class BaseModel(nn.Module):
         self.device = "cpu"
         self.best_model = None
         self.best_output = None
+        self.out_shape = None
 
     def fit(self, 
             train_input, 
@@ -54,11 +55,11 @@ class BaseModel(nn.Module):
         best_val = float('inf')
         es_flag = False
         for epoch in tqdm(range(epochs)):
-            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, 
+            loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, graph=train_graph,
                                     batch_size = batch_size, device = self.device, shuffle=shuffle)
             training_losses.append(loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, 
+            val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, graph=val_graph,
                                              batch_size = batch_size, device = self.device, shuffle=shuffle)
             validation_losses.append(val_loss)
 
@@ -97,7 +98,7 @@ class BaseModel(nn.Module):
         self.load_state_dict(best_weights)
 
         
-    def train_epoch(self, optimizer, loss_fn, dataset, batch_size = 1, device = 'cpu', shuffle=False):
+    def train_epoch(self, optimizer, loss_fn, dataset, batch_size = 1, device = 'cpu', shuffle=False, graph=None):
         """
         Trains one epoch with the given data.
         :param feature: Training features of shape (num_samples, num_nodes,
@@ -109,18 +110,28 @@ class BaseModel(nn.Module):
         """
         
         train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
-        edge_index = dataset.edge_index.long()
-        edge_weight = dataset.edge_weight.float()
+        '''edge_index = dataset.edge_index.long()
+        edge_weight = dataset.edge_weight.float()'''
         
         epoch_training_losses = []
-        for batch_data in train_loader:
+        for batch_data in train_loader:              
             self.train()
             optimizer.zero_grad()
             batch_data = batch_data.to(device)
-            y_batch = batch_data.y.long()
+            y_batch = batch_data.y#.long()
             x_batch = batch_data.x.float()
 
+            edge_index = batch_data.edge_index.long()
+            edge_weight = batch_data.edge_attr.float()
+            
             out = self.forward(x_batch, edge_index, edge_weight)
+            self.out_shape = y_batch.shape[1:]  # [47, 1]
+            try:
+                out = torch.reshape(out, (y_batch.shape)) # y_batch.shape=[2, 47, 1]
+            except:
+                out = torch.reshape(out, (batch_data.batch[-1]+1, graph.shape[0], -1))
+                
+            #out = out.view(-1,  y_batch.shape[1], y_batch.shape[2])
             loss = loss_fn(out, y_batch)
 
             loss.backward()
@@ -129,12 +140,12 @@ class BaseModel(nn.Module):
         return sum(epoch_training_losses)/len(epoch_training_losses)
     
     
-    def evaluate(self, loss_fn, dataset, batch_size=1, device = 'cpu', shuffle=False):
+    def evaluate(self, loss_fn, dataset, batch_size=1, device = 'cpu', shuffle=False, graph=None):
         with torch.no_grad():
             self.eval()
             val_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
-            edge_index = dataset.edge_index
-            edge_weight = dataset.edge_weight
+            '''edge_index = dataset.edge_index
+            edge_weight = dataset.edge_weight'''
             val_losses = []
             outs = []
             for batch_data in val_loader:
@@ -142,7 +153,13 @@ class BaseModel(nn.Module):
                 y_batch = batch_data.y
                 x_batch = batch_data.x
 
+                edge_index = batch_data.edge_index.long()
+                edge_weight = batch_data.edge_attr.float()
                 out = self.forward(x_batch, edge_index, edge_weight)
+                try:
+                    out = torch.reshape(out, (y_batch.shape))
+                except:
+                    out = torch.reshape(out, (batch_data.batch[-1]+1, graph.shape[0], -1))
                 val_loss = loss_fn(out, y_batch)
 
                 val_losses.append(val_loss)
@@ -157,19 +174,29 @@ class BaseModel(nn.Module):
         torch.FloatTensor
         """
         print("\nPredicting Progress...")
+        assert self.out_shape is not None, "Please fit model first!"
         self.eval()
         dataset = UniversalDataset(x=feature, graph=graph, dynamic_graph=dynamic_graph)
         test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
-        edge_index = dataset.edge_index
-        edge_weight = dataset.edge_weight
+        '''edge_index = dataset.edge_index
+        edge_weight = dataset.edge_weight'''
         outs = []
         for batch_data in tqdm(test_loader, total=len(test_loader)):
-            batch_data = batch_data.to(device)
+            batch_data = batch_data.to(self.device)
             y_batch = batch_data.y
             x_batch = batch_data.x
-
+            
+            edge_index = batch_data.edge_index.long()
+            edge_weight = batch_data.edge_attr.float()
             out = self.forward(x_batch, edge_index, edge_weight)
+            # self.out_shape = [47, 1]
+            #  [0...9]
+            try:
+                out = torch.reshape(out, (batch_data.batch[-1]+1, *self.out_shape))  # [2, 47, 1]
+            except:
+                out = torch.reshape(out, (batch_data.batch[-1]+1, graph.shape[0], -1))
+                #out = torch.argmax(out, dim=-1)
             outs.append(out)
             
-        return torch.stack(outs).squeeze()
+        return torch.cat(outs, dim=0)#.squeeze()
     

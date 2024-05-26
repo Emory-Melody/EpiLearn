@@ -84,9 +84,9 @@ class UniversalDataset(Dataset):
         batch_dynamic = None if self.dynamic_graph is None else self.dynamic_graph[index].unsqueeze(0)
 
         if self.y is not None:
-            return Data(x=self.x[index].unsqueeze(0), y=batch_y, edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
+            return Data(x=self.x[index], y=batch_y, edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
         else:
-            return Data(x=self.x[index].unsqueeze(0), edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
+            return Data(x=self.x[index], edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
         
     def __len__(self):
         return len(self.x)

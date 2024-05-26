@@ -10,6 +10,7 @@ from . import (
             EpiGNN, 
             DASTGN, 
             HierST, 
+            DCRNN,
             GraphWaveNet,
             DMP,
             NetworkSIR,
