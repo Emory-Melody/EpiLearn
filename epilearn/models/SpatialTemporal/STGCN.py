@@ -159,6 +159,7 @@ class STGCN(BaseModel):
         self.fully = nn.Linear((num_timesteps_input - 2 * 5) * 64,
                                num_timesteps_output)
 
+
     def forward(self, X, adj, states=None, dynamic_adj=None, **kargs):
         """
         :param X: Input data of shape (batch_size, num_nodes, num_timesteps,

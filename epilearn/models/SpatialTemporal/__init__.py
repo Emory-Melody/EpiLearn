@@ -3,7 +3,7 @@ from . import (
             ATMGNN, 
             CNNRNN_Res, 
             STAN, 
-            ColaGNNolaGNN, 
+            ColaGNN, 
             EpiColaGNN, 
             GraphLSTM, 
             MepoGNN, 
