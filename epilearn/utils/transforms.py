@@ -241,17 +241,7 @@ class seasonality_and_trend_decompose(nn.Module):
         if self.decompose_type == "static":
             seasonality, trend = self.decompsition(time_middle_data)
         return [seasonality, trend]
-    def forward(self, data, **kwarg):
-        num_graphs = data.shape[0]
-        num_nodes = data.shape[1]
-        timesteps = data.shape[2]
-        time_middle_data = data.permute(0, 2, 1).contiguous()
-        if self.decompose_type == "dynamic":
-            _, trend = self.trend_model(time_middle_data)
-            seasonality, _ = self.seasonality_model(time_middle_data)
-        if self.decompose_type == "static":
-            seasonality, trend = self.decompsition(time_middle_data)
-        return [seasonality, trend]
+
 
 
 class calculate_dtw_matrix(nn.Module):
