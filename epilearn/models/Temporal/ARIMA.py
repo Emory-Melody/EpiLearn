@@ -32,7 +32,44 @@ class VARMAXModel:
         self.trend = 'c'
 
     def fit(self, train_input, train_target, val_input=None, val_target=None, epochs=1000, batch_size=10, verbose=False, patience=100):
-      
+        """
+
+        Parameters
+        ----------
+        train_input : numpy.ndarray
+            The input training data array, expected to be in the shape 
+            (batch_size, num_timesteps_input, num_features), where:
+            - `batch_size` is the number of training samples,
+            - `num_timesteps_input` is the number of timesteps used as input,
+            - `num_features` is the number of features per timestep.
+        train_target : numpy.ndarray
+            The target training data array corresponding to the inputs, shaped 
+            (batch_size, num_timesteps_output).
+        val_input : numpy.ndarray, optional
+            The input validation data array, following the same format as `train_input`.
+        val_target : numpy.ndarray, optional
+            The target validation data array, following the same format as `train_target`.
+        epochs : int, optional
+            The number of epochs to train the model for. Default is 1000.
+        batch_size : int, optional
+            The size of batches to use when training the model. Default is 10.
+        verbose : bool, optional
+            If True, the model will print out progress during training. Default is False.
+        patience : int, optional
+            Number of epochs with no improvement after which training will be stopped. Default is 100.
+
+        Returns
+        -------
+        list
+            A list of forecasted values for each batch in the training data, each forecast corresponding 
+            to the future timesteps as defined by `num_timesteps_output`.
+
+        Notes
+        -----
+        This method internally converts the input PyTorch Tensors to numpy arrays if not already provided in that format, 
+        fits a VARMAX model for each subset of data, and performs forecasting. It is designed to handle smaller subsets 
+        of the data (defined by `subset_samples`) to demonstrate the model's fitting capability.
+        """
         train_input = train_input.numpy()
         train_target = train_target.numpy()
         val_input = val_input.numpy()
