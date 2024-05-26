@@ -49,6 +49,24 @@ class LSTMModel(BaseModel):
         self.out = nn.Linear(nhid, num_timesteps_output)
 
     def forward(self, x):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor for the model. Expected shape is 
+            (batch_size, num_timesteps_input, num_features), where
+            `batch_size` is the number of samples in the batch,
+            `num_timesteps_input` is the number of input timesteps,
+            and `num_features` is the number of features for each timestep.
+
+        Returns
+        -------
+        torch.Tensor
+            The output of the model, a tensor of shape 
+            (batch_size, num_timesteps_output), representing the predicted values 
+            for the future timesteps. Each element corresponds to a predicted value 
+            for a future timestep.
+        """
         lstm_out, _ = self.lstm(x)
 
         if self.use_norm:
