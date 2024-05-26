@@ -12,11 +12,11 @@ class GIN(BaseModel):
 
     Parameters
     ----------
-    input_dim : int
+    num_features : int
         Number of input features per node.
     hidden_dim : int
         Dimension of hidden layers.
-    output_dim : int
+    num_classes : int
         Number of output features per node.
     nlayers : int, optional
         Number of layers in the GIN. Default: 2.
@@ -32,7 +32,7 @@ class GIN(BaseModel):
     torch.Tensor
         A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GIN. 
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, nlayers=2, dropout=0.5,
+    def __init__(self, num_features, hidden_dim, num_classes, nlayers=2, dropout=0.5,
                 with_bias=True, device=None):
 
         super(GIN, self).__init__()
@@ -42,14 +42,14 @@ class GIN(BaseModel):
 
         
         mlp_one = MLP(
-            [input_dim, hidden_dim, output_dim],
+            [num_features, hidden_dim, num_classes],
             act="relu",
             norm="batch_norm",
             bias=with_bias
         )
         
         mlp_first = MLP(
-            [input_dim, hidden_dim, hidden_dim],
+            [num_features, hidden_dim, hidden_dim],
             act="relu",
             norm="batch_norm",
             bias=with_bias
@@ -63,7 +63,7 @@ class GIN(BaseModel):
         )
         
         mlp_last = MLP(
-            [hidden_dim, hidden_dim, output_dim],
+            [hidden_dim, hidden_dim, num_classes],
             act="relu",
             norm="batch_norm",
             bias=with_bias
@@ -79,13 +79,13 @@ class GIN(BaseModel):
                 self.layers.append(GINConv(mlp_hidden))
             self.layers.append(GINConv(mlp_hidden))
         
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc = nn.Linear(hidden_dim, num_classes)
         self.dropout = dropout
 
 
-    def forward(self, data):
+    def forward(self, x, edge_index, edge_weight):
         
-        x, edge_index = data.x, data.edge_index
+        #x, edge_index = data.x, data.edge_index
         x = torch.reshape(x, (x.shape[0], -1))
         for i, layer in enumerate(self.layers):
             x = layer(x, edge_index)

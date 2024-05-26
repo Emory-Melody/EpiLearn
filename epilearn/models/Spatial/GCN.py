@@ -66,7 +66,10 @@ class GCN(BaseModel):
         self.with_bn = with_bn
 
     def forward(self, x, edge_index, edge_weight):
-        b, n, _= x.shape
+        #print(x.shape)
+        #b, n, _= x.shape
+        x = torch.reshape(x, (x.shape[0], -1))
+        #print(x.shape)
     
         for i, layer in enumerate(self.layers):
             if edge_weight is not None:
@@ -75,10 +78,10 @@ class GCN(BaseModel):
                 x = layer(x.float(), edge_index)
             if i != len(self.layers) - 1:
                 if self.with_bn:
-                    x = self.bns[i](x.view(-1, self.hid)).view(b, n, self.hid)
+                    x = self.bns[i](x)#(x.view(-1, self.hid)).view(b, n, self.hid)
                 x = F.relu(x)
                 x = F.dropout(x, p=self.dropout, training=self.training)
-        return self.fc(x).squeeze() #F.log_softmax(x, dim=1)
+        return self.fc(x) #self.fc(x)#.squeeze() #F.log_softmax(x, dim=1)
 
     def initialize(self):
         for m in self.layers:

@@ -3,6 +3,5 @@ from . import(
         GCN, 
         GAT, 
         SAGE,
-        GIN, 
-        DCRNN
+        GIN
 )

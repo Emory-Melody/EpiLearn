@@ -63,10 +63,10 @@ class GraphWaveNet(BaseModel):
         Indicates whether to include an adaptive adjacency matrix. Default: True.
     aptinit : tensor, optional
         Initial tensor for adaptive adjacency matrix. Default: None.
-    input_dim : int
-        Number of input features per node.
-    output_dim : int
-        Number of output features per node.
+    num_timesteps_input : int
+        Number of input timesteps per node.
+    num_timesteps_output : int
+        Number of output timesteps per node.
     residual_channels : int
         Number of channels in residual layers. Default: 32.
     dilation_channels : int
@@ -90,7 +90,7 @@ class GraphWaveNet(BaseModel):
         A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted values for each node over future timesteps.
         Each slice along the second dimension corresponds to a timestep, with each column representing a node.
     """
-    def __init__(self, device, dropout=0.3, gcn_bool=True, addaptadj=True, aptinit=None, input_dim=2,output_dim=12,
+    def __init__(self, device="cpu", dropout=0.3, gcn_bool=True, addaptadj=True, aptinit=None, num_timesteps_input=2,num_timesteps_output=12,
                  residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,nlayers=2, adj_m=None):
         super(GraphWaveNet, self).__init__()
 
@@ -109,7 +109,7 @@ class GraphWaveNet(BaseModel):
         self.bn = nn.ModuleList()
         self.gconv = nn.ModuleList()
 
-        self.start_conv = nn.Conv2d(in_channels=input_dim,
+        self.start_conv = nn.Conv2d(in_channels=num_timesteps_input,
                                     out_channels=residual_channels,
                                     kernel_size=(1,1))
         if adj_m is not None:
@@ -182,7 +182,7 @@ class GraphWaveNet(BaseModel):
                                   bias=True)
 
         self.end_conv_2 = nn.Conv2d(in_channels=end_channels,
-                                    out_channels=output_dim,
+                                    out_channels=num_timesteps_output,
                                     kernel_size=(1,1),
                                     bias=True)
 
@@ -190,9 +190,9 @@ class GraphWaveNet(BaseModel):
 
 
 
-    def forward(self, graph, input):
+    def forward(self, X_batch, graph, X_states, batch_graph):
         #print(input)
-        input = torch.permute(input, (0, 2, 1, 3))
+        input = torch.permute(X_batch, (0, 2, 1, 3))
         input = input.transpose(1, 3)
 
         in_len = input.size(3)
