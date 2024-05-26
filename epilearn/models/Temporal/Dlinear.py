@@ -76,7 +76,6 @@ class DlinearModel(BaseModel):
 
     def forward(self, x):
         """
-
         Parameters
         ----------
         x : torch.Tensor
