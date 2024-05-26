@@ -33,7 +33,6 @@ class VARMAXModel:
 
     def fit(self, train_input, train_target, val_input=None, val_target=None, epochs=1000, batch_size=10, verbose=False, patience=100):
         """
-
         Parameters
         ----------
         train_input : numpy.ndarray
