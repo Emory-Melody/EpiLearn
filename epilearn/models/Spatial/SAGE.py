@@ -91,7 +91,17 @@ class SAGE(BaseModel):
         self.with_bn = with_bn
 
     def forward(self, x, edge_index, edge_weight):
-        
+        """
+        Parameters:
+        x : torch.Tensor
+            Node feature matrix with shape (batch_size, num_nodes, num_features).
+        edge_index : torch.Tensor
+            Edge index in COO format with shape (2, num_edges).
+
+        Returns:
+        torch.Tensor
+            Output from the network with shape (batch_size * num_nodes, num_classes).
+        """
         #x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
         x = torch.reshape(x, (x.shape[0], -1))
 
