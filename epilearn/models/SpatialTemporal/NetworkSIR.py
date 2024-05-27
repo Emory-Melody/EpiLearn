@@ -24,7 +24,7 @@ class NetSIR(nn.Module):
         A tensor of shape (time_step, num_nodes, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep for each node.
         Each row corresponds to a timestep, with the columns representing the susceptible, infected, and recovered counts respectively for each node.
     """
-    def __init__(self, num_nodes = None, horizon=None, infection_rate=0.01, recovery_rate=0.038, population=None):
+    def __init__(self, num_nodes=None, horizon=None, infection_rate=0.01, recovery_rate=0.038, population=None):
         super(NetSIR, self).__init__()
         self.pop = population
         self.horizon = horizon
@@ -44,12 +44,25 @@ class NetSIR(nn.Module):
         self.beta = nn.Parameter(self.beta)
         self.gamma = nn.Parameter(self.gamma)
         
-    def forward(self, x, adj, steps = 1):
-        '''
-        Args:  x: (n_nodes, one-hot encoding of states)
-               adj: (n_nodes, n_nodes)
-        Returns: (time_step, n_nodes, probability of states) 
-        ''' 
+    def forward(self, x, adj, steps=1):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input features tensor with shape (n_nodes, one-hot encoding of states).
+        adj : torch.Tensor
+            Static adjacency matrix of the graph with shape (num_nodes, num_nodes).
+        states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as x. Default: None.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (time_step, n_nodes, probability of states),
+            representing the predicted values for each node over the specified output timesteps.
+        """
         if self.pop is not None:
             pop = self.pop
         else:
