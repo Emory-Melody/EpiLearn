@@ -71,6 +71,24 @@ class CNNRNN_Res(BaseModel):
         self.out = nn.Linear(1, self.n_out)
 
     def forward(self, x, adj, states=None, dynamic_adj=None, **kargs):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).
+        adj : torch.Tensor
+            Static adjacency matrix of the graph with shape (num_nodes, num_nodes).
+        states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as x. Default: None.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+            representing the predicted values for each node over the specified output timesteps.
+        """
         # first transform
         masked_adj = adj * self.mask_mat
         x = torch.matmul(masked_adj, x)
