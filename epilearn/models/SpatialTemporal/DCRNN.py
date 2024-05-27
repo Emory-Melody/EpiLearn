@@ -441,13 +441,28 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
 
     def forward(self, X_batch, graph, X_states, batch_graph):
         """
-        original input shape: [batch_size, num_node, num_timesteps_input, num_features]
-        seq2seq forward pass
-        :param inputs: shape (num_timesteps_input, batch_size, num_sensor * num_features)
-        :param labels: shape (num_timesteps_output, batch_size, num_sensor * output)
-        :param batches_seen: batches seen till now
-        :return: output: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes)
+        Parameters
+        ----------
+        X_batch : torch.Tensor
+            Input tensor with shape (batch_size, num_nodes, num_timesteps_input, num_features),
+            representing the input features over multiple timesteps for each node.
+        graph : torch.Tensor
+            Static adjacency matrix with shape (num_nodes, num_nodes),
+            representing the fixed connections between nodes.
+        X_states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as X_batch.
+            Used for models that incorporate node states over time. Default: None.
+        batch_graph : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to graph but possibly varying over time.
+            Used for models that account for changing graph structures. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (batch_size, num_nodes, num_timesteps_output),
+            representing the predicted values for each node over the specified output timesteps.
         """
+        
         inputs = X_batch
         batch_size = X_batch.shape[0] #data.batch[-1] + 1
         
@@ -481,3 +496,6 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         self.encoder_model.initialize()
         self.decoder_model.initialize()
         #pass
+
+
+    
