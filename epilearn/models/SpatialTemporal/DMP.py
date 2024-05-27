@@ -82,7 +82,19 @@ class DMP(nn.Module):
 
 
     def forward(self, x, adj):
-
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Expected shape (batch_size, num_timesteps_input, num_nodes, num_features).
+        adj : torch.Tensor
+            Adjacency matrix of the graph with shape (num_nodes, num_nodes), indicating connections between nodes.
+    
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (horizon, num_nodes, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep.
+        """
         self.edge_list = self.edgeList(adj)
         # edge_list with size [3, E], (src_node, tar_node, weight) 
         self.src_nodes = torch.LongTensor(self.edge_list[0])
