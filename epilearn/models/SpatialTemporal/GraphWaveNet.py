@@ -191,6 +191,24 @@ class GraphWaveNet(BaseModel):
 
 
     def forward(self, X_batch, graph, X_states, batch_graph):
+        """
+        Parameters
+        ----------
+        X_batch : torch.Tensor
+            Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).
+        adj : torch.Tensor
+            Static adjacency matrix of the graph with shape (num_nodes, num_nodes).
+        states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as x. Default: None.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+            representing the predicted values for each node over the specified output timesteps.
+        """
         #print(input)
         input = torch.permute(X_batch, (0, 2, 1, 3))
         input = input.transpose(1, 3)
