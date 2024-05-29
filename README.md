@@ -3,6 +3,11 @@
 <h1 align="center">
 </h1>
 
+## Documentation
+
+[![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://exe2.readthedocs.io/en/latest/)
+
+
 
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)](https://github.com/DeepGraphLearning/torchdrug/blob/master/CONTRIBUTING.md)
 [![License MIT](https://img.shields.io/github/license/DeepGraphLearning/torchdrug?color=blue)](https://github.com/DeepGraphLearning/torchdrug/blob/master/LICENSE)
