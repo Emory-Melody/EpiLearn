@@ -1,5 +1,9 @@
 
-[![EpiLearn](asset/torchdrug_logo_full.svg)](https://torchdrug.ai/)
+[![EpiLearn](Emory-Melody/EpiLearn/blob/main/tests/epilaern_logo.png)]([https://torchdrug.ai/](https://github.com/))
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/epilaern_logo.png" width = "450" alt="logo">
+</p>
+
 <h1 align="center">
 </h1>
 
