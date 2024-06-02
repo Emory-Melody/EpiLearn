@@ -1,6 +1,6 @@
 
 <p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/epilaern_logo.png" width = "450" alt="logo">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/epilaern_logo.jpg" width = "450" alt="logo">
 </p>
 
 <h1 align="center">
