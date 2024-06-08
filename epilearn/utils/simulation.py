@@ -36,7 +36,6 @@ def get_graph_from_features(features, adj=None, G=1):
     return graph
 
 class Time_geo(object):
-
     def __init__(self, region_input, pop_input, p_t_raw=None, pop_num=7, time_slot=10, rho=0.6, gamma=0.41, alpha=1.86, n_w=6.1, beta1=3.67, beta2=10, simu_slot=144):
         
         super().__init__()
