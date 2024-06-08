@@ -136,6 +136,29 @@ class STAN(BaseModel):
         self.device = device
 
     def forward(self, X, adj, states, dynamic_adj=None, N = None, h = None):
+        """
+        Parameters
+        ----------
+        X : torch.Tensor
+            Input feature tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).
+        adj : torch.Tensor
+            Static adjacency matrix with shape (num_nodes, num_nodes).
+        states : torch.Tensor
+            States of the nodes, with the same shape as X, containing current infection and recovery data.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix, with shape similar to adj but possibly varying over time. Default: None.
+        N : float, optional
+            Total population considered in the model. Default: None.
+        h : torch.Tensor, optional
+            Hidden states for the GRU layer, used if provided. Default: None.
+
+        Returns
+        -------
+        tuple of torch.Tensor
+            A tuple containing two tensors:
+            1. Predicted new infections and recoveries, shape (batch_size, num_timesteps_output, num_nodes, 2).
+            2. Physical model predictions based on current states, shape (batch_size, num_timesteps_output, num_nodes, 2).
+        """
         last_diff_I = X[:, -1, :, 1].unsqueeze(2)
         last_diff_R = X[:, -1, :, 2].unsqueeze(2)
         X = X.transpose(1,2).flatten(2,3)

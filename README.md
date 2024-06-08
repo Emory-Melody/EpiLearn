@@ -1,13 +1,42 @@
 
-[![TorchDrug](asset/torchdrug_logo_full.svg)](https://torchdrug.ai/)
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_1.jpg" width = "450" alt="EpiLearn">
+</p>
+
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_2.jpg" width = "450" alt="EpiLearn">
+</p>
+
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_3.jpg" width = "450" alt="EpiLearn">
+</p>
+
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_4.jpg" width = "450" alt="EpiLearn">
+</p>
+
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_5.jpg" width = "450" alt="EpiLearn">
+</p>
+
+<p align="center">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_6.jpg" width = "450" alt="EpiLearn">
+</p>
+
+
 <h1 align="center">
 </h1>
+
+## Documentation
+
+[![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://exe2.readthedocs.io/en/latest/)
+
 
 
 [![Contributions](https://img.shields.io/badge/contributions-welcome-blue)](https://github.com/DeepGraphLearning/torchdrug/blob/master/CONTRIBUTING.md)
 [![License MIT](https://img.shields.io/github/license/DeepGraphLearning/torchdrug?color=blue)](https://github.com/DeepGraphLearning/torchdrug/blob/master/LICENSE)
 [![PyPI downloads](https://static.pepy.tech/personalized-badge/torchdrug?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pypi.org/project/torchdrug/)
-[![TorchDrug Twitter](https://img.shields.io/twitter/url?label=TorchDrug&style=social&url=https%3A%2F%2Ftwitter.com%2FDrugTorch)](https://twitter.com/DrugTorch)
+[![EpiLearn Twitter](https://img.shields.io/twitter/url?label=TorchDrug&style=social&url=https%3A%2F%2Ftwitter.com%2FDrugTorch)](https://twitter.com/DrugTorch)
 
 
 **EpiLearn** is a Pytorch-based machine learning tool-kit for epidemic aata modeling and analysis. We provide numerour features including:

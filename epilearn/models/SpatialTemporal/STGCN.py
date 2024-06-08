@@ -162,9 +162,17 @@ class STGCN(BaseModel):
 
     def forward(self, X, adj, states=None, dynamic_adj=None, **kargs):
         """
-        :param X: Input data of shape (batch_size, num_nodes, num_timesteps,
-        num_features=in_channels).
-        :param A_hat: Normalized adjacency matrix.
+        Parameters
+        ----------
+        X : torch.Tensor
+            Shape (batch_size, num_nodes, num_timesteps_input, num_features)
+        adj : torch.Tensor
+            Shape (num_nodes, num_nodes)
+
+        Returns
+        -------
+        torch.Tensor
+            Output shape (batch_size, num_timesteps_output, num_nodes)
         """
         out1 = self.block1(X, adj)
         out2 = self.block2(out1, adj)

@@ -45,7 +45,24 @@ class SIR(nn.Module):
         if recovery_rate is not None:
             self.gamma.weight.data = torch.FloatTensor([recovery_rate])
         
-    def forward(self, x, steps = 1):
+    def forward(self, x, steps=1):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            The initial condition tensor for the model. Expected shape is (3,), where the elements represent the 
+            number of susceptible (S), infected (I), and recovered (R) individuals respectively.
+        steps : int, optional
+            Number of future time steps to simulate. If `horizon` is specified during initialization and not None,
+            it overrides this parameter. Default is 1 if `horizon` is None.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (steps, 3), representing the predicted number of susceptible, infected, and recovered 
+            individuals at each timestep. Each row corresponds to a timestep, with the columns representing 
+            susceptible, infected, and recovered counts respectively.
+        """
         if self.pop is not None:
             pop = self.pop
         else:
@@ -109,7 +126,23 @@ class SIS(nn.Module):
         if recovery_rate is not None:
             self.gamma.weight.data = torch.FloatTensor([recovery_rate])
         
-    def forward(self, x, steps = 1):
+    def forward(self, x, steps=1):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            The initial condition tensor for the model, representing the initial numbers of susceptible (S) and infected (I) individuals.
+            Expected shape is (2,), where x[0] is the number of susceptible and x[1] is the number of infected individuals at the start.
+        steps : int, optional
+            Number of future time steps to simulate. If `horizon` is specified during initialization and not None, it overrides this parameter.
+            Default is 1 if `horizon` is None.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (steps, 2), representing the predicted number of susceptible and infected individuals at each timestep.
+            Each row corresponds to a timestep, with the first column representing susceptible and the second column representing infected counts.
+        """
         if self.pop is not None:
             pop = self.pop
         else:
@@ -187,7 +220,24 @@ class SEIR(nn.Module):
         if latency is not None:
             self.a.weight.data = torch.FloatTensor([latency])
         
-    def forward(self, x, steps = 1):
+    def forward(self, x, steps=1):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            The initial condition tensor for the model, representing the initial numbers of susceptible (S), exposed (E), 
+            infected (I), and recovered (R) individuals. Expected shape is (4,), where elements correspond to S, E, I, and R counts.
+        steps : int, optional
+            Number of future time steps to simulate. If `horizon` is specified during initialization and not None, 
+            it overrides this parameter. Default is 1 if `horizon` is None.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (steps, 4), representing the predicted number of susceptible, exposed, infected, and recovered 
+            individuals at each timestep. Each row corresponds to a timestep, with columns representing the counts of 
+            susceptible, exposed, infected, and recovered individuals respectively.
+        """
         if self.pop is not None:
             pop = self.pop
         else:

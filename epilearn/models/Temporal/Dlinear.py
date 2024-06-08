@@ -75,6 +75,20 @@ class DlinearModel(BaseModel):
         self.Linear_Transform = nn.Linear(num_timesteps_input * num_features, num_timesteps_output * num_features)
 
     def forward(self, x):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor representing time series data for each batch. Expected shape is 
+            (batch_size, num_timesteps_input, num_features), where `batch_size` is the number of samples in the batch,
+            `num_timesteps_input` is the number of input time steps, and `num_features` represents features at each time step.
+
+        Returns
+        -------
+        torch.Tensor
+            The output of the model, a tensor of shape (batch_size, num_timesteps_output) that represents the predicted values 
+            for the future time steps, reduced to a single predictive value per time step by averaging across the feature dimension.
+        """
         # Decompose and process as before
         seasonal_init, trend_init = self.decomposition(x)
         batch_size = x.shape[0]

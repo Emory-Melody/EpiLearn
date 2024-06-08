@@ -50,6 +50,36 @@ class XGBModel:
         return features
 
     def fit(self, train_input, train_target, val_input=None, val_target=None, epochs=1000, batch_size=10, verbose=False, patience=100):
+        """
+        Parameters
+        ----------
+        train_input : torch.Tensor or numpy.ndarray
+            The input training data, expected to be in the shape 
+            (batch_size, num_timesteps_input, num_features).
+        train_target : torch.Tensor or numpy.ndarray
+            The target training data, expected to be in the shape
+            (batch_size, num_timesteps_output).
+        val_input : torch.Tensor or numpy.ndarray, optional
+            The input validation data, following the same format as `train_input`.
+        val_target : torch.Tensor or numpy.ndarray, optional
+            The target validation data, following the same format as `train_target`.
+        epochs : int, optional
+            The number of epochs to train the model for. Default is 1000.
+        batch_size : int, optional
+            The size of batches to use when training the model. Default is 10.
+        verbose : bool, optional
+            If True, the training process will print out progress updates and evaluation metrics. Default is False.
+        patience : int, optional
+            Number of epochs with no improvement after which training will be stopped. Default is 100.
+
+        Notes
+        -----
+        The method first reshapes and prepares the input data for the XGBoost regressor, converting any PyTorch tensors
+        to numpy arrays if necessary. It configures the model with the specified hyperparameters and trains it on the
+        provided data. If validation data is provided, it will also evaluate the model on this data after each epoch,
+        which can be used for early stopping or parameter tuning. The method concludes by optionally printing the mean
+        squared error of the training and validation datasets if `verbose` is True.
+        """
         train_input = self.get_features(train_input)
         train_target = train_target.numpy() if isinstance(train_target, torch.Tensor) else train_target
 

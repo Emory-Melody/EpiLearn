@@ -149,6 +149,24 @@ class ATMGNN(BaseModel):
         
         
     def forward(self, x, adj, states=None, dynamic_adj=None, **kargs):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input features tensor with shape (batch_size, num_timestamps, num_nodes, num_features).
+        adj : torch.Tensor
+            Static adjacency matrix of the graph with shape (num_nodes, num_nodes).
+        states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as x. Default: None.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+            representing the predicted values for each node over the specified output timesteps.
+        """
         lst = list()
         skip = x.view(-1, self.window, self.n_nodes, self.nfeat)
         skip = torch.transpose(skip, 1, 2).reshape(-1, self.window, self.nfeat)
@@ -317,6 +335,24 @@ class MPNN_LSTM(BaseModel):
         
         
     def forward(self, x, adj, states=None, dynamic_adj=None, **kargs):
+        """
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input features tensor with shape (batch_size, num_timestamps, num_nodes, num_features).
+        adj : torch.Tensor
+            Static adjacency matrix of the graph with shape (num_nodes, num_nodes).
+        states : torch.Tensor, optional
+            States of the nodes if available, with the same shape as x. Default: None.
+        dynamic_adj : torch.Tensor, optional
+            Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.
+
+        Returns
+        -------
+        torch.Tensor
+            The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+            representing the predicted values for each node over the specified output timesteps.
+        """
         lst = list()
         weight = adj.to_sparse().values()
         adj = adj.to_sparse().indices()

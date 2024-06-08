@@ -84,7 +84,17 @@ class GIN(BaseModel):
 
 
     def forward(self, x, edge_index, edge_weight):
-        
+        """
+        Parameters:
+        x : torch.Tensor
+            The input features tensor with shape (batch_size, num_nodes, num_features).
+        edge_index : torch.Tensor
+            The edge indices in COO format with shape (2, num_edges).
+            
+        Returns:
+        torch.Tensor
+            The output predictions for each node with shape (batch_size * num_nodes, num_classes).
+        """
         #x, edge_index = data.x, data.edge_index
         x = torch.reshape(x, (x.shape[0], -1))
         for i, layer in enumerate(self.layers):
