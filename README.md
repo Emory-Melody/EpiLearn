@@ -1,26 +1,6 @@
 
 <p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_1.jpg" width = "450" alt="EpiLearn">
-</p>
-
-<p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_2.jpg" width = "450" alt="EpiLearn">
-</p>
-
-<p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_3.jpg" width = "450" alt="EpiLearn">
-</p>
-
-<p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_4.jpg" width = "450" alt="EpiLearn">
-</p>
-
-<p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_5.jpg" width = "450" alt="EpiLearn">
-</p>
-
-<p align="center">
-<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/epilearn_logo_6.jpg" width = "450" alt="EpiLearn">
+<img center src="https://github.com/Emory-Melody/EpiLearn/blob/main/tests/logo/logo_1.jpg" width = "450" alt="EpiLearn">
 </p>
 
 
