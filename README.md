@@ -30,12 +30,13 @@ conda create -n epilearn python=3.9
 conda activate epilearn
 
 python setup.py install
-pip install pytorch_geometric
 ```
 ## From Pypi ##
 ```bash
 pip install epilearn
 ```
+
+EpiLearn also   requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
 
 Tutorial
 ==============

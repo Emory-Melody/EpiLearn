@@ -5,5 +5,4 @@ test.ipynb
 **/.vscode
 .idea
 /build
-/dist
 /epilearn.egg-info
