@@ -39,7 +39,7 @@ pip install epilearn
 
 Tutorial
 ==============
-We provide a complete tutorial of EpiLearn in our documentation and the overal framework in our paper. For more examples, please refer to the *examples* folder.
+We provide a complete tutorial of EpiLearn in our [documentation](https://epilearn-doc.readthedocs.io/en/latest/) and the overal framework in our paper. For more examples, please refer to the *examples* folder.
 
 Here we also offer a quickstart of how to use the EpiLearn for forecast and detection task.
 
@@ -57,13 +57,21 @@ dataset = UniversalDataset()
 dataset.load_toy_dataset()
 # Adding Transformations
 transformation = transforms.Compose({
-                " features": [transforms.normalize_feat()],
-                " graph": [transforms.normalize_adj()]})
+                "features": [transforms.normalize_feat()],
+                "graph": [transforms.normalize_adj()]})
 dataset.transforms = transformation
 # Initialize Task
-task = Forecast(STGCN, lookback, horizon)
+task = Forecast(prototype=STGCN,
+                dataset=None, 
+                lookback=lookback, 
+                horizon=horizon, 
+                device='cpu')
 # Training
-result = task.train_model(dataset=dataset, loss='mse')
+result = task.train_model(dataset=dataset, 
+                          loss='mse', 
+                          epochs=50, 
+                          batch_size=5, 
+                          permute_dataset=True)
 # Evaluation
 evaluation = task.evaluate_model()
 ```
@@ -82,13 +90,20 @@ dataset = UniversalDataset()
 dataset.load_toy_dataset()
 # Adding Transformations
 transformation = transforms.Compose({
-                " features": [transforms.normalize_feat()],
-                " graph": [transforms.normalize_adj()]})
+                " features": [],
+                " graph": []})
 dataset.transforms = transformation
 # Initialize Task
-task = Forecast(STGCN, lookback, horizon)
+task = Detection(prototype=GCN, 
+                 dataset=None, 
+                 lookback=lookback, 
+                 horizon=horizon, 
+                 device='cpu')
 # Training
-result = task.train_model(dataset=dataset, loss='ce')
+result = task.train_model(dataset=dataset, 
+                          loss='ce', 
+                          epochs=50, 
+                          batch_size=5)
 # Evaluation
 evaluation = task.evaluate_model()
 ```
