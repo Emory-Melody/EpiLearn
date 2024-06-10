@@ -17,7 +17,6 @@ setuptools.setup(
     install_requires = [
           'matplotlib>=3.9.0',
           'numpy==1.26.4',
-          'torch>=1.2.0',
           'scipy>=1.3.1',
           'networkx==3.2.1',
           'Pillow>=7.0.0',
