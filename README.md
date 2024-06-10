@@ -17,6 +17,8 @@
 - Simulation of Epidemic Spreading
 - Visualization of Epidemic Data
 - Unified Pipeline for Epidemic Tasks
+  
+For more models, please refer to our [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers)
 
 
 Installation
