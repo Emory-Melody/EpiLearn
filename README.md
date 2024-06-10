@@ -4,7 +4,7 @@
 </p>
 
 
-## <center>Epidemic Modeling with Pytorch</center>
+## <p align="center">Epidemic Modeling with Pytorch</p>
 
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
