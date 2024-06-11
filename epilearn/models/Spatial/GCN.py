@@ -1,3 +1,4 @@
+# this code is adopted from https://github.com/DSE-MSU/DeepRobust/blob/master/deeprobust/graph/defense_pyg/gcn.py
 
 import torch.nn as nn
 import torch.nn.functional as F

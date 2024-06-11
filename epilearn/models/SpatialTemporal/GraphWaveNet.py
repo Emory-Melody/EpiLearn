@@ -1,3 +1,4 @@
+# this code is adopted from https://github.com/nnzhan/Graph-WaveNet/blob/master/model.py
 
 import torch
 import torch.nn as nn

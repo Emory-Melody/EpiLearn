@@ -1,3 +1,5 @@
+# this code is adopted from https://github.com/chnsh/DCRNN_PyTorch/tree/pytorch_scratch/model/pytorch
+
 import numpy as np
 import torch
 import torch.nn as nn
