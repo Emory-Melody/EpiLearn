@@ -9,7 +9,7 @@
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
 <!-- [![PyPI downloads](https://static.pepy.tech/personalized-badge/torchdrug?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pypi.org/project/torchdrug/) -->
-**[Documentation](https://epilearn-doc.readthedocs.io/en/latest/)** 
+**[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016)** 
 
 **EpiLearn** is a Pytorch-based machine learning tool-kit for epidemic data modeling and analysis. We provide numerour features including:
 
@@ -42,7 +42,7 @@ EpiLearn also   requires pytorch>=1.20, torch_geometric and torch_scatter. For c
 
 Tutorial
 ==============
-We provide a complete tutorial of EpiLearn in our [documentation](https://epilearn-doc.readthedocs.io/en/latest/) and the overal framework in our paper. For more examples, please refer to the *examples* folder.
+We provide a complete tutorial of EpiLearn in our [documentation](https://epilearn-doc.readthedocs.io/en/latest/), including [pipelines](https://epilearn-doc.readthedocs.io/en/latest/tutorials/task_building.html), [simulations](https://epilearn-doc.readthedocs.io/en/latest/tutorials/simulation.html) and other [utilities](https://epilearn-doc.readthedocs.io/en/latest/tutorials/utils.html). For more examples, please refer to the [example](https://github.com/Emory-Melody/EpiLearn/tree/main/examples) folder. For the overal framework of EpiLearn, please check our [paper](https://arxiv.org/abs/2406.06016).
 
 Here we also offer a quickstart of how to use the EpiLearn for forecast and detection task.
 
@@ -118,8 +118,19 @@ Our web application can be initiated using:
 python -m streamlit run interface/app.py to activate the interface
 ```
 
-
 Citing
 ==============
-...
+If you find this work useful, please cite: [EpiLearn: A Python Library for Machine Learning in Epidemic Modeling](https://arxiv.org/abs/2406.06016)
 
+    @article{liu2024epilearn,
+    title={EpiLearn: A Python Library for Machine Learning in Epidemic Modeling},
+    author={Liu, Zewen and Li, Yunxiao and Wei, Mingyang and Wan, Guancheng and Lau, Max S.Y. and Jin, Wei},
+    journal={arXiv preprint arXiv:2406.06016},
+    year={2024}
+    }
+
+Acknowledgement
+==============
+Some algorithms are adopted from the papers' implmentation and the original links can be easily found on top of each file. We also appreciate the datasets from various sources, which will be highlighted in the [dataset](https://github.com/Emory-Melody/EpiLearn/tree/main/datasets) file.
+
+Thanks to their great work and contributions!
