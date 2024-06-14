@@ -1,6 +1,6 @@
 
 <p align="center">
-<img center src="./asset/logo/logo_2_new.png" width = "450" alt="EpiLearn">
+<img center src="./asset/logo/logo_2_new.png" width = "600" alt="EpiLearn">
 </p>
 
 
