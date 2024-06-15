@@ -8,7 +8,8 @@
 
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
-[![PyPI downloads](https://img.shields.io/pypi/dm/epilearn)](https://pypi.org/project/epilearn/)
+[![Downloads](https://static.pepy.tech/badge/epilearn)](https://pepy.tech/project/epilearn)
+<!-- [![PyPI downloads](https://img.shields.io/pypi/dm/epilearn)](https://pypi.org/project/epilearn/) -->
 
 **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016)** 
 
