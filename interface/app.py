@@ -7,9 +7,9 @@ from pyvis.network import Network
 import torch
 import io
 import pandas as pd
+from sims import get_random_graph
+from NetSIR import NetSIR
 
-from ..epilearn.utils import  simulation
-from ..epilearn.models.SpatialTemporal.NetworkSIR import NetSIR
 
 # 设置全局属性
 st.set_page_config(
@@ -39,7 +39,7 @@ with st.sidebar:
 
         @st.cache_data
         def get_simulation(n_nodes, connect, pred_steps, infect_rate, recover_rate, infected):
-            initial_graph = simulation.get_random_graph(num_nodes=n_nodes, connect_prob=connect)
+            initial_graph = get_random_graph(num_nodes=n_nodes, connect_prob=connect)
             initial_states = torch.zeros(n_nodes,3) # [S,I,R]
             initial_states[:, 0] = 1.0
             for i in infected:
