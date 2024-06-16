@@ -8,8 +8,8 @@ import torch
 import io
 import pandas as pd
 
-from epilearn.utils import  simulation
-from epilearn.models.SpatialTemporal.NetworkSIR import NetSIR
+from ..epilearn.utils import  simulation
+from ..epilearn.models.SpatialTemporal.NetworkSIR import NetSIR
 
 # 设置全局属性
 st.set_page_config(
