@@ -3,7 +3,6 @@
 # 导入所需的库
 import streamlit as st
 import streamlit.components.v1 as components
-import plotly.figure_factory as ff
 from pyvis.network import Network
 import torch
 import io
