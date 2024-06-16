@@ -9,9 +9,9 @@
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/epilearn)](https://pepy.tech/project/epilearn)
-<!-- [![PyPI downloads](https://img.shields.io/pypi/dm/epilearn)](https://pypi.org/project/epilearn/) -->
+[![Web Interface](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://epilearn.streamlit.app/)
 
-**[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016)** 
+**[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
 
 **EpiLearn** is a Pytorch-based machine learning tool-kit for epidemic data modeling and analysis. We provide numerour features including:
 
@@ -115,7 +115,7 @@ evaluation = task.evaluate_model()
 
 ## Web Interface ##
 
-Our web application can be initiated using:
+Our [web application](https://epilearn.streamlit.app/) is deployed online using [streamlit](https://streamlit.io/). But it also can be initiated using:
 ```bash
 python -m streamlit run interface/app.py to activate the interface
 ```
@@ -126,8 +126,9 @@ If you find this work useful, please cite: [EpiLearn: A Python Library for Machi
 
     @article{liu2024epilearn,
     title={EpiLearn: A Python Library for Machine Learning in Epidemic Modeling},
-    author={Liu, Zewen and Li, Yunxiao and Wei, Mingyang and Wan, Guancheng and Lau, Max S.Y. and Jin, Wei},
-    journal={arXiv preprint arXiv:2406.06016},
+    author={Liu, Zewen and Li, Yunxiao and Wei, Mingyang and Wan, Guancheng and Lau, Max SY and Jin, Wei},
+    journal={arXiv e-prints},
+    pages={arXiv--2406},
     year={2024}
     }
 
