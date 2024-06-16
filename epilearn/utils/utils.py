@@ -1,12 +1,11 @@
 import torch
 import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
 import torch.nn as nn
 
 import math
 import torch.fft as fft
 from einops import rearrange, reduce, repeat
+
 def accuracy(output, labels):
     """Return accuracy of output compared to labels.
 

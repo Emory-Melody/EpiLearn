@@ -4,15 +4,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import plotly.figure_factory as ff
-import networkx as nx
 from pyvis.network import Network
-import matplotlib.pyplot as plt
 import torch
 import io
-from tqdm import tqdm
 import pandas as pd
 
-from epilearn.utils import utils
 from epilearn.utils import  simulation
 from epilearn.models.SpatialTemporal.NetworkSIR import NetSIR
 
@@ -119,7 +115,7 @@ with graph_tab:
 
         num_locs = list(range(len(graph)))
         
-        for i in tqdm(num_locs):
+        for i in num_locs:
             for j in num_locs:
                 if graph[i, j] > 0 and i!=j: # and (i not in nt.node_ids or j not in nt.node_ids)
                     i_color = 'green' if i in traced else color_map[state[i]]
