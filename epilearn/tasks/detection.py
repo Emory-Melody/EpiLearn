@@ -4,6 +4,12 @@ from ..utils import utils, metrics
 from .base import BaseTask
 
 class Detection(BaseTask):
+    """
+    The Detection class is designed to handle the training and evaluation of models for detection tasks.
+    It extends the BaseTask class, incorporating specific functionalities to work with spatial-temporal
+    data models. This class includes methods for model training, evaluation, and data preprocessing to
+    facilitate experiments with different types of neural network architectures and configurations.
+    """
     def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, device = 'cpu'):
         super().__init__(prototype, model, dataset, lookback, horizon, device)
 
@@ -22,6 +28,9 @@ class Detection(BaseTask):
                     verbose=False, 
                     patience=100, 
                     ):
+        '''
+        Trains the detection model using the provided dataset and configuration settings. It handles data splitting, model initialization, and the training process, and also evaluates the model on the test set, reporting the accuracy.
+        '''
         if config is not None:
             permute_dataset = config.permute
             train_rate = config.train_rate
@@ -120,6 +129,9 @@ class Detection(BaseTask):
                     states=None,
                     targets=None,
                     ):
+        '''
+        Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs the prediction accuracy of the model.
+        '''
         if model is None:
             if not hasattr(self, "model"):
                 raise RuntimeError("model not exists, please use load_model() to load model first!")
@@ -134,6 +146,9 @@ class Detection(BaseTask):
     
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
+        '''
+        Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.
+        '''
         if dataset is None:
             try:
                 dataset = self.dataset
