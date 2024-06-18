@@ -4,6 +4,12 @@ from ..utils import utils, metrics
 from .base import BaseTask
 
 class Forecast(BaseTask):
+    """
+    The Forecast class extends the BaseTask class, focusing on the training and evaluation of forecast models for 
+    time-series prediction tasks. It includes functionalities specific to handling time-series data, especially 
+    in settings that involve spatial-temporal dynamics. The class supports model initialization, training, evaluation, 
+    and preprocessing, facilitating the application of various neural network architectures and configurations.
+    """
     def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, device = 'cpu'):
         super().__init__(prototype, model, dataset, lookback, horizon, device)
         self.feat_mean = 0
@@ -25,6 +31,11 @@ class Forecast(BaseTask):
                     verbose=False, 
                     patience=100, 
                     ):
+        """
+        Trains the forecast model using the provided dataset and configuration settings. It handles data splitting, model 
+        initialization, and the training process, and also evaluates the model on the test set, reporting metrics such as 
+        MAE and RMSE.
+        """
         if config is not None:
             permute_dataset = config.permute
             train_rate = config.train_rate
@@ -118,6 +129,10 @@ class Forecast(BaseTask):
                     states=None,
                     targets=None,
                     ):
+        """
+        Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs prediction accuracy 
+        metrics such as MAE and RMSE for the forecasted values.
+        """
         if model is None:
             if not hasattr(self, "model"):
                 raise RuntimeError("model not exists, please use load_model() to load model first!")
@@ -152,6 +167,10 @@ class Forecast(BaseTask):
 
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
+        """
+        Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles 
+        preprocessing to normalize the data and prepare it for the model.
+        """
         if dataset is None:
             try:
                 dataset = self.dataset
