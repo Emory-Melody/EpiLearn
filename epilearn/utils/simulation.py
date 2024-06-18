@@ -36,6 +36,43 @@ def get_graph_from_features(features, adj=None, G=1):
     return graph
 
 class Time_geo(object):
+    """
+    Models spatial-temporal movement patterns of individuals across different regions, simulating movement based on
+    temporal rhythms, personal habits, and regional exploration probabilities. It includes mechanisms to simulate
+    individual trajectories, predict location changes, and calculate movement probabilities based on historical data.
+
+    Parameters
+    ----------
+    region_input : ndarray
+        Input array of region coordinates.
+    pop_input : ndarray
+        Population distribution across regions.
+    p_t_raw : ndarray, optional
+        Raw probability distribution of time slots for movement. Default: Loads from "epilearn/data/rhythm.npy".
+    pop_num : int, optional
+        Number of individuals in the population to simulate. Default: 7.
+    time_slot : int, optional
+        Time resolution in minutes for one slot. Default: 10.
+    rho : float, optional
+        Controls the exploration probability for other regions. Default: 0.6.
+    gamma : float, optional
+        Attenuation parameter for exploration probability. Default: 0.41.
+    alpha : float, optional
+        Controls the exploration depth. Default: 1.86.
+    n_w : float, optional
+        Average number of tours based on home per week. Default: 6.1.
+    beta1 : float, optional
+        Dwell rate. Default: 3.67.
+    beta2 : float, optional
+        Burst rate, affecting movement speed. Default: 10.
+    simu_slot : int, optional
+        Total number of simulation slots. Default: 144.
+
+    Returns
+    -------
+    list of dicts
+        Each dictionary contains the movement trace and other metrics for an individual simulated over the simu_slot duration.
+    """
     def __init__(self, region_input, pop_input, p_t_raw=None, pop_num=7, time_slot=10, rho=0.6, gamma=0.41, alpha=1.86, n_w=6.1, beta1=3.67, beta2=10, simu_slot=144):
         
         super().__init__()
@@ -167,6 +204,18 @@ class Time_geo(object):
         return simu_trace
     
     def trace_simulate(self):
+        """
+        Generates simulated movement traces for each individual in the population. The simulation captures
+        the dynamics of movement based on initial conditions and predefined movement parameters over a set
+        number of time slots.
+
+        Returns
+        -------
+        list of dicts
+            Each dictionary contains detailed information and metrics for an individual's simulated trace, including
+            home location, total number of movements, cumulative distance traveled, and the sequence of visited
+            locations across the simulation period.
+        """
         pop_info = []
         for i in range(self.pop_num):
             pop_info.append({'n_w': self.n_w, 'beta1': self.beta1, 'beta2': self.beta2, 'home': self.home_location[i],
