@@ -61,6 +61,15 @@ class Compose:
         return format_string
 
 class normalize_feat(nn.Module):
+    """
+    A normalization module for feature standardization in PyTorch. This module adjusts features
+    to have zero mean and unit variance along specified dimensions, handling 3D and 4D tensors.
+
+    Parameters
+    ----------
+    dim : int, optional
+        The dimension over which to calculate the mean and standard deviation for normalization. Default: 1.
+    """
     def __init__(self, dim=1):
         super().__init__()
         self.dim = dim
@@ -68,6 +77,22 @@ class normalize_feat(nn.Module):
         self.stds = None
     
     def forward(self, X, device='cpu'):
+        """
+        Forward pass of the normalization module that normalizes a given input tensor X.
+
+        Parameters
+        ----------
+        X : torch.Tensor
+            The input tensor to be normalized. Can be either a 3D or 4D tensor.
+        device : str, optional
+            The device to which the normalized tensor is transferred. Default: 'cpu'.
+
+        Returns
+        -------
+        torch.Tensor
+            The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
+            and transferred to the specified device.
+        """
         if len(X.shape) == 3:
             means = torch.mean(X, axis=(0, 1))
             X = X - means.unsqueeze(0).unsqueeze(0)
@@ -84,14 +109,39 @@ class normalize_feat(nn.Module):
 
         return X.to(device)
 
+
+
 class normalize_adj(nn.Module):
+    """
+    A PyTorch module for normalizing adjacency matrices to facilitate operations in graph neural networks. 
+    The normalization adjusts adjacency matrices to account for node degrees, enhancing the propagation 
+    of features through the network. This class can handle both batched and single adjacency matrices.
+
+    Parameters
+    ----------
+    dim : int, optional
+        The dimension over which to perform normalization (not utilized in current implementation). Default: 0.
+    """
     def __init__(self, dim = 0):
         super().__init__()
         self.dim = dim
     
     def forward(self, Adj, device='cpu'):
         """
-        Returns the degree normalized adjacency matrix.
+        Forward pass of the normalize_adj module that computes a degree-normalized adjacency matrix 
+        from the input adjacency matrix 'Adj'. 
+
+        Parameters
+        ----------
+        Adj : torch.Tensor or np.array
+            The input adjacency matrix, which can be a 2D matrix for a single graph or a 3D tensor for batch processing.
+        device : str, optional
+            The device to which the normalized adjacency matrix is transferred. Default: 'cpu'.
+
+        Returns
+        -------
+        torch.Tensor
+            The degree-normalized adjacency matrix, transferred to the specified device.
         """
         if Adj is None:
             return None
@@ -125,6 +175,20 @@ class normalize_adj(nn.Module):
 
 
 class convert_to_frequency(nn.Module):
+    """
+    A PyTorch module for transforming time-domain data into frequency-domain representations using either
+    FFT (Fast Fourier Transform) or STFT (Short Time Fourier Transform). This module is configurable to handle
+    different lengths of FFT and hop sizes for STFT, making it flexible for various signal processing tasks.
+
+    Parameters
+    ----------
+    ftype : str, optional
+        The type of frequency transformation to perform, either 'fft' for Fast Fourier Transform or 'stft' for
+        Short Time Fourier Transform. Default: "fft".
+    n_fft : int, optional
+        The window size for the FFT or STFT. Default: 8.
+    """
+
     def __init__(self, ftype="fft", n_fft=8):
         super().__init__()
         self.ftype = ftype
@@ -134,13 +198,23 @@ class convert_to_frequency(nn.Module):
 
 
     def forward(self, data, **kwarg):
-        '''frequency_data = torch.zeros_like(data, dtype=torch.complex128)
-        for i in range(data.shape[0]):  
-            for j in range(data.shape[1]):
-                for k in range(data.shape[3]):
-                    frequency_data[i, j, :, k] = torch.fft.fft(data[i, j, :, k])
-                    
-        return frequency_data.real.float()'''
+        """
+        Applies the configured frequency transformation (FFT or STFT) to the input data.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input data tensor, expected to be a time-domain signal. It can be a 3D tensor (batch, channels, time)
+            for 'fft' or a 4D tensor (batch, nodes, time, features) for 'stft'.
+        **kwargs : dict
+            Additional keyword arguments, such as 'device' for specifying the computation device.
+
+        Returns
+        -------
+        torch.Tensor
+            The frequency-domain representation of the input data. The output format depends on the transformation
+            type ('fft' returns real parts of the FFT, 'stft' returns the magnitude of the STFT as a 5D tensor).
+        """
         if self.ftype == "fft":
             return torch.fft.fft(data, dim=2).real.float()
         
@@ -168,13 +242,40 @@ class convert_to_frequency(nn.Module):
     
 
 class add_time_embedding(nn.Module):
+    """
+    A PyTorch module that appends time-based embeddings to each feature vector in the dataset. 
+    It can generate embeddings using sinusoidal functions, optionally using a Fourier transform approach, 
+    enhancing the temporal aspects of data for tasks such as time series forecasting or sequence modeling.
 
+    Parameters
+    ----------
+    embedding_dim : int, optional
+        The dimensionality of the time embeddings. Default: 13.
+    fourier : bool, optional
+        Specifies whether to use a Fourier transform-based approach for time embedding. Default: False.
+    """
     def __init__(self, embedding_dim=13, fourier=False):
         super().__init__()
         self.embedding_dim = embedding_dim
         self.fourier = fourier
 
     def forward(self, data, **kwarg):
+        """
+        Generates and appends time-based embeddings to the input data tensor.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input data tensor, which can vary in dimensions depending on the application (e.g., batch, nodes, time).
+        **kwargs : dict
+            Additional keyword arguments such as 'device' for specifying the computation device.
+
+        Returns
+        -------
+        torch.Tensor
+            The input data tensor augmented with time-based embeddings. The resulting tensor includes an additional
+            dimension for the embeddings, concatenated to the last dimension of the input data tensor.
+        """
         num_graphs = data.shape[0]
         num_nodes = data.shape[1]
         timesteps = data.shape[2]
@@ -200,11 +301,40 @@ class add_time_embedding(nn.Module):
     
     
 class learnable_time_embedding(nn.Module):
+    """
+    A PyTorch module that appends learnable time embeddings to the input data, facilitating the capture
+    of temporal dependencies in models that process sequences or time-series data. The embedding is learned 
+    during the training process, allowing it to adapt to specific temporal patterns observed in the dataset.
+
+    Parameters
+    ----------
+    timesteps : int
+        The total number of timesteps in the data sequence, which defines the number of unique time indices.
+    embedding_dim : int
+        The dimensionality of each time embedding vector.
+    """
     def __init__(self, timesteps=13, embedding_dim=13):
         super(learnable_time_embedding, self).__init__()
         self.add_embedding = nn.Embedding(timesteps, embedding_dim)
 
     def forward(self, data, **kwarg):
+        """
+        Appends learnable time-based embeddings to the input data tensor. The embeddings are added to each timestep, 
+        augmenting the feature dimensions of the data.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input data tensor, typically including dimensions for batch, nodes, and time.
+        **kwargs : dict
+            Additional keyword arguments such as 'device' for specifying the computation device.
+
+        Returns
+        -------
+        torch.Tensor
+            The input data tensor augmented with time-based embeddings, expanding the last dimension to include
+            the embeddings.
+        """
         
         num_graphs = data.shape[0]
         num_nodes = data.shape[1]
@@ -221,6 +351,23 @@ class learnable_time_embedding(nn.Module):
 
 
 class seasonality_and_trend_decompose(nn.Module):
+    """
+    A PyTorch module designed to decompose time-series data into seasonality and trend components.
+    It supports both dynamic and static decomposition methods. Dynamic decomposition leverages a Fourier
+    transform approach for seasonality and convolutional filters for trend extraction. Static decomposition
+    utilizes a moving average approach.
+
+    Parameters
+    ----------
+    decompose_type : str, optional
+        The type of decomposition to perform. "dynamic" for Fourier and convolutional methods, "static" for
+        moving average based decomposition. Default: "dynamic".
+    moving_avg : int, optional
+        The window size for the moving average in static decomposition. Default: 25.
+    kernel_size : list of int, optional
+        List of kernel sizes for convolutional filters in dynamic trend decomposition. Default: [4, 8, 12].
+
+    """
     def __init__(self, decompose_type = "dynamic", moving_avg=25, kernel_size= [4, 8, 12]):
         super().__init__()
         self.decompose_type = decompose_type
@@ -231,6 +378,22 @@ class seasonality_and_trend_decompose(nn.Module):
             self.decompsition = series_decomp(moving_avg)
 
     def forward(self, data, **kwarg):
+        """
+        Decomposes the input data tensor into seasonality and trend components. The method of decomposition
+        (dynamic or static) impacts the models and techniques used.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input data tensor, typically including dimensions for batch, nodes, and time.
+        **kwargs : dict
+            Additional keyword arguments such as 'device' for specifying the computation device.
+
+        Returns
+        -------
+        list of torch.Tensor
+            A list containing the seasonality and trend components of the input data, each as a separate tensor.
+        """
         num_graphs = data.shape[0]
         num_nodes = data.shape[1]
         timesteps = data.shape[2]
@@ -245,11 +408,37 @@ class seasonality_and_trend_decompose(nn.Module):
 
 
 class calculate_dtw_matrix(nn.Module):
+    """
+    A PyTorch module designed to compute the Dynamic Time Warping (DTW) distance matrix between all pairs
+    of time-series in a dataset. DTW is a method that calculates an optimal match between two given sequences
+    with certain restrictions. The matrix is computed once and saved for future use to avoid redundant computations.
 
+    Parameters
+    ----------
+    dataset_name : str
+        The name of the dataset, used to save and retrieve the computed DTW matrix.
+    """
     def __init__(self, dataset_name):
         super().__init__()
         self.dataset = dataset_name
     def forward(self, data, **kwarg):
+        """
+        Computes the Dynamic Time Warping (DTW) matrix for the input data. If a precomputed matrix exists
+        in the cache, it loads that matrix; otherwise, it computes a new matrix and saves it.
+
+        Parameters
+        ----------
+        data : np.ndarray
+            The input data array where each row represents a time step and each column a time-series node.
+        **kwargs : dict
+            Additional keyword arguments not utilized in this method.
+
+        Returns
+        -------
+        np.ndarray
+            The computed or loaded DTW distance matrix, where each element (i, j) represents the DTW distance
+            between the i-th and j-th time-series.
+        """
         # data format -> np.narray
         all_time = data.shape[0]
         num_nodes = data.shape[1]
