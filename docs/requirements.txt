@@ -75,7 +75,6 @@ tenacity==8.3.0
 threadpoolctl==3.5.0
 toml==0.10.2
 toolz==0.12.1
-torch==2.3.1
 torch_geometric==2.5.3
 tqdm==4.66.4
 twine==5.1.0
