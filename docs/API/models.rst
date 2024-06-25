@@ -113,20 +113,20 @@ ATMGNN
     :members:
 
 MPNN_LSTM
-----------
+--------------------
 
 .. autoclass:: epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM
     :members:
 
 CNNRNN_Res
-----------
+--------------------
 
 .. autoclass:: epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res
     :members:
 
 
 ColaGNN
-----------
+--------------------
 
 .. autoclass:: epilearn.models.SpatialTemporal.ColaGNN.ColaGNN
     :members:
@@ -154,7 +154,7 @@ DMP
 
 
 EpiColaGNN
-----------
+--------------------
 
 .. autoclass:: epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN
     :members:
@@ -167,7 +167,7 @@ EpiGNN
     :members:
 
 GraphWaveNet
-----------
+--------------------
 
 .. autoclass:: epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet
     :members:
