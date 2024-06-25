@@ -1,11 +1,11 @@
 Dataset
 ===================================
 
-UniversalDataset
-----------
+#UniversalDataset
+#----------
 
-.. autoclass:: epilearn.data.dataset.UniversalDataset
-    :members:
+#.. autoclass:: epilearn.data.dataset.UniversalDataset
+#    :members:
 
 
 
