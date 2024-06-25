@@ -5,8 +5,7 @@
 
 
 ## <p align="center">Epidemic Modeling with Pytorch</p>
-
-#[![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
+<!-- [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/) -->
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://vermillion-malasada-a2864e.netlify.app/html/index.html)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/epilearn)](https://pepy.tech/project/epilearn)
