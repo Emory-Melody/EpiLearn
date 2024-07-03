@@ -7,6 +7,27 @@ import time
 from .utils import edge_to_adj
 
 def get_random_graph(num_nodes=None, connect_prob=None, block_sizes=None, num_edges=None, graph_type='erdos_renyi'):
+    """
+    Generates a random static graph using one of the supported graph types: Erdos-Renyi, Stochastic Blockmodel, or Barabasi-Albert.
+
+    Parameters
+    ----------
+    num_nodes : int
+        Number of nodes in the graph.
+    connect_prob : float, optional
+        Probability of edge creation (for Erdos-Renyi and Stochastic Blockmodel graphs).
+    block_sizes : list of int, optional
+        Sizes of blocks (for Stochastic Blockmodel graph).
+    num_edges : int, optional
+        Number of edges (for Barabasi-Albert graph).
+    graph_type : str
+        Type of graph to generate. Options are `'erdos_renyi'`, `'stochastic_blockmodel'`, `'barabasi_albert'`. Default is `'erdos_renyi'`.
+
+    Returns
+    -------
+    torch.Tensor
+        Adjacency matrix of the generated graph.
+    """
     import torch_geometric
     if graph_type == 'erdos_renyi':
         edges = torch_geometric.utils.erdos_renyi_graph(num_nodes, connect_prob)
