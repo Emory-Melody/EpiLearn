@@ -35,6 +35,7 @@ Static features are fixed attributes assigned to nodes or edges in a graph. Thes
 Given static features, a graph can be obtained. The adj parameter is used to indicate the distance between nodes.
 
 .. code-block:: python
+
     import epilearn as epi
     import torch
 
@@ -49,6 +50,7 @@ Gravity Model
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis.
 
 .. code-block:: python
+
     ...
 
 
@@ -59,6 +61,7 @@ Mobility Simulation
 Mobility simulation models the movement of nodes over time, which can represent entities such as people or vehicles in a network.
 
 .. code-block:: python
+
     TimeGeo?
 
 
@@ -70,6 +73,7 @@ SIR
 The SIR model is a simple mathematical model used to simulate the spread of a disease through a population.
 
 .. code-block:: python
+
     import epilearn as epi
 
     model = epi.models.Temporal.SIR.SIR(horizon=190, infection_rate=0.05, recovery_rate=0.05)
@@ -83,6 +87,7 @@ NetworkSIR
 The NetworkSIR model extends the SIR model by simulating the disease spread over a network, taking into account the network structure.
 
 .. code-block:: python
+    
     import epilearn as epi
 
     model = epi.models.SpatialTemporal.NetworkSIR.NetSIR(num_nodes=initial_graph.shape[0], horizon=120, infection_rate=0.05, recovery_rate=0.05)
