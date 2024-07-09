@@ -6,14 +6,14 @@
 
 ## <p align="center">Epidemic Modeling with Pytorch</p>
 <!-- [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/) -->
-[![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://vermillion-malasada-a2864e.netlify.app/html/index.html)
+[![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/epilearn)](https://pepy.tech/project/epilearn)
 [![Web Interface](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://epilearn.streamlit.app/)
 
 <!-- **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
  -->
-**[Documentation](https://vermillion-malasada-a2864e.netlify.app/html/index.html) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
+**[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
 
 
 **EpiLearn** is a Pytorch-based machine learning tool-kit for epidemic data modeling and analysis. We provide numerour features including:
