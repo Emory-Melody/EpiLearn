@@ -134,20 +134,19 @@
 </section>
 <section id="model-customization">
 <h2>Model Customization<a class="headerlink" href="#model-customization" title="Link to this heading"></a></h2>
-<ol class="arabic simple">
-<li><p>Model categories 2. Internal Models 3. customized Models</p></li>
-</ol>
 <p>Epilearn supports three different models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])</p>
 <p>For models implemented, please refer to <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/models">Models</a>.</p>
 <p>To build a customized model, you can simply create a model class inherited from BaseModel with a forward function, as shown below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomizedModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="k">class</span> <span class="nc">CustomizedModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                 <span class="n">num_nodes</span><span class="p">,</span>
                 <span class="n">num_features</span><span class="p">,</span>
                 <span class="n">num_timesteps_input</span><span class="p">,</span>
                 <span class="n">num_timesteps_output</span><span class="p">,</span>
                 <span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">STGCN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CustomizedModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">dynamic_graph</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>

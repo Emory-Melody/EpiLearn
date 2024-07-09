@@ -39,7 +39,6 @@ To customize your own transformation, simply add new a new class following the s
 
 Model Customization
 ----------------------
-1. Model categories 2. Internal Models 3. customized Models
 
 Epilearn supports three different models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])
 
@@ -49,6 +48,8 @@ To build a customized model, you can simply create a model class inherited from 
 
 .. code-block:: python
 
+    from .base import BaseModel
+    
     class CustomizedModel(BaseModel):
         def __init__(self, 
                     num_nodes, 
@@ -56,7 +57,7 @@ To build a customized model, you can simply create a model class inherited from 
                     num_timesteps_input, 
                     num_timesteps_output, 
                     device = 'cpu'):
-            super(STGCN, self).__init__(device=device)
+            super(CustomizedModel, self).__init__(device=device)
             pass
 
         def forward(self, feature, graph, states, dynamic_graph, **kargs):
