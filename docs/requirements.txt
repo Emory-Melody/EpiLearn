@@ -1,4 +1,4 @@
-sphinx
+sphinx<7
 sphinx-autobuild
 sphinx-rtd-theme
 aiohttp==3.9.5
