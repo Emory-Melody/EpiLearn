@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'EpiLearn'
-copyright = '2024, exe'
-author = 'exe'
+copyright = '2024, Melody Group'
+author = 'Melody Group'
 
 # The full version, including alpha/beta/rc tags
 release = '1'
@@ -35,6 +35,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 
-html_theme = 'alabaster'
-# html_theme = "sphinx_rtd_theme"
+# html_theme = 'alabaster'
+html_theme = "sphinx_rtd_theme"
 # html_static_path = ['_static']

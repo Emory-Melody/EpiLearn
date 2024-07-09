@@ -53,14 +53,22 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="API/dataset.html">Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/models.html#spatial-models">Spatial Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/models.html#temporal-models">Temporal Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/models.html#spatial-temporal-models">Spatial-Temporal Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/tasks.html">Tasks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/utils.html#utility-functions">Utility_Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/utils.html#metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/utils.html#simulation">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/utils.html#transformation">Transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/utils.html#id2">Utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/visualization.html">Visualization</a></li>
 </ul>
 
@@ -90,7 +98,69 @@
              
   <section id="quickstart-for-epilearn">
 <h1>Quickstart for EpiLearn<a class="headerlink" href="#quickstart-for-epilearn" title="Link to this heading"></a></h1>
-<p>…</p>
+<p>For forecast task, …</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.models.SpatialTemporal.STGCN</span> <span class="kn">import</span> <span class="n">STGCN</span>
+<span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+<span class="kn">from</span> <span class="nn">epilearn.utils</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">epilearn.tasks.forecast</span> <span class="kn">import</span> <span class="n">Forecast</span>
+<span class="c1"># initialize settings</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">12</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># predicts size</span>
+<span class="c1"># load toy dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">()</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">load_toy_dataset</span><span class="p">()</span>
+<span class="c1"># Adding Transformations</span>
+<span class="n">transformation</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">({</span>
+                <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_feat</span><span class="p">()],</span>
+                <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_adj</span><span class="p">()]})</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transformation</span>
+<span class="c1"># Initialize Task</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">Forecast</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">STGCN</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="c1"># Training</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span>
+                        <span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                        <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                        <span class="n">permute_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Evaluation</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">evaluate_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For detection task, …</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.models.Spatial.GCN</span> <span class="kn">import</span> <span class="n">GCN</span>
+<span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+<span class="kn">from</span> <span class="nn">epilearn.utils</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">epilearn.tasks.detection</span> <span class="kn">import</span> <span class="n">Detection</span>
+<span class="c1"># initialize settings</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># predicts size; also seen as number of classes</span>
+<span class="c1"># load toy dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">()</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">load_toy_dataset</span><span class="p">()</span>
+<span class="c1"># Adding Transformations</span>
+<span class="n">transformation</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">({</span>
+                <span class="s2">&quot; features&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot; graph&quot;</span><span class="p">:</span> <span class="p">[]})</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transformation</span>
+<span class="c1"># Initialize Task</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">GCN</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="c1"># Training</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;ce&#39;</span><span class="p">,</span>
+                        <span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                        <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1"># Evaluation</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">evaluate_model</span><span class="p">()</span>
+</pre></div>
+</div>
 </section>
 
 
@@ -104,7 +174,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

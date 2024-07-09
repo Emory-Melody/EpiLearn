@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Enpowering Epidemic Modeling with EpiLearn!
-===================================
+============================================
 
 Epilearn is a python library built for epidemic modeling, providing abundant tools to quickly construct and test epidemic models as well as analyze epidemic data. 
 

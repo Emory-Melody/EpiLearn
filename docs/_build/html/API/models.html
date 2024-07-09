@@ -53,14 +53,222 @@
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dataset.html">Dataset</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#spatial-models">Spatial Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#gat">GAT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Spatial.GAT.GAT"><code class="docutils literal notranslate"><span class="pre">GAT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Spatial.GAT.GAT.forward"><code class="docutils literal notranslate"><span class="pre">GAT.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gcn">GCN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Spatial.GCN.GCN"><code class="docutils literal notranslate"><span class="pre">GCN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Spatial.GCN.GCN.forward"><code class="docutils literal notranslate"><span class="pre">GCN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gin">GIN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Spatial.GIN.GIN"><code class="docutils literal notranslate"><span class="pre">GIN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Spatial.GIN.GIN.forward"><code class="docutils literal notranslate"><span class="pre">GIN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sage">SAGE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Spatial.SAGE.SAGE"><code class="docutils literal notranslate"><span class="pre">SAGE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Spatial.SAGE.SAGE.forward"><code class="docutils literal notranslate"><span class="pre">SAGE.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#temporal-models">Temporal Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arima">ARIMA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.ARIMA.VARMAXModel"><code class="docutils literal notranslate"><span class="pre">VARMAXModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.ARIMA.VARMAXModel.fit"><code class="docutils literal notranslate"><span class="pre">VARMAXModel.fit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dlinear">DLINEAR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.Dlinear.DlinearModel"><code class="docutils literal notranslate"><span class="pre">DlinearModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.Dlinear.DlinearModel.decomposition"><code class="docutils literal notranslate"><span class="pre">DlinearModel.decomposition</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.Dlinear.DlinearModel.Linear_Transform"><code class="docutils literal notranslate"><span class="pre">DlinearModel.Linear_Transform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.Dlinear.DlinearModel.forward"><code class="docutils literal notranslate"><span class="pre">DlinearModel.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gru">GRU</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.GRU.GRUModel"><code class="docutils literal notranslate"><span class="pre">GRUModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.GRU.GRUModel.forward"><code class="docutils literal notranslate"><span class="pre">GRUModel.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lstm">LSTM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.LSTM.LSTMModel"><code class="docutils literal notranslate"><span class="pre">LSTMModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.LSTM.LSTMModel.forward"><code class="docutils literal notranslate"><span class="pre">LSTMModel.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sir">SIR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIR"><code class="docutils literal notranslate"><span class="pre">SIR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIR.beta"><code class="docutils literal notranslate"><span class="pre">SIR.beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIR.gamma"><code class="docutils literal notranslate"><span class="pre">SIR.gamma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIR.forward"><code class="docutils literal notranslate"><span class="pre">SIR.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sis">SIS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIS"><code class="docutils literal notranslate"><span class="pre">SIS</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIS.beta"><code class="docutils literal notranslate"><span class="pre">SIS.beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIS.gamma"><code class="docutils literal notranslate"><span class="pre">SIS.gamma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SIS.forward"><code class="docutils literal notranslate"><span class="pre">SIS.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#seir">SEIR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR"><code class="docutils literal notranslate"><span class="pre">SEIR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR.beta"><code class="docutils literal notranslate"><span class="pre">SEIR.beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR.gamma"><code class="docutils literal notranslate"><span class="pre">SEIR.gamma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR.mu"><code class="docutils literal notranslate"><span class="pre">SEIR.mu</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR.a"><code class="docutils literal notranslate"><span class="pre">SEIR.a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.SIR.SEIR.forward"><code class="docutils literal notranslate"><span class="pre">SEIR.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#xgboost">XGBOOST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.Temporal.XGB.XGBModel"><code class="docutils literal notranslate"><span class="pre">XGBModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.Temporal.XGB.XGBModel.fit"><code class="docutils literal notranslate"><span class="pre">XGBModel.fit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#spatial-temporal-models">Spatial-Temporal Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#atmgnn">ATMGNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ATMGNN.ATMGNN"><code class="docutils literal notranslate"><span class="pre">ATMGNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ATMGNN.ATMGNN.forward"><code class="docutils literal notranslate"><span class="pre">ATMGNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mpnn-lstm">MPNN_LSTM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM"><code class="docutils literal notranslate"><span class="pre">MPNN_LSTM</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM.forward"><code class="docutils literal notranslate"><span class="pre">MPNN_LSTM.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cnnrnn-res">CNNRNN_Res</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res"><code class="docutils literal notranslate"><span class="pre">CNNRNN_Res</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res.forward"><code class="docutils literal notranslate"><span class="pre">CNNRNN_Res.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#colagnn">ColaGNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ColaGNN.ColaGNN"><code class="docutils literal notranslate"><span class="pre">ColaGNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.ColaGNN.ColaGNN.forward"><code class="docutils literal notranslate"><span class="pre">ColaGNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dastgn">DASTGN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DASTGN.DASTGN"><code class="docutils literal notranslate"><span class="pre">DASTGN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DASTGN.DASTGN.forward"><code class="docutils literal notranslate"><span class="pre">DASTGN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dcrnn">DCRNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN"><code class="docutils literal notranslate"><span class="pre">DCRNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.decoder"><code class="docutils literal notranslate"><span class="pre">DCRNN.decoder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.encoder"><code class="docutils literal notranslate"><span class="pre">DCRNN.encoder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.forward"><code class="docutils literal notranslate"><span class="pre">DCRNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dmp">DMP</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DMP.DMP"><code class="docutils literal notranslate"><span class="pre">DMP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.DMP.DMP.forward"><code class="docutils literal notranslate"><span class="pre">DMP.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#epicolagnn">EpiColaGNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN"><code class="docutils literal notranslate"><span class="pre">EpiColaGNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN.forward"><code class="docutils literal notranslate"><span class="pre">EpiColaGNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#epignn">EpiGNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.EpiGNN.EpiGNN"><code class="docutils literal notranslate"><span class="pre">EpiGNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.EpiGNN.EpiGNN.forward"><code class="docutils literal notranslate"><span class="pre">EpiGNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#graphwavenet">GraphWaveNet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet"><code class="docutils literal notranslate"><span class="pre">GraphWaveNet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet.forward"><code class="docutils literal notranslate"><span class="pre">GraphWaveNet.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mepognn">MepoGNN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.MepoGNN.MepoGNN"><code class="docutils literal notranslate"><span class="pre">MepoGNN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.MepoGNN.MepoGNN.forward"><code class="docutils literal notranslate"><span class="pre">MepoGNN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#netsir">NetSIR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.NetworkSIR.NetSIR"><code class="docutils literal notranslate"><span class="pre">NetSIR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.NetworkSIR.NetSIR.forward"><code class="docutils literal notranslate"><span class="pre">NetSIR.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stan">STAN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.STAN.STAN"><code class="docutils literal notranslate"><span class="pre">STAN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.STAN.STAN.forward"><code class="docutils literal notranslate"><span class="pre">STAN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stgcn">STGCN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.models.SpatialTemporal.STGCN.STGCN"><code class="docutils literal notranslate"><span class="pre">STGCN</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.models.SpatialTemporal.STGCN.STGCN.forward"><code class="docutils literal notranslate"><span class="pre">STGCN.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#utility-functions">Utility_Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#simulation">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#transformation">Transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#id2">Utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
 </ul>
 
@@ -90,9 +298,1468 @@
              
   <section id="models">
 <h1>Models<a class="headerlink" href="#models" title="Link to this heading"></a></h1>
-<p>Spatial Models</p>
-<p>Temporal Models</p>
-<p>Spatial-Temporal Models</p>
+</section>
+<section id="spatial-models">
+<h1>Spatial Models<a class="headerlink" href="#spatial-models" title="Link to this heading"></a></h1>
+<section id="gat">
+<h2>GAT<a class="headerlink" href="#gat" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GAT.GAT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Spatial.GAT.</span></span><span class="sig-name descname"><span class="pre">GAT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nheads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[2,</span> <span class="pre">2]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GAT.GAT" title="Link to this definition"></a></dt>
+<dd><p>Graph Attention Network (GAT)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of input features per node.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – Dimension of hidden layers.</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em>) – Number of output features per node.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the GAT. Default: 2.</p></li>
+<li><p><strong>nheads</strong> (<em>list</em><em> of </em><em>int</em>) – Number of attention heads in each GAT layer. Length must match <cite>nlayers</cite>.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>with_bn</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether batch normalization should be included. Default: False.</p></li>
+<li><p><strong>with_bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to include bias parameters in the attention calculations. Default: True.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device (cpu or gpu) on which the model will be run.</p></li>
+<li><p><strong>concat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to concatenate the outputs of the attention heads instead of averaging them. Default: False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted values for each node over future timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GAT.GAT.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GAT.GAT.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (num_nodes, num_features).</p></li>
+<li><p><strong>edge_index</strong> (<em>torch.Tensor</em>) – Tensor defining the edges of the graph with shape (2, num_edges), where each column represents an edge as a pair of node indices.</p></li>
+<li><p><strong>edge_weight</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Edge weights with shape (num_edges,). Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor of shape (num_nodes, num_classes), representing the predicted values for each node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gcn">
+<h2>GCN<a class="headerlink" href="#gcn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GCN.GCN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Spatial.GCN.</span></span><span class="sig-name descname"><span class="pre">GCN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GCN.GCN" title="Link to this definition"></a></dt>
+<dd><p>Graph Convolutional Network (GCN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of input features per node.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of hidden layers. Default: 16.</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output classes for each node. Default: 2.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the GCN. Default: 2.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>with_bn</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether batch normalization should be included. Default: False.</p></li>
+<li><p><strong>with_bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to include bias parameters in the GCN layers. Default: True.</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – The device (cpu or gpu) on which the model will be run.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, num_classes), representing the predicted outcomes for each node after passing through the GCN.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GCN.GCN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GCN.GCN.forward" title="Link to this definition"></a></dt>
+<dd><p>Parameters:
+x : torch.Tensor</p>
+<blockquote>
+<div><p>The input features tensor with shape (batch_size, num_nodes, num_features).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>edge_index<span class="classifier">torch.Tensor</span></dt><dd><p>The edge indices in COO format with shape (2, num_edges).</p>
+</dd>
+</dl>
+<p>Returns:
+torch.Tensor</p>
+<blockquote>
+<div><p>The output predictions for each node with shape (batch_size * num_nodes, num_classes).</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gin">
+<h2>GIN<a class="headerlink" href="#gin" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GIN.GIN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Spatial.GIN.</span></span><span class="sig-name descname"><span class="pre">GIN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GIN.GIN" title="Link to this definition"></a></dt>
+<dd><p>Graph Isomorphism Network (GIN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of input features per node.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – Dimension of hidden layers.</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em>) – Number of output features per node.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the GIN. Default: 2.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>with_bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to include bias parameters in the MLP layers. Default: True.</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – The device (cpu or gpu) on which the model will be run. Must be specified.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GIN.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.GIN.GIN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.GIN.GIN.forward" title="Link to this definition"></a></dt>
+<dd><p>Parameters:
+x : torch.Tensor</p>
+<blockquote>
+<div><p>The input features tensor with shape (batch_size, num_nodes, num_features).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>edge_index<span class="classifier">torch.Tensor</span></dt><dd><p>The edge indices in COO format with shape (2, num_edges).</p>
+</dd>
+</dl>
+<p>Returns:
+torch.Tensor</p>
+<blockquote>
+<div><p>The output predictions for each node with shape (batch_size * num_nodes, num_classes).</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="sage">
+<h2>SAGE<a class="headerlink" href="#sage" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.SAGE.SAGE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Spatial.SAGE.</span></span><span class="sig-name descname"><span class="pre">SAGE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.SAGE.SAGE" title="Link to this definition"></a></dt>
+<dd><p>Graph Sample and Aggregate (SAGE)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of input features per node.</p></li>
+<li><p><strong>hidden_dim</strong> (<em>int</em>) – Dimension of hidden layers.</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em>) – Number of output features per node.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the GraphSAGE model. Default: 2.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>with_bn</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether batch normalization should be included. Default: False.</p></li>
+<li><p><strong>with_bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to include bias parameters in the GraphSAGE layers. Default: True.</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – The device (cpu or gpu) on which the model will be run. Must be specified.</p></li>
+<li><p><strong>aggr</strong> (<em>str</em><em> or </em><em>callable</em><em>, </em><em>optional</em>) – The aggregation function to use (‘mean’, ‘sum’, ‘max’, etc.), or a callable that returns a custom aggregation function. Default: ‘mean’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted outcomes for each node after passing through the GraphSAGE model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Spatial.SAGE.SAGE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Spatial.SAGE.SAGE.forward" title="Link to this definition"></a></dt>
+<dd><p>Parameters:
+x : torch.Tensor</p>
+<blockquote>
+<div><p>Node feature matrix with shape (batch_size, num_nodes, num_features).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>edge_index<span class="classifier">torch.Tensor</span></dt><dd><p>Edge index in COO format with shape (2, num_edges).</p>
+</dd>
+</dl>
+<p>Returns:
+torch.Tensor</p>
+<blockquote>
+<div><p>Output from the network with shape (batch_size * num_nodes, num_classes).</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="temporal-models">
+<h1>Temporal Models<a class="headerlink" href="#temporal-models" title="Link to this heading"></a></h1>
+<section id="arima">
+<h2>ARIMA<a class="headerlink" href="#arima" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.ARIMA.VARMAXModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.ARIMA.</span></span><span class="sig-name descname"><span class="pre">VARMAXModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.ARIMA.VARMAXModel" title="Link to this definition"></a></dt>
+<dd><p>Vector Autoregression Moving-Average with eXogenous variables (VARMAX) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in each timestep of the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+Each element corresponds to a predicted value for a future timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.ARIMA.VARMAXModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.ARIMA.VARMAXModel.fit" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_input</strong> (<em>numpy.ndarray</em>) – The input training data array, expected to be in the shape
+(batch_size, num_timesteps_input, num_features), where:
+- <cite>batch_size</cite> is the number of training samples,
+- <cite>num_timesteps_input</cite> is the number of timesteps used as input,
+- <cite>num_features</cite> is the number of features per timestep.</p></li>
+<li><p><strong>train_target</strong> (<em>numpy.ndarray</em>) – The target training data array corresponding to the inputs, shaped
+(batch_size, num_timesteps_output).</p></li>
+<li><p><strong>val_input</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – The input validation data array, following the same format as <cite>train_input</cite>.</p></li>
+<li><p><strong>val_target</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – The target validation data array, following the same format as <cite>train_target</cite>.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of epochs to train the model for. Default is 1000.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of batches to use when training the model. Default is 10.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the model will print out progress during training. Default is False.</p></li>
+<li><p><strong>patience</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of epochs with no improvement after which training will be stopped. Default is 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of forecasted values for each batch in the training data, each forecast corresponding
+to the future timesteps as defined by <cite>num_timesteps_output</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method internally converts the input PyTorch Tensors to numpy arrays if not already provided in that format,
+fits a VARMAX model for each subset of data, and performs forecasting. It is designed to handle smaller subsets
+of the data (defined by <cite>subset_samples</cite>) to demonstrate the model’s fitting capability.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dlinear">
+<h2>DLINEAR<a class="headerlink" href="#dlinear" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.Dlinear.DlinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.Dlinear.</span></span><span class="sig-name descname"><span class="pre">DlinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel" title="Link to this definition"></a></dt>
+<dd><p>Dynamic Linear Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in each timestep of the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.Dlinear.DlinearModel.decomposition">
+<span class="sig-name descname"><span class="pre">decomposition</span></span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel.decomposition" title="Link to this definition"></a></dt>
+<dd><p>Method to decompose the time series data into seasonal and trend components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.Dlinear.DlinearModel.Linear_Transform">
+<span class="sig-name descname"><span class="pre">Linear_Transform</span></span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel.Linear_Transform" title="Link to this definition"></a></dt>
+<dd><p>Linear transformation layer to project the decomposed input data to the output space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+Each element corresponds to a predicted value for a specific future timestep. The output is averaged across the feature dimension to reduce it to a single predictive value per timestep.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.Dlinear.DlinearModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor representing time series data for each batch. Expected shape is
+(batch_size, num_timesteps_input, num_features), where <cite>batch_size</cite> is the number of samples in the batch,
+<cite>num_timesteps_input</cite> is the number of input time steps, and <cite>num_features</cite> represents features at each time step.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output of the model, a tensor of shape (batch_size, num_timesteps_output) that represents the predicted values
+for the future time steps, reduced to a single predictive value per time step by averaging across the feature dimension.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gru">
+<h2>GRU<a class="headerlink" href="#gru" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.GRU.GRUModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.GRU.</span></span><span class="sig-name descname"><span class="pre">GRUModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.GRU.GRUModel" title="Link to this definition"></a></dt>
+<dd><p>Single-layer Gated Recurrent Unit (GRU) Network</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of input timesteps.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the GRU layer. Default: 256.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for the GRU layer. Default: 0.5.</p></li>
+<li><p><strong>use_norm</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use Layer Normalization after the GRU layer. Default: False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+Each element corresponds to a predicted value for a future timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.GRU.GRUModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.GRU.GRUModel.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor for the model. Expected shape is
+(batch_size, num_timesteps_input, num_features), where
+<cite>batch_size</cite> is the number of samples in the batch,
+<cite>num_timesteps_input</cite> is the number of input timesteps,
+and <cite>num_features</cite> is the number of features for each timestep.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output of the model, a tensor of shape
+(batch_size, num_timesteps_output), representing the predicted values
+for the future timesteps. Each element corresponds to a predicted value
+for a future timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="lstm">
+<h2>LSTM<a class="headerlink" href="#lstm" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.LSTM.LSTMModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.LSTM.</span></span><span class="sig-name descname"><span class="pre">LSTMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.LSTM.LSTMModel" title="Link to this definition"></a></dt>
+<dd><p>Long Short-Term Memory (LSTM) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in each timestep of the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the LSTM layers. Default: 256.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>use_norm</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply layer normalization after the LSTM layers. Default: False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+This tensor is the output from the last timestep processed through a linear layer to predict the desired number of future timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.LSTM.LSTMModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.LSTM.LSTMModel.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor for the model. Expected shape is
+(batch_size, num_timesteps_input, num_features), where
+<cite>batch_size</cite> is the number of samples in the batch,
+<cite>num_timesteps_input</cite> is the number of input timesteps,
+and <cite>num_features</cite> is the number of features for each timestep.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output of the model, a tensor of shape
+(batch_size, num_timesteps_output), representing the predicted values
+for the future timesteps. Each element corresponds to a predicted value
+for a future timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="sir">
+<h2>SIR<a class="headerlink" href="#sir" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.SIR.</span></span><span class="sig-name descname"><span class="pre">SIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infection_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.038</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIR" title="Link to this definition"></a></dt>
+<dd><p>Susceptible-Infected-Recovered (SIR) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>horizon</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.</p></li>
+<li><p><strong>infection_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial infection rate parameter, representing the rate at which susceptible individuals become infected. Default: 0.01.</p></li>
+<li><p><strong>recovery_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial recovery rate parameter, representing the rate at which infected individuals recover. Default: 0.038.</p></li>
+<li><p><strong>population</strong> (<em>int</em><em>, </em><em>optional</em>) – Total population considered in the model. If None, the sum of the initial conditions (susceptible, infected, recovered) is used as the total population.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIR.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIR.beta" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the infection rate dynamically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIR.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIR.gamma" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the recovery rate dynamically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tensor of shape (horizon, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep.
+Each row corresponds to a timestep, with the columns representing susceptible, infected, and recovered counts respectively.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIR.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIR.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The initial condition tensor for the model. Expected shape is (3,), where the elements represent the
+number of susceptible (S), infected (I), and recovered (R) individuals respectively.</p></li>
+<li><p><strong>steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If <cite>horizon</cite> is specified during initialization and not None,
+it overrides this parameter. Default is 1 if <cite>horizon</cite> is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (steps, 3), representing the predicted number of susceptible, infected, and recovered
+individuals at each timestep. Each row corresponds to a timestep, with the columns representing
+susceptible, infected, and recovered counts respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="sis">
+<h2>SIS<a class="headerlink" href="#sis" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.SIR.</span></span><span class="sig-name descname"><span class="pre">SIS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infection_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIS" title="Link to this definition"></a></dt>
+<dd><p>Susceptible-Infected-Susceptible (SIS) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>horizon</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.</p></li>
+<li><p><strong>infection_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Infection rate parameter, representing the rate at which susceptible individuals become infected. If None, must be initialized separately.</p></li>
+<li><p><strong>recovery_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Recovery rate parameter, representing the rate at which infected individuals recover and return to the susceptible state. If None, must be initialized separately.</p></li>
+<li><p><strong>population</strong> (<em>int</em><em>, </em><em>optional</em>) – Total population considered in the model. If None, the sum of the initial conditions (susceptible and infected) is used as the total population.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIS.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIS.beta" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the infection rate dynamically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIS.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIS.gamma" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the recovery rate dynamically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tensor of shape (horizon, 2), representing the predicted number of susceptible and infected individuals at each timestep.
+Each row corresponds to a timestep, with the columns representing the susceptible and infected counts respectively.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SIS.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SIS.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The initial condition tensor for the model, representing the initial numbers of susceptible (S) and infected (I) individuals.
+Expected shape is (2,), where x[0] is the number of susceptible and x[1] is the number of infected individuals at the start.</p></li>
+<li><p><strong>steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If <cite>horizon</cite> is specified during initialization and not None, it overrides this parameter.
+Default is 1 if <cite>horizon</cite> is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (steps, 2), representing the predicted number of susceptible and infected individuals at each timestep.
+Each row corresponds to a timestep, with the first column representing susceptible and the second column representing infected counts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="seir">
+<h2>SEIR<a class="headerlink" href="#seir" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.SIR.</span></span><span class="sig-name descname"><span class="pre">SEIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infection_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cure_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR" title="Link to this definition"></a></dt>
+<dd><p>Susceptible-Exposed-Infected-Recovered (SEIR) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>horizon</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.</p></li>
+<li><p><strong>infection_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Infection rate parameter, representing the rate at which susceptible individuals become exposed. If None, must be initialized separately.</p></li>
+<li><p><strong>recovery_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Recovery rate parameter, representing the rate at which infected individuals recover. If None, must be initialized separately.</p></li>
+<li><p><strong>cure_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Natural immunity rate parameter, representing the rate at which individuals (across S, E, I, R compartments) return to susceptible due to loss of immunity. If None, must be initialized separately.</p></li>
+<li><p><strong>latency</strong> (<em>float</em><em>, </em><em>optional</em>) – Latency rate parameter, representing the rate at which exposed individuals become infected. If None, must be initialized separately.</p></li>
+<li><p><strong>population</strong> (<em>int</em><em>, </em><em>optional</em>) – Total population considered in the model. If None, the sum of the initial conditions (susceptible, exposed, infected, recovered) is used as the total population.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR.beta" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to dynamically model the infection rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR.gamma" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to dynamically model the recovery rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR.mu" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the natural immunity rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR.a">
+<span class="sig-name descname"><span class="pre">a</span></span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR.a" title="Link to this definition"></a></dt>
+<dd><p>Linear layer with no bias to model the latency rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tensor of shape (horizon, 4), representing the predicted number of susceptible, exposed, infected, and recovered individuals at each timestep.
+Each row corresponds to a timestep, with the columns representing the counts of susceptible, exposed, infected, and recovered individuals respectively.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.SIR.SEIR.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.SIR.SEIR.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The initial condition tensor for the model, representing the initial numbers of susceptible (S), exposed (E),
+infected (I), and recovered (R) individuals. Expected shape is (4,), where elements correspond to S, E, I, and R counts.</p></li>
+<li><p><strong>steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If <cite>horizon</cite> is specified during initialization and not None,
+it overrides this parameter. Default is 1 if <cite>horizon</cite> is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (steps, 4), representing the predicted number of susceptible, exposed, infected, and recovered
+individuals at each timestep. Each row corresponds to a timestep, with columns representing the counts of
+susceptible, exposed, infected, and recovered individuals respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="xgboost">
+<h2>XGBOOST<a class="headerlink" href="#xgboost" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.XGB.XGBModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.XGB.</span></span><span class="sig-name descname"><span class="pre">XGBModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.XGB.XGBModel" title="Link to this definition"></a></dt>
+<dd><p>Extreme Gradient Boosting (XGBoost) Model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in each timestep of the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>n_estimators</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of gradient boosted trees. Equivalent to the number of boosting rounds. Default: 40.</p></li>
+<li><p><strong>learning_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Step size shrinkage used in update to prevents overfitting. Default: 0.1.</p></li>
+<li><p><strong>max_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit. Default: 5.</p></li>
+<li><p><strong>reg_lambda</strong> (<em>float</em><em>, </em><em>optional</em>) – L2 regularization term on weights. Increasing this value will make model more conservative. Default: 1.0.</p></li>
+<li><p><strong>reg_alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – L1 regularization term on weights. Increasing this value will make model more conservative. Default: 0.1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output) representing the predicted values for the future timesteps.
+Each element corresponds to a predicted value for a future timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.Temporal.XGB.XGBModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.XGB.XGBModel.fit" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_input</strong> (<em>torch.Tensor</em><em> or </em><em>numpy.ndarray</em>) – The input training data, expected to be in the shape
+(batch_size, num_timesteps_input, num_features).</p></li>
+<li><p><strong>train_target</strong> (<em>torch.Tensor</em><em> or </em><em>numpy.ndarray</em>) – The target training data, expected to be in the shape
+(batch_size, num_timesteps_output).</p></li>
+<li><p><strong>val_input</strong> (<em>torch.Tensor</em><em> or </em><em>numpy.ndarray</em><em>, </em><em>optional</em>) – The input validation data, following the same format as <cite>train_input</cite>.</p></li>
+<li><p><strong>val_target</strong> (<em>torch.Tensor</em><em> or </em><em>numpy.ndarray</em><em>, </em><em>optional</em>) – The target validation data, following the same format as <cite>train_target</cite>.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of epochs to train the model for. Default is 1000.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of batches to use when training the model. Default is 10.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the training process will print out progress updates and evaluation metrics. Default is False.</p></li>
+<li><p><strong>patience</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of epochs with no improvement after which training will be stopped. Default is 100.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The method first reshapes and prepares the input data for the XGBoost regressor, converting any PyTorch tensors
+to numpy arrays if necessary. It configures the model with the specified hyperparameters and trains it on the
+provided data. If validation data is provided, it will also evaluate the model on this data after each epoch,
+which can be used for early stopping or parameter tuning. The method concludes by optionally printing the mean
+squared error of the training and validation datasets if <cite>verbose</cite> is True.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="spatial-temporal-models">
+<h1>Spatial-Temporal Models<a class="headerlink" href="#spatial-temporal-models" title="Link to this heading"></a></h1>
+<section id="atmgnn">
+<h2>ATMGNN<a class="headerlink" href="#atmgnn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ATMGNN.ATMGNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.ATMGNN.</span></span><span class="sig-name descname"><span class="pre">ATMGNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">5]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ATMGNN.ATMGNN" title="Link to this definition"></a></dt>
+<dd><p>Attention-based Temporal Multiresolution Graph Neural Network (ATMGNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample (window size).</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the network and the output size of graph convolution layers. Default: 256.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>nhead</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of heads in the multi-head attention mechanism. Default: 1.</p></li>
+<li><p><strong>num_clusters</strong> (<em>list</em><em>, </em><em>optional</em>) – List of integers defining the number of clusters for each multiresolution layer. Default: [10, 5].</p></li>
+<li><p><strong>use_norm</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use normalization on outputs from each layer. Default: False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ATMGNN.ATMGNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ATMGNN.ATMGNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timestamps, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="mpnn-lstm">
+<h2>MPNN_LSTM<a class="headerlink" href="#mpnn-lstm" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.ATMGNN.</span></span><span class="sig-name descname"><span class="pre">MPNN_LSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM" title="Link to this definition"></a></dt>
+<dd><p>Message Passing Neural Network combined with Long Short-Term Memory (MPNN_LSTM)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features in each timestep of the input data.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Window size; number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the LSTM and the number of output channels in GCN layers. Default: 256.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ATMGNN.MPNN_LSTM.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timestamps, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="cnnrnn-res">
+<h2>CNNRNN_Res<a class="headerlink" href="#cnnrnn-res" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.CNNRNN_Res.</span></span><span class="sig-name descname"><span class="pre">CNNRNN_Res</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res" title="Link to this definition"></a></dt>
+<dd><p>Combined Convolutional Neural Network and Recurrent Neural Network with Residual Connections (CNNRNN_Res)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample (window size).</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the GRU layer. Default: 32.</p></li>
+<li><p><strong>residual_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Proportion of the residual connection compared to the GRU output. Default: 0.</p></li>
+<li><p><strong>residual_window</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of timesteps to include in the residual connection. Default: 0.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.CNNRNN_Res.CNNRNN_Res.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="colagnn">
+<h2>ColaGNN<a class="headerlink" href="#colagnn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ColaGNN.ColaGNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.ColaGNN.</span></span><span class="sig-name descname"><span class="pre">ColaGNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GRU'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidirect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ColaGNN.ColaGNN" title="Link to this definition"></a></dt>
+<dd><p>Convolutional-Layer Graph Neural Network (ColaGNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the RNN and GNN layers. Default: 32.</p></li>
+<li><p><strong>n_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of channels for the convolution layers. Default: 1.</p></li>
+<li><p><strong>rnn_model</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of RNN model to use (‘LSTM’, ‘GRU’, ‘RNN’). Default: ‘GRU’.</p></li>
+<li><p><strong>n_layer</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the RNN model. Default: 1.</p></li>
+<li><p><strong>bidirect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the RNN layers are bidirectional. Default: False.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.ColaGNN.ColaGNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.ColaGNN.ColaGNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dastgn">
+<h2>DASTGN<a class="headerlink" href="#dastgn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DASTGN.DASTGN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.DASTGN.</span></span><span class="sig-name descname"><span class="pre">DASTGN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GNN_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DASTGN.DASTGN" title="Link to this definition"></a></dt>
+<dd><p>Dynamic and Adaptive Spatio-Temporal Graph Network (DASTGN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>GNN_layers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of Graph Neural Network layers to use. Default: 2.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DASTGN.DASTGN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DASTGN.DASTGN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dcrnn">
+<h2>DCRNN<a class="headerlink" href="#dcrnn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DCRNN.DCRNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.DCRNN.</span></span><span class="sig-name descname"><span class="pre">DCRNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_diffusion_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'laplacian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_rnn_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinearity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tanh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN" title="Link to this definition"></a></dt>
+<dd><p>Diffusion Convolutional Recurrent Neural Network (DCRNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of input features per node.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of past time steps used as input by the network.</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em>) – Number of output features per node.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of future time steps to predict.</p></li>
+<li><p><strong>max_diffusion_step</strong> (<em>int</em>) – Maximum number of diffusion steps in the graph convolution operations. Default: 2.</p></li>
+<li><p><strong>filter_type</strong> (<em>str</em>) – Type of filter used in graph convolutions, e.g., ‘laplacian’. Default: “laplacian”.</p></li>
+<li><p><strong>num_rnn_layers</strong> (<em>int</em>) – Number of recurrent neural network layers. Default: 1.</p></li>
+<li><p><strong>rnn_units</strong> (<em>int</em>) – Number of units per recurrent layer. Default: 1.</p></li>
+<li><p><strong>nonlinearity</strong> (<em>str</em>) – Type of nonlinearity function used in RNN. Default: “tanh”.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em>) – Dropout rate applied in the network to prevent overfitting. Default: 0.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, horizon), representing the predicted values for each node over future timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DCRNN.DCRNN.decoder">
+<span class="sig-name descname"><span class="pre">decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_hidden_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_mx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.decoder" title="Link to this definition"></a></dt>
+<dd><p>Decoder forward pass
+:param encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)
+:param labels: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes) [optional, not exist for inference]
+:param batches_seen: global step [optional, not exist for inference]
+:return: output: (self.num_timesteps_output, batch_size, self.num_nodes * self.num_classes)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DCRNN.DCRNN.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_mx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.encoder" title="Link to this definition"></a></dt>
+<dd><p>encoder forward pass on t time steps
+:param inputs: shape (num_timesteps_input, batch_size, num_sensor * num_features)
+:return: encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DCRNN.DCRNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DCRNN.DCRNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X_batch</strong> (<em>torch.Tensor</em>) – Input tensor with shape (batch_size, num_nodes, num_timesteps_input, num_features),
+representing the input features over multiple timesteps for each node.</p></li>
+<li><p><strong>graph</strong> (<em>torch.Tensor</em>) – Static adjacency matrix with shape (num_nodes, num_nodes),
+representing the fixed connections between nodes.</p></li>
+<li><p><strong>X_states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as X_batch.
+Used for models that incorporate node states over time. Default: None.</p></li>
+<li><p><strong>batch_graph</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to graph but possibly varying over time.
+Used for models that account for changing graph structures. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_nodes, num_timesteps_output),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dmp">
+<h2>DMP<a class="headerlink" href="#dmp" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DMP.DMP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.DMP.</span></span><span class="sig-name descname"><span class="pre">DMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recover_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[14,</span> <span class="pre">8]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DMP.DMP" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.DMP.DMP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.DMP.DMP.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Expected shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Adjacency matrix of the graph with shape (num_nodes, num_nodes), indicating connections between nodes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (horizon, num_nodes, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="epicolagnn">
+<h2>EpiColaGNN<a class="headerlink" href="#epicolagnn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.EpiColaGNN.</span></span><span class="sig-name descname"><span class="pre">EpiColaGNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GRU'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidirect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN" title="Link to this definition"></a></dt>
+<dd><p>Epidemiological Convolutional-Layer Graph Neural Network (EpiColaGNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>nhid</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden units in the RNN and GNN layers. Default: 32.</p></li>
+<li><p><strong>rnn_model</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of RNN model to use (‘LSTM’, ‘GRU’, ‘RNN’). Default: ‘GRU’.</p></li>
+<li><p><strong>n_layer</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the RNN model. Default: 1.</p></li>
+<li><p><strong>bidirect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the RNN layers are bidirectional. Default: False.</p></li>
+<li><p><strong>target_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – Index of the target variable in the feature set. Default: 0.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.EpiColaGNN.EpiColaGNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="epignn">
+<h2>EpiGNN<a class="headerlink" href="#epignn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.EpiGNN.EpiGNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.EpiGNN.</span></span><span class="sig-name descname"><span class="pre">EpiGNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidP</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.EpiGNN.EpiGNN" title="Link to this definition"></a></dt>
+<dd><p>Epidemiological Graph Neural Network (EpiGNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of local neighborhoods to consider in the graph learning layer. Default: 8.</p></li>
+<li><p><strong>hidA</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of attention in the model. Default: 64.</p></li>
+<li><p><strong>hidR</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of hidden layers in the recurrent neural network part. Default: 40.</p></li>
+<li><p><strong>hidP</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of positional encoding in the model. Default: 1.</p></li>
+<li><p><strong>n_layer</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the graph neural network. Default: 2.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.EpiGNN.EpiGNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.EpiGNN.EpiGNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="graphwavenet">
+<h2>GraphWaveNet<a class="headerlink" href="#graphwavenet" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.GraphWaveNet.</span></span><span class="sig-name descname"><span class="pre">GraphWaveNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcn_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addaptadj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aptinit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet" title="Link to this definition"></a></dt>
+<dd><p>Graph Convolutional Wave Network (GraphWaveNet)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> (<em>str</em>) – The device (cpu or gpu) on which the model will be run.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.3.</p></li>
+<li><p><strong>gcn_bool</strong> (<em>bool</em><em>, </em><em>optional</em>) – Indicates whether to include graph convolution layers. Default: True.</p></li>
+<li><p><strong>addaptadj</strong> (<em>bool</em><em>, </em><em>optional</em>) – Indicates whether to include an adaptive adjacency matrix. Default: True.</p></li>
+<li><p><strong>aptinit</strong> (<em>tensor</em><em>, </em><em>optional</em>) – Initial tensor for adaptive adjacency matrix. Default: None.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of input timesteps per node.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps per node.</p></li>
+<li><p><strong>residual_channels</strong> (<em>int</em>) – Number of channels in residual layers. Default: 32.</p></li>
+<li><p><strong>dilation_channels</strong> (<em>int</em>) – Number of channels in dilation layers. Default: 32.</p></li>
+<li><p><strong>skip_channels</strong> (<em>int</em>) – Number of channels in skip connection layers. Default: 256.</p></li>
+<li><p><strong>end_channels</strong> (<em>int</em>) – Number of channels in the final convolution layers. Default: 512.</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – Kernel size for the convolution layers. Default: 2.</p></li>
+<li><p><strong>blocks</strong> (<em>int</em>) – Number of blocks in the WaveNet architecture. Default: 4.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em>) – Number of layers in each block. Default: 2.</p></li>
+<li><p><strong>adj_m</strong> (<em>tensor</em>) – Initial adjacency matrix if static graph structure is used. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_nodes, output_dim), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X_batch</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="mepognn">
+<h2>MepoGNN<a class="headerlink" href="#mepognn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.MepoGNN.MepoGNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.MepoGNN.</span></span><span class="sig-name descname"><span class="pre">MepoGNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glm_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Dynamic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adapt_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.MepoGNN.MepoGNN" title="Link to this definition"></a></dt>
+<dd><p>Meta-Population Graph Neural Network (MepoGNN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>glm_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of graph learning model (‘Dynamic’, ‘Adaptive’). Default: ‘Dynamic’.</p></li>
+<li><p><strong>adapt_graph</strong> (<em>tensor</em><em>, </em><em>optional</em>) – Initial tensor for adaptive adjacency matrix. Only needed if glm_type is ‘Adaptive’. Default: None.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization during training to prevent overfitting. Default: 0.5.</p></li>
+<li><p><strong>residual_channels</strong> (<em>int</em>) – Number of channels in residual layers.</p></li>
+<li><p><strong>dilation_channels</strong> (<em>int</em>) – Number of channels in dilation layers.</p></li>
+<li><p><strong>skip_channels</strong> (<em>int</em>) – Number of channels in skip connection layers.</p></li>
+<li><p><strong>end_channels</strong> (<em>int</em>) – Number of channels in the final convolution layers.</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – Kernel size for the convolution layers.</p></li>
+<li><p><strong>blocks</strong> (<em>int</em>) – Number of blocks in the WaveNet architecture.</p></li>
+<li><p><strong>layers</strong> (<em>int</em>) – Number of layers in each block.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
+Each slice along the second dimension corresponds to a timestep, with each column representing a node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.MepoGNN.MepoGNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_od</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.MepoGNN.MepoGNN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="netsir">
+<h2>NetSIR<a class="headerlink" href="#netsir" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.NetworkSIR.NetSIR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.NetworkSIR.</span></span><span class="sig-name descname"><span class="pre">NetSIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infection_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recovery_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.038</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.NetworkSIR.NetSIR" title="Link to this definition"></a></dt>
+<dd><p>Network-based SIR (Susceptible-Infected-Recovered)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of nodes in the graph representing individuals or groups. Default: None.</p></li>
+<li><p><strong>horizon</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of future time steps to simulate. If None, a single step is simulated unless overridden in the forward method.</p></li>
+<li><p><strong>infection_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial infection rate parameter, representing the rate at which susceptible individuals become infected. Default: 0.01.</p></li>
+<li><p><strong>recovery_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial recovery rate parameter, representing the rate at which infected individuals recover. Default: 0.038.</p></li>
+<li><p><strong>population</strong> (<em>int</em><em>, </em><em>optional</em>) – Total population considered in the model. If None, the sum of the initial conditions (susceptible, infected, recovered) is used as the total population.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (time_step, num_nodes, 3), representing the predicted number of susceptible, infected, and recovered individuals at each timestep for each node.
+Each row corresponds to a timestep, with the columns representing the susceptible, infected, and recovered counts respectively for each node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.NetworkSIR.NetSIR.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.NetworkSIR.NetSIR.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input features tensor with shape (n_nodes, one-hot encoding of states).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix of the graph with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – States of the nodes if available, with the same shape as x. Default: None.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix if available, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of shape (time_step, n_nodes, probability of states),
+representing the predicted values for each node over the specified output timesteps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="stan">
+<h2>STAN<a class="headerlink" href="#stan" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.STAN.STAN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.STAN.</span></span><span class="sig-name descname"><span class="pre">STAN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gat_dim1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gat_dim2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gru_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.STAN.STAN" title="Link to this definition"></a></dt>
+<dd><p>Spatio-Temporal Attention Network (STAN)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_nodes</strong> (<em>int</em>) – Number of nodes in the graph.</p></li>
+<li><p><strong>num_features</strong> (<em>int</em>) – Number of features per node per timestep.</p></li>
+<li><p><strong>num_timesteps_input</strong> (<em>int</em>) – Number of timesteps considered for each input sample.</p></li>
+<li><p><strong>num_timesteps_output</strong> (<em>int</em>) – Number of output timesteps to predict.</p></li>
+<li><p><strong>population</strong> (<em>float</em><em>, </em><em>optional</em>) – Total population considered in the model. Default: 1e10.</p></li>
+<li><p><strong>gat_dim1</strong> (<em>int</em>) – Dimension of the output space for the first GAT layer. Default: 32.</p></li>
+<li><p><strong>gat_dim2</strong> (<em>int</em>) – Dimension of the output space for the second GAT layer. Default: 32.</p></li>
+<li><p><strong>gru_dim</strong> (<em>int</em>) – Dimension of the hidden state for the GRU layer. Default: 32.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em>) – Number of attention heads in the first GAT layer. Default: 1.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device (cpu or gpu) on which the model will be run. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing two tensors, each of shape (batch_size, num_timesteps_output, num_nodes, 1), representing the predicted values for newly infected and recovered individuals respectively for each node over future timesteps. The second tensor contains the physical model predictions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of torch.Tensor</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.STAN.STAN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.STAN.STAN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>torch.Tensor</em>) – Input feature tensor with shape (batch_size, num_timesteps_input, num_nodes, num_features).</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Static adjacency matrix with shape (num_nodes, num_nodes).</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em>) – States of the nodes, with the same shape as X, containing current infection and recovery data.</p></li>
+<li><p><strong>dynamic_adj</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic adjacency matrix, with shape similar to adj but possibly varying over time. Default: None.</p></li>
+<li><p><strong>N</strong> (<em>float</em><em>, </em><em>optional</em>) – Total population considered in the model. Default: None.</p></li>
+<li><p><strong>h</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Hidden states for the GRU layer, used if provided. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing two tensors:
+1. Predicted new infections and recoveries, shape (batch_size, num_timesteps_output, num_nodes, 2).
+2. Physical model predictions based on current states, shape (batch_size, num_timesteps_output, num_nodes, 2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="stgcn">
+<h2>STGCN<a class="headerlink" href="#stgcn" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.STGCN.STGCN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.SpatialTemporal.STGCN.</span></span><span class="sig-name descname"><span class="pre">STGCN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.STGCN.STGCN" title="Link to this definition"></a></dt>
+<dd><p>Spatio-temporal graph convolutional network as described in
+<a class="reference external" href="https://arxiv.org/abs/1709.04875v3">https://arxiv.org/abs/1709.04875v3</a> by Yu et al.
+Input should have shape (batch_size, num_nodes, num_input_time_steps,
+num_features).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.models.SpatialTemporal.STGCN.STGCN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.SpatialTemporal.STGCN.STGCN.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>torch.Tensor</em>) – Shape (batch_size, num_nodes, num_timesteps_input, num_features)</p></li>
+<li><p><strong>adj</strong> (<em>torch.Tensor</em>) – Shape (num_nodes, num_nodes)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output shape (batch_size, num_timesteps_output, num_nodes)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -106,7 +1773,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

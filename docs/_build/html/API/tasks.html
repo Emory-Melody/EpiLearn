@@ -53,14 +53,42 @@
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dataset.html">Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-models">Spatial Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#temporal-models">Temporal Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-temporal-models">Spatial-Temporal Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#detection">Detection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.tasks.detection.Detection"><code class="docutils literal notranslate"><span class="pre">Detection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.detection.Detection.evaluate_model"><code class="docutils literal notranslate"><span class="pre">Detection.evaluate_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.detection.Detection.get_splits"><code class="docutils literal notranslate"><span class="pre">Detection.get_splits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.detection.Detection.train_model"><code class="docutils literal notranslate"><span class="pre">Detection.train_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#forecast">Forecast</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.tasks.forecast.Forecast"><code class="docutils literal notranslate"><span class="pre">Forecast</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.forecast.Forecast.evaluate_model"><code class="docutils literal notranslate"><span class="pre">Forecast.evaluate_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.forecast.Forecast.get_splits"><code class="docutils literal notranslate"><span class="pre">Forecast.get_splits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.forecast.Forecast.train_model"><code class="docutils literal notranslate"><span class="pre">Forecast.train_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#utility-functions">Utility_Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#simulation">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#transformation">Transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#id2">Utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
 </ul>
 
@@ -90,7 +118,70 @@
              
   <section id="tasks">
 <h1>Tasks<a class="headerlink" href="#tasks" title="Link to this heading"></a></h1>
-<p>…</p>
+<section id="detection">
+<h2>Detection<a class="headerlink" href="#detection" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.tasks.detection.</span></span><span class="sig-name descname"><span class="pre">Detection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prototype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection" title="Link to this definition"></a></dt>
+<dd><p>The Detection class is designed to handle the training and evaluation of models for detection tasks.
+It extends the BaseTask class, incorporating specific functionalities to work with spatial-temporal
+data models. This class includes methods for model training, evaluation, and data preprocessing to
+facilitate experiments with different types of neural network architectures and configurations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.evaluate_model">
+<span class="sig-name descname"><span class="pre">evaluate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'mean':</span> <span class="pre">0,</span> <span class="pre">'std':</span> <span class="pre">1}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.evaluate_model" title="Link to this definition"></a></dt>
+<dd><p>Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs the prediction accuracy of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.get_splits">
+<span class="sig-name descname"><span class="pre">get_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.get_splits" title="Link to this definition"></a></dt>
+<dd><p>Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.train_model">
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ce'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.train_model" title="Link to this definition"></a></dt>
+<dd><p>Trains the detection model using the provided dataset and configuration settings. It handles data splitting, model initialization, and the training process, and also evaluates the model on the test set, reporting the accuracy.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="forecast">
+<h2>Forecast<a class="headerlink" href="#forecast" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.tasks.forecast.Forecast">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.tasks.forecast.</span></span><span class="sig-name descname"><span class="pre">Forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prototype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.forecast.Forecast" title="Link to this definition"></a></dt>
+<dd><p>The Forecast class extends the BaseTask class, focusing on the training and evaluation of forecast models for
+time-series prediction tasks. It includes functionalities specific to handling time-series data, especially
+in settings that involve spatial-temporal dynamics. The class supports model initialization, training, evaluation,
+and preprocessing, facilitating the application of various neural network architectures and configurations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.forecast.Forecast.evaluate_model">
+<span class="sig-name descname"><span class="pre">evaluate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.forecast.Forecast.evaluate_model" title="Link to this definition"></a></dt>
+<dd><p>Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs prediction accuracy
+metrics such as MAE and RMSE for the forecasted values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.forecast.Forecast.get_splits">
+<span class="sig-name descname"><span class="pre">get_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.forecast.Forecast.get_splits" title="Link to this definition"></a></dt>
+<dd><p>Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles
+preprocessing to normalize the data and prepare it for the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.forecast.Forecast.train_model">
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.forecast.Forecast.train_model" title="Link to this definition"></a></dt>
+<dd><p>Trains the forecast model using the provided dataset and configuration settings. It handles data splitting, model
+initialization, and the training process, and also evaluates the model on the test set, reporting metrics such as
+MAE and RMSE.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -104,7 +195,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

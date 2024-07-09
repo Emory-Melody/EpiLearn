@@ -1,7 +1,7 @@
 Quickstart for EpiLearn
 ==========================
 
-For forecast task, ...
+For forecast task, Epilearn initialzes a Forecast class with model prototyes and the dataset. Before building the task, a UniversalDataset is used to load the spatial&temporal data and transformations are defined and applied. 
 
 .. code-block:: python
 
@@ -36,7 +36,7 @@ For forecast task, ...
     evaluation = task.evaluate_model()
 
 
-For detection task, ...
+For detection task, the process is the same as the forecast task except that we initialze a Detection task.
 
 .. code-block:: python
 

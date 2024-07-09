@@ -9,7 +9,11 @@ If you haven't installed or tried **Epilearn**, please refer to `Installation <h
 Dataset construction
 ----------------------
 
-1. Internal 2. External 3. Simulation
+To begin with, we need to choose and load data using a UniversalDataset defined by Epilearn. 
+
+1. Pre-compiled data is also available, which is adopted from other researches and processed. To view more available internal data, please refer to `Datasets <https://github.com/Emory-Melody/EpiLearn/tree/main/datasets>`_.
+2. Users can also use external data, initializing UniversalDataset with the corresponding values directly.
+3. Epilearn also provides simulation methods to generate simulated data. See  `Simulation <https://vermillion-malasada-a2864e.netlify.app/html/tutorials/simulation>`_ for more details.
 
 .. code-block:: python
 
@@ -20,6 +24,10 @@ Transformations
 ----------------------
 
 1. supported transformations 2. how it works 3. customizing your own transformations
+
+Epilearn provides numerous transformations including normalization, seasonal decomposition, converting to frequency domain, etc. The loading of these functions follows similar style to Torch, as shown below.
+
+To customize your own transformation, simply add new a new class following the style shown in `Transformations <https://vermillion-malasada-a2864e.netlify.app/html/api/utils#transformation>`_.
 
 .. code-block:: python
 
@@ -33,12 +41,34 @@ Model Customization
 ----------------------
 1. Model categories 2. Internal Models 3. customized Models
 
+Epilearn supports three different models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])
 
+For models implemented, please refer to `Models <https://vermillion-malasada-a2864e.netlify.app/html/api/models>`_.
 
+To build a customized model, you can simply create a model class inherited from BaseModel with a forward function, as shown below. 
 
-Tasks Initialization
-----------------------
-1. supported tasks and functions 2. how it works
+.. code-block:: python
+
+    class CustomizedModel(BaseModel):
+        def __init__(self, 
+                    num_nodes, 
+                    num_features, 
+                    num_timesteps_input, 
+                    num_timesteps_output, 
+                    device = 'cpu'):
+            super(STGCN, self).__init__(device=device)
+            pass
+
+        def forward(self, feature, graph, states, dynamic_graph, **kargs):
+            pass
+
+        def initialize(self):
+            pass
+
+Task Initialization and Model Evaluation
+-------------------------------------------
+
+Epilearn currently supports two tasks: Forecast and Detection. Forecast task takes in a UniversalDataset, model prototype and other configurations like lookback window size and the horizon size. The same setting applies to the Detection task. After initializing, you can try functions like .train_model() and .evaluate_model() to the model performance on the given dataset.
 
 .. code-block:: python
 
@@ -47,8 +77,6 @@ Tasks Initialization
                     lookback=lookback, 
                     horizon=horizon, 
                     device='cpu')
+    task.train_model(customized_dataset, loss='mse', epoch=50, lr=0.001)
+    task.evaluate_model()
 
-
-Evaluation
-----------------------
-1. training and testing 2. tuning configurations 3. visualizing results

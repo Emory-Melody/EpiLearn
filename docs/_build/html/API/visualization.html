@@ -52,15 +52,33 @@
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dataset.html">Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-models">Spatial Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#temporal-models">Temporal Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-temporal-models">Spatial-Temporal Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#utility-functions">Utility_Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#simulation">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#transformation">Transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html#id2">Utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#plot-series">Plot_Series</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.visualize.plot_series.plot_series"><code class="docutils literal notranslate"><span class="pre">plot_series()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plot-graph">Plot_Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.visualize.plot_series.plot_graph"><code class="docutils literal notranslate"><span class="pre">plot_graph()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -89,7 +107,56 @@
              
   <section id="visualization">
 <h1>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h1>
-<p>…</p>
+<section id="plot-series">
+<h2>Plot_Series<a class="headerlink" href="#plot-series" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.visualize.plot_series.plot_series">
+<span class="sig-prename descclassname"><span class="pre">epilearn.visualize.plot_series.</span></span><span class="sig-name descname"><span class="pre">plot_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.visualize.plot_series.plot_series" title="Link to this definition"></a></dt>
+<dd><p>Plots time series data from an array using Seaborn’s line plot functionality. Each series
+is represented as a separate line on the plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.array</em>) – A NumPy array containing the data points of the time series.</p></li>
+<li><p><strong>columns</strong> (<em>list</em>) – List of strings representing the column names or labels for each time series in the array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Displays the plot directly and returns None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="plot-graph">
+<h2>Plot_Graph<a class="headerlink" href="#plot-graph" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.visualize.plot_series.plot_graph">
+<span class="sig-prename descclassname"><span class="pre">epilearn.visualize.plot_series.</span></span><span class="sig-name descname"><span class="pre">plot_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.visualize.plot_series.plot_graph" title="Link to this definition"></a></dt>
+<dd><p>Plots a graph using NetworkX where nodes are colored based on their state and annotated with class labels.
+The graph’s layout can be specified; otherwise, a spring layout is used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>states</strong> (<em>np.array</em>) – Array containing the state of each node used to determine the color of nodes.</p></li>
+<li><p><strong>graph</strong> (<em>np.array</em>) – A 2D array where each column represents an edge between two nodes (start and end).</p></li>
+<li><p><strong>classes</strong> (<em>list</em><em>, </em><em>optional</em>) – List of class labels corresponding to each node. Default is None.</p></li>
+<li><p><strong>layout</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary defining the position of each node for custom layouts. If None, a spring layout is used. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The positions of the nodes in the plot, useful for customizing the layout or for further graphical analysis.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -102,7 +169,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

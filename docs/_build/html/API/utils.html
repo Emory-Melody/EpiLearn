@@ -53,14 +53,171 @@
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dataset.html">Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-models">Spatial Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#temporal-models">Temporal Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html#spatial-temporal-models">Spatial-Temporal Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#utility-functions">Utility_Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#accuracy">Accuracy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.accuracy"><code class="docutils literal notranslate"><span class="pre">accuracy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#normalize">Normalize</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.normalize"><code class="docutils literal notranslate"><span class="pre">normalize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#normalize-adj">Normalize_Adj</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.normalize_adj"><code class="docutils literal notranslate"><span class="pre">normalize_adj()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#diff">Diff</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.diff"><code class="docutils literal notranslate"><span class="pre">diff()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#degree-matrix">Degree_Matrix</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.Degree_Matrix"><code class="docutils literal notranslate"><span class="pre">Degree_Matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#static-full">Static_Full</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.Static_full"><code class="docutils literal notranslate"><span class="pre">Static_full()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kronecker">Kronecker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.kronecker"><code class="docutils literal notranslate"><span class="pre">kronecker()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#edge-to-adj">Edge_to_Adj</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.utils.edge_to_adj"><code class="docutils literal notranslate"><span class="pre">edge_to_adj()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#moving-avg">Moving_Avg</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.moving_avg"><code class="docutils literal notranslate"><span class="pre">moving_avg</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.moving_avg.forward"><code class="docutils literal notranslate"><span class="pre">moving_avg.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#series-decomp">Series_Decomp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.series_decomp"><code class="docutils literal notranslate"><span class="pre">series_decomp</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.series_decomp.forward"><code class="docutils literal notranslate"><span class="pre">series_decomp.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#series-decomp-multi">Series_Decomp_Multi</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.series_decomp_multi"><code class="docutils literal notranslate"><span class="pre">series_decomp_multi</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.series_decomp_multi.forward"><code class="docutils literal notranslate"><span class="pre">series_decomp_multi.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#metrics">Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mse-loss">MSE_loss</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.get_loss"><code class="docutils literal notranslate"><span class="pre">get_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stan-loss">Stan_loss</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.stan_loss"><code class="docutils literal notranslate"><span class="pre">stan_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#epi-cola-loss">Epi_cola_loss</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.epi_cola_loss"><code class="docutils literal notranslate"><span class="pre">epi_cola_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cross-entropy-loss">Cross_entropy_loss</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.cross_entropy_loss"><code class="docutils literal notranslate"><span class="pre">cross_entropy_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mae">MAE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.get_MAE"><code class="docutils literal notranslate"><span class="pre">get_MAE()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rmse">RMSE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.get_RMSE"><code class="docutils literal notranslate"><span class="pre">get_RMSE()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#acc">ACC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.metrics.get_ACC"><code class="docutils literal notranslate"><span class="pre">get_ACC()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#simulation">Simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#time-geo">Time_Geo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.simulation.Time_geo"><code class="docutils literal notranslate"><span class="pre">Time_geo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.simulation.Time_geo.trace_simulate"><code class="docutils literal notranslate"><span class="pre">Time_geo.trace_simulate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#transformation">Transformation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#compose">Compose</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.Compose"><code class="docutils literal notranslate"><span class="pre">Compose</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#normalize-feat">Normalize_Feat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.normalize_feat"><code class="docutils literal notranslate"><span class="pre">normalize_feat</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.normalize_feat.forward"><code class="docutils literal notranslate"><span class="pre">normalize_feat.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Normalize_Adj</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.normalize_adj"><code class="docutils literal notranslate"><span class="pre">normalize_adj</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.normalize_adj.forward"><code class="docutils literal notranslate"><span class="pre">normalize_adj.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#convert-to-frequency">Convert_To_Frequency</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.convert_to_frequency"><code class="docutils literal notranslate"><span class="pre">convert_to_frequency</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.convert_to_frequency.forward"><code class="docutils literal notranslate"><span class="pre">convert_to_frequency.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#add-time-embedding">Add_Time_Embedding</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.add_time_embedding"><code class="docutils literal notranslate"><span class="pre">add_time_embedding</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.add_time_embedding.forward"><code class="docutils literal notranslate"><span class="pre">add_time_embedding.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#learnable-time-embedding">Learnable_Time_Embedding</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.learnable_time_embedding"><code class="docutils literal notranslate"><span class="pre">learnable_time_embedding</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.learnable_time_embedding.forward"><code class="docutils literal notranslate"><span class="pre">learnable_time_embedding.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#seasonality-and-trend-decompose">Seasonality_And_Trend_Decompose</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.seasonality_and_trend_decompose"><code class="docutils literal notranslate"><span class="pre">seasonality_and_trend_decompose</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.seasonality_and_trend_decompose.forward"><code class="docutils literal notranslate"><span class="pre">seasonality_and_trend_decompose.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#calculate-dtw-matrix">Calculate_DTW_Matrix</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.utils.transforms.calculate_dtw_matrix"><code class="docutils literal notranslate"><span class="pre">calculate_dtw_matrix</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.utils.transforms.calculate_dtw_matrix.forward"><code class="docutils literal notranslate"><span class="pre">calculate_dtw_matrix.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id2">Utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
 </ul>
 
@@ -90,6 +247,835 @@
              
   <section id="utils">
 <h1>Utils<a class="headerlink" href="#utils" title="Link to this heading"></a></h1>
+</section>
+<section id="utility-functions">
+<h1>Utility_Functions<a class="headerlink" href="#utility-functions" title="Link to this heading"></a></h1>
+<section id="accuracy">
+<h2>Accuracy<a class="headerlink" href="#accuracy" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.accuracy">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.accuracy" title="Link to this definition"></a></dt>
+<dd><p>Return accuracy of output compared to labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<em>torch.Tensor</em>) – output from model</p></li>
+<li><p><strong>labels</strong> (<em>torch.Tensor</em><em> or </em><em>numpy.array</em>) – node labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>accuracy</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="normalize">
+<h2>Normalize<a class="headerlink" href="#normalize" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.normalize">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.normalize" title="Link to this definition"></a></dt>
+<dd><p>Normalizes the input tensor X to have zero mean and unit standard deviation. Handles 3D tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>torch.Tensor</em>) – The input tensor to be normalized.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>torch.Tensor</em> – The normalized tensor.</p></li>
+<li><p><em>torch.Tensor</em> – The means of the input tensor.</p></li>
+<li><p><em>torch.Tensor</em> – The standard deviations of the input tensor.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="normalize-adj">
+<h2>Normalize_Adj<a class="headerlink" href="#normalize-adj" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.normalize_adj">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Adj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.normalize_adj" title="Link to this definition"></a></dt>
+<dd><p>Returns the degree normalized adjacency matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Adj</strong> (<em>torch.Tensor</em><em> or </em><em>np.array</em>) – The input adjacency matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The degree normalized adjacency matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="diff">
+<h2>Diff<a class="headerlink" href="#diff" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.diff">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.diff" title="Link to this definition"></a></dt>
+<dd><p>Computes the discrete difference along the time dimension of the input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features</strong> (<em>torch.Tensor</em>) – The input feature tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tensor of differences along the time dimension.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="degree-matrix">
+<h2>Degree_Matrix<a class="headerlink" href="#degree-matrix" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.Degree_Matrix">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">Degree_Matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ST_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.Degree_Matrix" title="Link to this definition"></a></dt>
+<dd><p>Computes the degree matrix for a given spatio-temporal adjacency matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ST_matrix</strong> (<em>torch.Tensor</em>) – The input spatio-temporal adjacency matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The degree matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="static-full">
+<h2>Static_Full<a class="headerlink" href="#static-full" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.Static_full">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">Static_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.Static_full" title="Link to this definition"></a></dt>
+<dd><p>Constructs the full spatio-temporal adjacency matrix using the binary spatio-temporal adjacency matrix method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – The dimension of the spatial adjacency matrix.</p></li>
+<li><p><strong>t</strong> (<em>int</em>) – The length of periods.</p></li>
+<li><p><strong>A</strong> (<em>torch.Tensor</em>) – The spatial adjacency matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full spatio-temporal adjacency matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="kronecker">
+<h2>Kronecker<a class="headerlink" href="#kronecker" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.kronecker">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">kronecker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.kronecker" title="Link to this definition"></a></dt>
+<dd><p>Constructs the spatio-temporal adjacency matrix using the Kronecker product.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>torch.Tensor</em>) – The temporal adjacency matrix.</p></li>
+<li><p><strong>B</strong> (<em>torch.Tensor</em>) – The spatial adjacency matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adjacency matrix of one space-time neighboring block.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="edge-to-adj">
+<h2>Edge_to_Adj<a class="headerlink" href="#edge-to-adj" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.utils.edge_to_adj">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.utils.</span></span><span class="sig-name descname"><span class="pre">edge_to_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.utils.edge_to_adj" title="Link to this definition"></a></dt>
+<dd><p>Converts edge index representation to adjacency matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edge_index</strong> (<em>torch.Tensor</em>) – The edge index tensor where each column represents an edge.</p></li>
+<li><p><strong>num_nodes</strong> (<em>int</em>) – The number of nodes in the graph.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adjacency matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="moving-avg">
+<h2>Moving_Avg<a class="headerlink" href="#moving-avg" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.moving_avg">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">moving_avg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.moving_avg" title="Link to this definition"></a></dt>
+<dd><p>Moving average block to highlight the trend of time series. This module smooths the input time series data
+using a moving average filter, which helps in capturing the underlying trend by averaging over a specified window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel_size</strong> (<em>int</em>) – The size of the moving average window.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – The stride of the moving average window.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.moving_avg.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.moving_avg.forward" title="Link to this definition"></a></dt>
+<dd><p>Applies the moving average to the input tensor ‘x’, padding the time series at both ends to ensure
+that the moving average is computed correctly for the entire series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input time-series data tensor, typically of shape (batch_size, time_steps, features).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The tensor smoothed using the moving average, maintaining the original shape of the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="series-decomp">
+<h2>Series_Decomp<a class="headerlink" href="#series-decomp" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.series_decomp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">series_decomp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.series_decomp" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module for series decomposition using a single moving average kernel. This module decomposes
+a time series into its residual and moving average components, providing a straightforward approach to
+trend extraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kernel_size</strong> (<em>int</em>) – The kernel size to be used for the moving average calculation. The kernel size defines the window
+for the moving average.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.series_decomp.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.series_decomp.forward" title="Link to this definition"></a></dt>
+<dd><p>Applies the series decomposition to the input tensor ‘x’. It calculates the moving average using the specified kernel size
+and computes the residual by subtracting the moving average from the original series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input time-series data tensor, typically of shape (batch_size, time_steps).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing:
+- The residual tensor after subtracting the moving average from the input.
+- The moving average tensor computed from the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(torch.Tensor, torch.Tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="series-decomp-multi">
+<h2>Series_Decomp_Multi<a class="headerlink" href="#series-decomp-multi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.series_decomp_multi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">series_decomp_multi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.series_decomp_multi" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module for series decomposition using multiple moving average kernels. This module decomposes
+a time series into its residual and moving average components, leveraging multiple kernel sizes for enhanced
+flexibility and accuracy in capturing trends.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kernel_size</strong> (<em>list</em><em> of </em><em>int</em>) – List of kernel sizes to be used for moving average calculations. Each kernel size defines the window
+for the moving average.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.series_decomp_multi.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.series_decomp_multi.forward" title="Link to this definition"></a></dt>
+<dd><p>Applies the series decomposition to the input tensor ‘x’. It calculates multiple moving averages
+using the initialized kernels, weights them using a linear layer followed by a softmax, and computes
+the residual by subtracting the weighted moving average from the original series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input time-series data tensor, typically of shape (batch_size, time_steps).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing:
+- The residual tensor after subtracting the weighted moving average from the input.
+- The weighted moving average tensor computed from the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(torch.Tensor, torch.Tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="metrics">
+<h1>Metrics<a class="headerlink" href="#metrics" title="Link to this heading"></a></h1>
+<section id="mse-loss">
+<h2>MSE_loss<a class="headerlink" href="#mse-loss" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.get_loss">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">get_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mse'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.get_loss" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the specified loss function based on the input loss name. It supports mean squared error (MSE),
+a standardized loss (stan), an epidemic-collaboration specific loss (epi_cola), and cross-entropy loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loss_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the loss function to retrieve. Default is ‘mse’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding loss function as specified by loss_name.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="stan-loss">
+<h2>Stan_loss<a class="headerlink" href="#stan-loss" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.stan_loss">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">stan_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.stan_loss" title="Link to this definition"></a></dt>
+<dd><p>Calculates a combined mean squared error loss on predicted and physically informed predicted values,
+scaled by a given factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<em>tuple</em><em> of </em><em>torch.Tensor</em>) – The predicted values and the physically informed predicted values.</p></li>
+<li><p><strong>label</strong> (<em>torch.Tensor</em>) – The ground truth values.</p></li>
+<li><p><strong>scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Scaling factor for the physical informed loss component. Default: 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated total loss as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="epi-cola-loss">
+<h2>Epi_cola_loss<a class="headerlink" href="#epi-cola-loss" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.epi_cola_loss">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">epi_cola_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.epi_cola_loss" title="Link to this definition"></a></dt>
+<dd><p>Calculates a combined L1 and mean squared error loss on the output and an epidemiological output,
+scaled by a given factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<em>tuple</em><em> of </em><em>torch.Tensor</em>) – The primary model output and the epidemiological model output.</p></li>
+<li><p><strong>label</strong> (<em>torch.Tensor</em>) – The ground truth values.</p></li>
+<li><p><strong>scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Scaling factor for the epidemiological loss component. Default: 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated total loss as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="cross-entropy-loss">
+<h2>Cross_entropy_loss<a class="headerlink" href="#cross-entropy-loss" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.cross_entropy_loss">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">cross_entropy_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.cross_entropy_loss" title="Link to this definition"></a></dt>
+<dd><p>Computes the cross-entropy loss between the logits and labels, adjusting the label tensor to fit the logits dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<em>torch.Tensor</em>) – The logits from the model.</p></li>
+<li><p><strong>label</strong> (<em>torch.Tensor</em>) – The ground truth labels, scaled to match the number of classes based on output dimensions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cross-entropy loss as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="mae">
+<h2>MAE<a class="headerlink" href="#mae" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.get_MAE">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">get_MAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.get_MAE" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Mean Absolute Error (MAE) between predictions and targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted values.</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em>) – Ground truth values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The MAE value as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="rmse">
+<h2>RMSE<a class="headerlink" href="#rmse" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.get_RMSE">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">get_RMSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.get_RMSE" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Root Mean Squared Error (RMSE) between predictions and targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted values.</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em>) – Ground truth values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The RMSE value as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="acc">
+<h2>ACC<a class="headerlink" href="#acc" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="epilearn.utils.metrics.get_ACC">
+<span class="sig-prename descclassname"><span class="pre">epilearn.utils.metrics.</span></span><span class="sig-name descname"><span class="pre">get_ACC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.metrics.get_ACC" title="Link to this definition"></a></dt>
+<dd><p>Calculates the accuracy of predictions by comparing them to the targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted labels.</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em>) – True labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The accuracy as a scalar tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="simulation">
+<h1>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h1>
+<section id="time-geo">
+<h2>Time_Geo<a class="headerlink" href="#time-geo" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.simulation.Time_geo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.simulation.</span></span><span class="sig-name descname"><span class="pre">Time_geo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_t_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.41</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.86</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.67</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simu_slot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">144</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.simulation.Time_geo" title="Link to this definition"></a></dt>
+<dd><p>Models spatial-temporal movement patterns of individuals across different regions, simulating movement based on
+temporal rhythms, personal habits, and regional exploration probabilities. It includes mechanisms to simulate
+individual trajectories, predict location changes, and calculate movement probabilities based on historical data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region_input</strong> (<em>ndarray</em>) – Input array of region coordinates.</p></li>
+<li><p><strong>pop_input</strong> (<em>ndarray</em>) – Population distribution across regions.</p></li>
+<li><p><strong>p_t_raw</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Raw probability distribution of time slots for movement. Default: Loads from “epilearn/data/rhythm.npy”.</p></li>
+<li><p><strong>pop_num</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of individuals in the population to simulate. Default: 7.</p></li>
+<li><p><strong>time_slot</strong> (<em>int</em><em>, </em><em>optional</em>) – Time resolution in minutes for one slot. Default: 10.</p></li>
+<li><p><strong>rho</strong> (<em>float</em><em>, </em><em>optional</em>) – Controls the exploration probability for other regions. Default: 0.6.</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – Attenuation parameter for exploration probability. Default: 0.41.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Controls the exploration depth. Default: 1.86.</p></li>
+<li><p><strong>n_w</strong> (<em>float</em><em>, </em><em>optional</em>) – Average number of tours based on home per week. Default: 6.1.</p></li>
+<li><p><strong>beta1</strong> (<em>float</em><em>, </em><em>optional</em>) – Dwell rate. Default: 3.67.</p></li>
+<li><p><strong>beta2</strong> (<em>float</em><em>, </em><em>optional</em>) – Burst rate, affecting movement speed. Default: 10.</p></li>
+<li><p><strong>simu_slot</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of simulation slots. Default: 144.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Each dictionary contains the movement trace and other metrics for an individual simulated over the simu_slot duration.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of dicts</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.simulation.Time_geo.trace_simulate">
+<span class="sig-name descname"><span class="pre">trace_simulate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.simulation.Time_geo.trace_simulate" title="Link to this definition"></a></dt>
+<dd><p>Generates simulated movement traces for each individual in the population. The simulation captures
+the dynamics of movement based on initial conditions and predefined movement parameters over a set
+number of time slots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Each dictionary contains detailed information and metrics for an individual’s simulated trace, including
+home location, total number of movements, cumulative distance traveled, and the sequence of visited
+locations across the simulation period.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="transformation">
+<h1>Transformation<a class="headerlink" href="#transformation" title="Link to this heading"></a></h1>
+<section id="compose">
+<h2>Compose<a class="headerlink" href="#compose" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.Compose">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">Compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transforms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.Compose" title="Link to this definition"></a></dt>
+<dd><p>Composes several transforms together. This transform does not support torchscript.
+Please, see the note below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transforms</strong> (list of <code class="docutils literal notranslate"><span class="pre">Transform</span></code> objects) – list of transforms to compose.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In order to script the transformations, please use <code class="docutils literal notranslate"><span class="pre">torch.nn.Sequential</span></code> as below.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transforms</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">)),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scripted_transforms</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make sure to use only scriptable transformations, i.e. that work with <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>, does not require
+<cite>lambda</cite> functions or <code class="docutils literal notranslate"><span class="pre">PIL.Image</span></code>.</p>
+</div>
+</dd></dl>
+
+</section>
+<section id="normalize-feat">
+<h2>Normalize_Feat<a class="headerlink" href="#normalize-feat" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.normalize_feat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">normalize_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.normalize_feat" title="Link to this definition"></a></dt>
+<dd><p>A normalization module for feature standardization in PyTorch. This module adjusts features
+to have zero mean and unit variance along specified dimensions, handling 3D and 4D tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dim</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension over which to calculate the mean and standard deviation for normalization. Default: 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.normalize_feat.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.normalize_feat.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass of the normalization module that normalizes a given input tensor X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>torch.Tensor</em>) – The input tensor to be normalized. Can be either a 3D or 4D tensor.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device to which the normalized tensor is transferred. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
+and transferred to the specified device.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="id1">
+<h2>Normalize_Adj<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.normalize_adj">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">normalize_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.normalize_adj" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module for normalizing adjacency matrices to facilitate operations in graph neural networks.
+The normalization adjusts adjacency matrices to account for node degrees, enhancing the propagation
+of features through the network. This class can handle both batched and single adjacency matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dim</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension over which to perform normalization (not utilized in current implementation). Default: 0.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.normalize_adj.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.normalize_adj.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass of the normalize_adj module that computes a degree-normalized adjacency matrix
+from the input adjacency matrix ‘Adj’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Adj</strong> (<em>torch.Tensor</em><em> or </em><em>np.array</em>) – The input adjacency matrix, which can be a 2D matrix for a single graph or a 3D tensor for batch processing.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device to which the normalized adjacency matrix is transferred. Default: ‘cpu’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The degree-normalized adjacency matrix, transferred to the specified device.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="convert-to-frequency">
+<h2>Convert_To_Frequency<a class="headerlink" href="#convert-to-frequency" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.convert_to_frequency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">convert_to_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fft'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.convert_to_frequency" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module for transforming time-domain data into frequency-domain representations using either
+FFT (Fast Fourier Transform) or STFT (Short Time Fourier Transform). This module is configurable to handle
+different lengths of FFT and hop sizes for STFT, making it flexible for various signal processing tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ftype</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of frequency transformation to perform, either ‘fft’ for Fast Fourier Transform or ‘stft’ for
+Short Time Fourier Transform. Default: “fft”.</p></li>
+<li><p><strong>n_fft</strong> (<em>int</em><em>, </em><em>optional</em>) – The window size for the FFT or STFT. Default: 8.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.convert_to_frequency.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.convert_to_frequency.forward" title="Link to this definition"></a></dt>
+<dd><p>Applies the configured frequency transformation (FFT or STFT) to the input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>torch.Tensor</em>) – The input data tensor, expected to be a time-domain signal. It can be a 3D tensor (batch, channels, time)
+for ‘fft’ or a 4D tensor (batch, nodes, time, features) for ‘stft’.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments, such as ‘device’ for specifying the computation device.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The frequency-domain representation of the input data. The output format depends on the transformation
+type (‘fft’ returns real parts of the FFT, ‘stft’ returns the magnitude of the STFT as a 5D tensor).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="add-time-embedding">
+<h2>Add_Time_Embedding<a class="headerlink" href="#add-time-embedding" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.add_time_embedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">add_time_embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">13</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.add_time_embedding" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module that appends time-based embeddings to each feature vector in the dataset.
+It can generate embeddings using sinusoidal functions, optionally using a Fourier transform approach,
+enhancing the temporal aspects of data for tasks such as time series forecasting or sequence modeling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimensionality of the time embeddings. Default: 13.</p></li>
+<li><p><strong>fourier</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies whether to use a Fourier transform-based approach for time embedding. Default: False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.add_time_embedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.add_time_embedding.forward" title="Link to this definition"></a></dt>
+<dd><p>Generates and appends time-based embeddings to the input data tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>torch.Tensor</em>) – The input data tensor, which can vary in dimensions depending on the application (e.g., batch, nodes, time).</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments such as ‘device’ for specifying the computation device.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input data tensor augmented with time-based embeddings. The resulting tensor includes an additional
+dimension for the embeddings, concatenated to the last dimension of the input data tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="learnable-time-embedding">
+<h2>Learnable_Time_Embedding<a class="headerlink" href="#learnable-time-embedding" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.learnable_time_embedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">learnable_time_embedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">13</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">13</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.learnable_time_embedding" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module that appends learnable time embeddings to the input data, facilitating the capture
+of temporal dependencies in models that process sequences or time-series data. The embedding is learned
+during the training process, allowing it to adapt to specific temporal patterns observed in the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timesteps</strong> (<em>int</em>) – The total number of timesteps in the data sequence, which defines the number of unique time indices.</p></li>
+<li><p><strong>embedding_dim</strong> (<em>int</em>) – The dimensionality of each time embedding vector.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.learnable_time_embedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.learnable_time_embedding.forward" title="Link to this definition"></a></dt>
+<dd><p>Appends learnable time-based embeddings to the input data tensor. The embeddings are added to each timestep,
+augmenting the feature dimensions of the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>torch.Tensor</em>) – The input data tensor, typically including dimensions for batch, nodes, and time.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments such as ‘device’ for specifying the computation device.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input data tensor augmented with time-based embeddings, expanding the last dimension to include
+the embeddings.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="seasonality-and-trend-decompose">
+<h2>Seasonality_And_Trend_Decompose<a class="headerlink" href="#seasonality-and-trend-decompose" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.seasonality_and_trend_decompose">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">seasonality_and_trend_decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decompose_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dynamic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_avg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[4,</span> <span class="pre">8,</span> <span class="pre">12]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.seasonality_and_trend_decompose" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module designed to decompose time-series data into seasonality and trend components.
+It supports both dynamic and static decomposition methods. Dynamic decomposition leverages a Fourier
+transform approach for seasonality and convolutional filters for trend extraction. Static decomposition
+utilizes a moving average approach.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decompose_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of decomposition to perform. “dynamic” for Fourier and convolutional methods, “static” for
+moving average based decomposition. Default: “dynamic”.</p></li>
+<li><p><strong>moving_avg</strong> (<em>int</em><em>, </em><em>optional</em>) – The window size for the moving average in static decomposition. Default: 25.</p></li>
+<li><p><strong>kernel_size</strong> (<em>list</em><em> of </em><em>int</em><em>, </em><em>optional</em>) – List of kernel sizes for convolutional filters in dynamic trend decomposition. Default: [4, 8, 12].</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.seasonality_and_trend_decompose.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.seasonality_and_trend_decompose.forward" title="Link to this definition"></a></dt>
+<dd><p>Decomposes the input data tensor into seasonality and trend components. The method of decomposition
+(dynamic or static) impacts the models and techniques used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>torch.Tensor</em>) – The input data tensor, typically including dimensions for batch, nodes, and time.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments such as ‘device’ for specifying the computation device.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list containing the seasonality and trend components of the input data, each as a separate tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="calculate-dtw-matrix">
+<h2>Calculate_DTW_Matrix<a class="headerlink" href="#calculate-dtw-matrix" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.calculate_dtw_matrix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.utils.transforms.</span></span><span class="sig-name descname"><span class="pre">calculate_dtw_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.calculate_dtw_matrix" title="Link to this definition"></a></dt>
+<dd><p>A PyTorch module designed to compute the Dynamic Time Warping (DTW) distance matrix between all pairs
+of time-series in a dataset. DTW is a method that calculates an optimal match between two given sequences
+with certain restrictions. The matrix is computed once and saved for future use to avoid redundant computations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset_name</strong> (<em>str</em>) – The name of the dataset, used to save and retrieve the computed DTW matrix.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.utils.transforms.calculate_dtw_matrix.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.utils.transforms.calculate_dtw_matrix.forward" title="Link to this definition"></a></dt>
+<dd><p>Computes the Dynamic Time Warping (DTW) matrix for the input data. If a precomputed matrix exists
+in the cache, it loads that matrix; otherwise, it computes a new matrix and saves it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – The input data array where each row represents a time step and each column a time-series node.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments not utilized in this method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The computed or loaded DTW distance matrix, where each element (i, j) represents the DTW distance
+between the i-th and j-th time-series.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="id2">
+<h1>Utils<a class="headerlink" href="#id2" title="Link to this heading"></a></h1>
 <p>metrics</p>
 <p>simulation</p>
 <p>transformation</p>
@@ -107,7 +1093,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

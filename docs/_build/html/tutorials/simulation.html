@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Utils" href="utils.html" />
+    <link rel="next" title="Utilities" href="utils.html" />
     <link rel="prev" title="Pipeline for Epidemic Modling" href="task_building.html" /> 
 </head>
 
@@ -52,15 +52,40 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="task_building.html">Pipeline for Epidemic Modling</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#static-properties">Static Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#random-static-graph">Random Static Graph</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.tasks.detection.Detection"><code class="docutils literal notranslate"><span class="pre">Detection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#static-features">Static Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gravity-model">Gravity Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-properties">Dynamic Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mobility-simulation">Mobility Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sir">SIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#networksir">NetworkSIR</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../API/dataset.html">Dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/models.html#spatial-models">Spatial Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/models.html#temporal-models">Temporal Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/models.html#spatial-temporal-models">Spatial-Temporal Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/tasks.html">Tasks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/utils.html#utility-functions">Utility_Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/utils.html#metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/utils.html#simulation">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/utils.html#transformation">Transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/utils.html#id2">Utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/visualization.html">Visualization</a></li>
 </ul>
 
@@ -90,7 +115,105 @@
              
   <section id="simulation">
 <h1>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h1>
-<p>…</p>
+<p>In this section, we provide a tutorial of the simulation methods in <strong>EpiLearn</strong>. In general, we focus on the simulation of static and dynamic properties including graph structure and node features.</p>
+<section id="static-properties">
+<h2>Static Properties<a class="headerlink" href="#static-properties" title="Link to this heading"></a></h2>
+<section id="random-static-graph">
+<h3>Random Static Graph<a class="headerlink" href="#random-static-graph" title="Link to this heading"></a></h3>
+<p>A random static graph is a network where nodes are randomly connected with each other. This can be useful for simulating scenarios where connections between nodes do not change over time.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.tasks.detection.</span></span><span class="sig-name descname"><span class="pre">Detection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prototype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection" title="Link to this definition"></a></dt>
+<dd><p>The Detection class is designed to handle the training and evaluation of models for detection tasks.
+It extends the BaseTask class, incorporating specific functionalities to work with spatial-temporal
+data models. This class includes methods for model training, evaluation, and data preprocessing to
+facilitate experiments with different types of neural network architectures and configurations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.evaluate_model">
+<span class="sig-name descname"><span class="pre">evaluate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'mean':</span> <span class="pre">0,</span> <span class="pre">'std':</span> <span class="pre">1}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.evaluate_model" title="Link to this definition"></a></dt>
+<dd><p>Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs the prediction accuracy of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.get_splits">
+<span class="sig-name descname"><span class="pre">get_splits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.get_splits" title="Link to this definition"></a></dt>
+<dd><p>Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.tasks.detection.Detection.train_model">
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ce'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.tasks.detection.Detection.train_model" title="Link to this definition"></a></dt>
+<dd><p>Trains the detection model using the provided dataset and configuration settings. It handles data splitting, model initialization, and the training process, and also evaluates the model on the test set, reporting the accuracy.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>When the function accepts inputs as number of nodes and connect probability, it will randomly generate a graph.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span> <span class="k">as</span> <span class="nn">epi</span>
+
+<span class="n">n_node</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">adj</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_random_graph</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">n_node</span><span class="p">,</span> <span class="n">connect_prob</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">block_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_type</span><span class="o">=</span><span class="s1">&#39;erdos_renyi&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">adj</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="static-features">
+<h3>Static Features<a class="headerlink" href="#static-features" title="Link to this heading"></a></h3>
+<p>Static features are fixed attributes assigned to nodes or edges in a graph. These features do not change over time.</p>
+<p>Given static features, a graph can be obtained. The adj parameter is used to indicate the distance between nodes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span> <span class="k">as</span> <span class="nn">epi</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">feature</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">graph1</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_graph_from_features</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">feature</span><span class="p">,</span> <span class="n">adj</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">graph2</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_graph_from_features</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">feature</span><span class="p">,</span> <span class="n">adj</span><span class="o">=</span><span class="n">adj</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="gravity-model">
+<h3>Gravity Model<a class="headerlink" href="#gravity-model" title="Link to this heading"></a></h3>
+<p>The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It’s often used in spatial analysis.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="dynamic-properties">
+<h2>Dynamic Properties<a class="headerlink" href="#dynamic-properties" title="Link to this heading"></a></h2>
+<section id="mobility-simulation">
+<h3>Mobility Simulation<a class="headerlink" href="#mobility-simulation" title="Link to this heading"></a></h3>
+<p>Mobility simulation models the movement of nodes over time, which can represent entities such as people or vehicles in a network.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TimeGeo</span><span class="err">?</span>
+</pre></div>
+</div>
+</section>
+<section id="sir">
+<h3>SIR<a class="headerlink" href="#sir" title="Link to this heading"></a></h3>
+<p>The SIR model is a simple mathematical model used to simulate the spread of a disease through a population.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span> <span class="k">as</span> <span class="nn">epi</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Temporal</span><span class="o">.</span><span class="n">SIR</span><span class="o">.</span><span class="n">SIR</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">190</span><span class="p">,</span> <span class="n">infection_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">recovery_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">initial_states</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">steps</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="n">layout</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">visualize</span><span class="o">.</span><span class="n">plot_series</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Suspected&#39;</span><span class="p">,</span> <span class="s1">&#39;Infected&#39;</span><span class="p">,</span> <span class="s1">&#39;Recovered&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="networksir">
+<h3>NetworkSIR<a class="headerlink" href="#networksir" title="Link to this heading"></a></h3>
+<p>The NetworkSIR model extends the SIR model by simulating the disease spread over a network, taking into account the network structure.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span> <span class="k">as</span> <span class="nn">epi</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SpatialTemporal</span><span class="o">.</span><span class="n">NetworkSIR</span><span class="o">.</span><span class="n">NetSIR</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">initial_graph</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">infection_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">recovery_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">initial_states</span><span class="p">,</span> <span class="n">initial_graph</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="n">layout</span> <span class="o">=</span> <span class="n">epi</span><span class="o">.</span><span class="n">visualize</span><span class="o">.</span><span class="n">plot_graph</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">2</span><span class="p">)[</span><span class="mi">15</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">initial_graph</span><span class="o">.</span><span class="n">to_sparse</span><span class="p">()</span><span class="o">.</span><span class="n">indices</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Suspected&#39;</span><span class="p">,</span> <span class="s1">&#39;Infected&#39;</span><span class="p">,</span> <span class="s1">&#39;Recovered&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
@@ -98,13 +221,13 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="task_building.html" class="btn btn-neutral float-left" title="Pipeline for Epidemic Modling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="utils.html" class="btn btn-neutral float-right" title="Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, exe.</p>
+    <p>&#169; Copyright 2024, Melody Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
