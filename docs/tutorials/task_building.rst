@@ -15,15 +15,9 @@ To begin with, we need to choose and load data using a UniversalDataset defined 
 2. Users can also use external data, initializing UniversalDataset with the corresponding values directly.
 3. Epilearn also provides simulation methods to generate simulated data. See  `Simulation <https://vermillion-malasada-a2864e.netlify.app/html/tutorials/simulation>`_ for more details.
 
-.. code-block:: python
-
-    UniversalDataset
-
 
 Transformations 
 ----------------------
-
-1. supported transformations 2. how it works 3. customizing your own transformations
 
 Epilearn provides numerous transformations including normalization, seasonal decomposition, converting to frequency domain, etc. The loading of these functions follows similar style to Torch, as shown below.
 
@@ -49,7 +43,7 @@ To build a customized model, you can simply create a model class inherited from 
 .. code-block:: python
 
     from .base import BaseModel
-    
+
     class CustomizedModel(BaseModel):
         def __init__(self, 
                     num_nodes, 
