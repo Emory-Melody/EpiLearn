@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="epilearn",
-    version="0.0.2",
+    version="0.0.3",
     author="Emory-Melody", 
-    maintainer='MSU-DSE',
+    maintainer='Emory-Melody',
     author_email="zevin.liu@gmail.com",
     description="A Pytorch library for machine learning in epidemic modeling", 
     long_description=long_description,
@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/Emory-Melody/EpiLearn",
     include_package_data=True,
     install_requires = [
-          'matplotlib>=3.9.0',
+          'matplotlib==3.9.19',
           'numpy==1.26.4',
           'scipy>=1.3.1',
           'networkx==3.2.1',
@@ -29,8 +29,7 @@ setuptools.setup(
           'pyvis==0.3.2',
           'plotly==5.22.0',
           'fastdtw==0.3.4',
-          'einops==0.8.0'
-          
+          'einops==0.8.0' 
       ],
     packages=setuptools.find_packages(),
     classifiers=[
