@@ -56,6 +56,25 @@ def get_graph_from_features(features, adj=None, G=1):
                 graph[i, j] = torch.nn.functional.cosine_similarity(features[i], features[j], dim=0).item()
     return graph
 
+class Gravity_model(object):
+    def __init__(self, source, target, s):
+        self.source = source
+        self.target = target
+        self.s = s
+    
+    def get_influence(self, source_population, target_population, distance):
+        return (source_population**self.source * target_population**self.target) / torch.exp(distance / self.s)
+
+    def get_mobility_graph(self, node_populations, distance_graph):
+        num_nodes = node_populations.shape[0]
+        mobility_graph = torch.zeros(num_nodes, num_nodes)
+
+        for source in range(num_nodes):
+            for target in range(num_nodes):
+                mobility_graph[source, target] = (node_populations[source]**self.source * node_populations[target]**self.target) / torch.exp(distance_graph[source, target] / self.s)
+        return mobility_graph
+        
+
 class Time_geo(object):
     """
     Models spatial-temporal movement patterns of individuals across different regions, simulating movement based on
