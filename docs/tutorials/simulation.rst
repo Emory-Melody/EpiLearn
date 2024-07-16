@@ -49,6 +49,7 @@ Gravity Model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis. For example, in epidemic, it can be used to capture the regional contact and transmission patterns invoked
 by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter source, target and s, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
+
 .. list-table::
    :widths: 25 25 50
    :header-rows: 1
@@ -70,6 +71,7 @@ by human mobility. The Gravity_model class follows the `equation <https://dl.acm
 .. autoclass:: epilearn.utils.simulation.Gravity_model
     :members:
     :undoc-members:  
+    :special-members: __init__
 
 
 Given population numbers in each node (or say region) and distance between each node, edge weights can be obtained along with given each parameter.
@@ -287,6 +289,7 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
 NetworkSIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The NetworkSIR model extends the SIR model by simulating the disease spread over a network, taking into account the network structure. This class has four vital initial parameters:
+
 1. num_nodes: The number of nodes in the network.
 2. horizon: The total number of time steps for the simulation.
 3. infection_rate: The rate at which susceptible nodes get infected.

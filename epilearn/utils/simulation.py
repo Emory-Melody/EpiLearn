@@ -49,7 +49,7 @@ def get_graph_from_features(features, adj=None, G=1):
     between the feature vectors of the connected nodes. If an adjacency matrix is provided, the cosine 
     similarity is adjusted by the corresponding entry in the adjacency matrix.
 
-    Parameters:
+    Parameters
     ----------
     features : torch.Tensor
         A tensor of shape (num_nodes, feat_dim) where num_nodes is the number of nodes and feat_dim is 
@@ -59,7 +59,7 @@ def get_graph_from_features(features, adj=None, G=1):
         denotes the distance or weight between node i and node j. If None, the cosine similarity is 
         used directly as the edge weight. Default is None.
 
-    Returns:
+    Returns
     -------
     torch.Tensor
         A tensor of shape (num_nodes, num_nodes) representing the generated graph's adjacency matrix, 
@@ -86,22 +86,7 @@ class Gravity_model(object):
 
         e_{v,w} = \\frac{N_v^{\\rho} N_w^{\\theta}}{\\exp(d_{vw} / \\delta)},\\forall v, w \\in \\mathcal{V}
         
-
-    Attributes
-    ----------
-    source : float
-        Exponent for the source node population \\rho in the gravity model.
-    target : float
-        Exponent for the target node population \\theta in the gravity model.
-    s : float
-        Scaling factor for the distance \\delta in the gravity model.
-
-    Methods
-    -------
-    get_influence(source_population, target_population, distance):
-        Calculate the influence between a source and a target node based on their populations and the distance between them.
-    get_mobility_graph(node_populations, distance_graph):
-        Generate a mobility graph based on node populations and a distance graph.
+        
     """
     def __init__(self, source, target, s):
         """
@@ -110,11 +95,11 @@ class Gravity_model(object):
         Parameters
         ----------
         source : float
-            Exponent for the source node population (\(\rho\)) in the gravity model.
+            Exponent for the source node population :math:`\\rho` in the gravity model.
         target : float
-            Exponent for the target node population (\(\theta\)) in the gravity model.
+            Exponent for the target node population :math:`\\theta` in the gravity model.
         s : float
-            Scaling factor for the distance (\(\delta\)) in the gravity model.
+            Scaling factor for the distance :math:`\\delta` in the gravity model.
         """
         self.source = source
         self.target = target
@@ -122,16 +107,16 @@ class Gravity_model(object):
     
     def get_influence(self, source_population, target_population, distance):
         """
-        Calculate the influence between a source and a target node.
+        Calculate the influence between a source and a target node based on their populations and the distance between them.
 
         Parameters
         ----------
         source_population : float
-            Population of the source node (\(N_v\)).
+            Population of the source node :math:`\\N_v`.
         target_population : float
-            Population of the target node (\(N_w\)).
+            Population of the target node :math:`\\N_w`.
         distance : float
-            Distance between the source and target nodes (\(d_{vw}\)).
+            Distance between the source and target nodes :math:`\\d_{vw}`.
 
         Returns
         -------
