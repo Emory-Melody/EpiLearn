@@ -48,14 +48,24 @@ Given static node features, a graph can be obtained by calculating cosine simila
 Gravity Model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis. For example, in epidemic, it can be used to capture the regional contact and transmission patterns invoked
-by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>` as shown in annotations. For parameter source, target and s, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`:
-+---------+-----------+-----------+--------+
-| distance (km)  |   source  |   target  | s (km) |
-+=========+===========+===========+========+
-| ≤ 300   | 0.46 ± 0.01 | 0.64 ± 0.01 | 82 ± 2 |
-+---------+-----------+-----------+--------+
-| > 300   | 0.35 ± 0.06 | 0.37 ± 0.06 | N/A    |
-+---------+-----------+-----------+--------+
+by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter source, target and s, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
+.. list-table::
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - distance (km)
+     - source
+     - target
+     - s (km)
+   * - ≤ 300
+     - 0.46 ± 0.01
+     - 0.64 ± 0.01
+     - 82 ± 2
+   * - > 300
+     - 0.35 ± 0.06
+     - 0.37 ± 0.06
+     - N/A
+
 
 .. autoclass:: epilearn.utils.simulation.Gravity_model
     :members:
@@ -65,6 +75,7 @@ by human mobility. The Gravity_model class follows the `equation <https://dl.acm
 Given population numbers in each node (or say region) and distance between each node, edge weights can be obtained along with given each parameter.
 
 .. code-block:: python
+
     import epilearn as epi
 
     node_populations = torch.tensor([1000, 2000, 1500]) # Assume we have three nodes, and the populations for the three nodes.
@@ -102,6 +113,7 @@ Mobility simulation models the movement of nodes over time, which can represent 
 First, we randomly generate a set of GPS coordinates. These coordinates will serve as the regions within which individuals will move. The generated GPS data simulates the geographic regions in which our individuals will perform their activities. This is essential for the Time_geo class to simulate realistic movements based on geographic locations.
 
 .. code-block:: python
+
     import numpy as np
 
     np.random.seed(42)
@@ -127,6 +139,7 @@ Next we define several helper functions to process the trajectories of individua
 4. **to_std**: Standardizes the trajectories into a specific format.
 
 .. code-block:: python
+
     def padding(traj, tim_size):
         def intcount(seq):
             a, b = np.array(seq[:-1]), np.array(seq[1:])
@@ -153,6 +166,7 @@ Next we define several helper functions to process the trajectories of individua
 Define a TimeGeo function utilizes the Time_geo class to simulate trajectories based on the input data and parameters.
 
 .. code-block:: python
+
     from tqdm import tqdm
 
     def TimeGeo(data, param):
@@ -175,6 +189,7 @@ Define a TimeGeo function utilizes the Time_geo class to simulate trajectories b
 Define Parameters class holds the data type and GPS information needed for the simulation.
 
 .. code-block:: python
+
     class Parameters:
         def __init__(self, data_type):
             self.data_type = data_type
@@ -192,6 +207,7 @@ Define Parameters class holds the data type and GPS information needed for the s
 Finally define a sample data set and run the TimeGeo function to simulate the movement patterns.
 
 .. code-block:: python
+
     data = {
         1: {
             0: {
@@ -238,11 +254,13 @@ Finally define a sample data set and run the TimeGeo function to simulate the mo
 SIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The SIR model is a simple mathematical model used to simulate the spread of a disease through a population. This class has three vital initial parameters:
-- horizon: The total number of time steps for the simulation.
-- infection_rate: The rate at which susceptible individuals get infected.
-- recovery_rate: The rate at which infected individuals recover.
+
+1. horizon: The total number of time steps for the simulation.
+2. infection_rate: The rate at which susceptible individuals get infected.
+3. recovery_rate: The rate at which infected individuals recover.
 
 .. code-block:: python
+
     import epilearn as epi
 
     # Generate random static graph
@@ -269,12 +287,13 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
 NetworkSIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The NetworkSIR model extends the SIR model by simulating the disease spread over a network, taking into account the network structure. This class has four vital initial parameters:
-- num_nodes: The number of nodes in the network.
-- horizon: The total number of time steps for the simulation.
-- infection_rate: The rate at which susceptible nodes get infected.
-- recovery_rate: The rate at which infected nodes recover.
+1. num_nodes: The number of nodes in the network.
+2. horizon: The total number of time steps for the simulation.
+3. infection_rate: The rate at which susceptible nodes get infected.
+4. recovery_rate: The rate at which infected nodes recover.
 
 .. code-block:: python
+
     import epilearn as epi
 
     # Generate random static graph

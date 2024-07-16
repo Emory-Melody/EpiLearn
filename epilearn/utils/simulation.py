@@ -84,16 +84,17 @@ class Gravity_model(object):
 
     .. math::
 
-        e_{v,w} = \frac{N_v^{\rho} N_w^{\theta}}{\exp(d_{vw} / \delta)}, \forall v, w \in \mathcal{V}
+        e_{v,w} = \\frac{N_v^{\\rho} N_w^{\\theta}}{\\exp(d_{vw} / \\delta)},\\forall v, w \\in \\mathcal{V}
+        
 
     Attributes
     ----------
     source : float
-        Exponent for the source node population (\(\rho\)) in the gravity model.
+        Exponent for the source node population \\rho in the gravity model.
     target : float
-        Exponent for the target node population (\(\theta\)) in the gravity model.
+        Exponent for the target node population \\theta in the gravity model.
     s : float
-        Scaling factor for the distance (\(\delta\)) in the gravity model.
+        Scaling factor for the distance \\delta in the gravity model.
 
     Methods
     -------
