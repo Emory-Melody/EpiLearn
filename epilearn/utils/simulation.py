@@ -112,11 +112,11 @@ class Gravity_model(object):
         Parameters
         ----------
         source_population : float
-            Population of the source node :math:`\\N_v`.
+            Population of the source node :math:`N_v`.
         target_population : float
-            Population of the target node :math:`\\N_w`.
+            Population of the target node :math:`N_w`.
         distance : float
-            Distance between the source and target nodes :math:`\\d_{vw}`.
+            Distance between the source and target nodes :math:`d_{vw}`.
 
         Returns
         -------
