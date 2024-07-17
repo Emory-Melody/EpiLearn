@@ -48,9 +48,9 @@ Given static node features, a graph can be obtained by calculating cosine simila
 Gravity Model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis. For example, in epidemic, it can be used to capture the regional contact and transmission patterns invoked
-by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter source, target and s, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
+by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter settings, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
 
-.. list-table::
+.. list-table:: Empirical Parameters
    :widths: 25 25 50
    :header-rows: 1
 
