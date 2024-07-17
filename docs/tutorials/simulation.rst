@@ -173,6 +173,7 @@ Define a TimeGeo function utilizes the Time_geo class to simulate trajectories b
 .. code-block:: python
 
     from tqdm import tqdm
+    import epilearn as epi
 
     def TimeGeo(data, param):
         TG = {}
@@ -269,7 +270,7 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
     import epilearn as epi
 
     # Generate random static graph
-    initial_graph = simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+    initial_graph = epi.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
 
     # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
@@ -304,7 +305,7 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
     import epilearn as epi
 
     # Generate random static graph
-    initial_graph = simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+    initial_graph = epi.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
 
     # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
