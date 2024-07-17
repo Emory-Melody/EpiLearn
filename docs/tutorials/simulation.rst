@@ -51,7 +51,7 @@ The gravity model is used to simulate the interaction between nodes based on the
 by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter settings, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
 
 .. list-table:: Empirical Parameters
-   :widths: 25 25 50
+   :widths: 25 25 25 25
    :header-rows: 1
 
    * - distance (km)
@@ -107,7 +107,7 @@ Mobility Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Mobility simulation models the movement of nodes over time, which can represent entities such as people or vehicles in a network.
 
-.. autoclass:: epilearn.utils.simulation.TimeGeo
+.. autoclass:: epilearn.utils.simulation.Time_geo
     :members:
     :undoc-members: 
 
