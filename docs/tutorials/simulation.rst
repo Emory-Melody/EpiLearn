@@ -270,9 +270,10 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
 
     # Generate random static graph
     initial_graph = simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+
+    # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
     initial_states[:, 0] = 1
-    # Set infected individual: 3
     initial_states[3, 0] = 0
     initial_states[3, 1] = 1
     initial_states[10, 0] = 0
@@ -304,9 +305,10 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
 
     # Generate random static graph
     initial_graph = simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+
+    # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
     initial_states[:, 0] = 1
-    # Set infected individual: 3
     initial_states[3, 0] = 0
     initial_states[3, 1] = 1
     initial_states[10, 0] = 0
