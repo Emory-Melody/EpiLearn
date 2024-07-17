@@ -30,15 +30,18 @@ Static features are fixed attributes assigned to nodes or edges in a graph. Thes
 .. autofunction:: epilearn.utils.simulation.get_graph_from_features
 
 
-Given static node features, a graph can be obtained by calculating cosine similarity between each nodes. The adj parameter is used to indicate the distance between nodes, adding panelty on similarities.
+Given static node features, a graph can be obtained by calculating cosine similarity between each nodes. The adj parameter is used to indicate the distance between nodes, adding penalty on similarities.
 
 .. code-block:: python
 
     import epilearn as epi
     import torch
 
-    feature = torch.rand(10,20) # Randomly generate a 10x20 feature matrix. 10 is the number of node and 20 is the feature dimension.
-    adj = torch.randint(10,100, (10,10)) # Randomly generate a adjacency matrix by 10 nodes.
+    # Randomly generate a 10x20 feature matrix. 10 is the number of node and 20 is the feature dimension.
+    feature = torch.rand(10,20) 
+
+    # Randomly generate a adjacency matrix by 10 nodes.
+    adj = torch.randint(10,100, (10,10)) 
 
     # The feature, adj and any other parameters can be replaced by your own.
     graph1 = epi.utils.simulation.get_graph_from_features(features=feature, adj=None)
@@ -48,7 +51,7 @@ Given static node features, a graph can be obtained by calculating cosine simila
 Gravity Model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis. For example, in epidemic, it can be used to capture the regional contact and transmission patterns invoked
-by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter settings, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
+by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/pdf/10.1145/3589132.3625596>`_ as shown in annotations. For parameter settings, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
 
 .. list-table::
    :widths: 30 30 30 30
@@ -80,12 +83,15 @@ Given population numbers in each node (or say region) and distance between each 
 
     import epilearn as epi
 
-    node_populations = torch.tensor([1000, 2000, 1500]) # Assume we have three nodes, and the populations for the three nodes.
+    # Assume we have three nodes, and the populations for the three nodes.
+    node_populations = torch.tensor([1000, 2000, 1500]) 
+
+    # Assume the distance between each node.
     distance_graph = torch.tensor([
         [0, 10, 20],
         [10, 0, 15],
         [20, 15, 0]
-    ]) # Assume the distance between each node.
+    ]) 
 
     # Create gravity model by giving the three parameters 
     gravity_model = epi.utils.simulation.Gravity_model(source=0.46, target=0.64, s=82)
@@ -107,9 +113,7 @@ Mobility Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Mobility simulation models the movement of nodes over time, which can represent entities such as people or vehicles in a network.
 
-.. autoclass:: epilearn.utils.simulation.Time_geo
-    :members:
-
+Next, we will specify how to use `Time Geo <https://epilearn-doc.readthedocs.io/en/latest/API/utils.html#time-geo>`_ to simulate mobility.
 
 First, we randomly generate a set of GPS coordinates. These coordinates will serve as the regions within which individuals will move. The generated GPS data simulates the geographic regions in which our individuals will perform their activities. This is essential for the Time_geo class to simulate realistic movements based on geographic locations.
 
@@ -289,10 +293,10 @@ NetworkSIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The NetworkSIR model extends the SIR model by simulating the disease spread over a network, taking into account the network structure. This class has four vital initial parameters:
 
-1. num_nodes: The number of nodes in the network.
-2. horizon: The total number of time steps for the simulation.
-3. infection_rate: The rate at which susceptible nodes get infected.
-4. recovery_rate: The rate at which infected nodes recover.
+1. **num_nodes**: The number of nodes in the network.
+2. **horizon**: The total number of time steps for the simulation.
+3. **infection_rate**: The rate at which susceptible nodes get infected.
+4. **recovery_rate**: The rate at which infected nodes recover.
 
 .. code-block:: python
 
