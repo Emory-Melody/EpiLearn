@@ -260,9 +260,9 @@ SIR
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The SIR model is a simple mathematical model used to simulate the spread of a disease through a population. This class has three vital initial parameters:
 
-1. horizon: The total number of time steps for the simulation.
-2. infection_rate: The rate at which susceptible individuals get infected.
-3. recovery_rate: The rate at which infected individuals recover.
+1. **horizon**: The total number of time steps for the simulation.
+2. **infection_rate**: The rate at which susceptible individuals get infected.
+3. **recovery_rate**: The rate at which infected individuals recover.
 
 .. code-block:: python
 
