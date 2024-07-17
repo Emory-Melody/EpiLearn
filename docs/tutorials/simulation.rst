@@ -50,8 +50,8 @@ Gravity Model
 The gravity model is used to simulate the interaction between nodes based on their attributes and distance. It's often used in spatial analysis. For example, in epidemic, it can be used to capture the regional contact and transmission patterns invoked
 by human mobility. The Gravity_model class follows the `equation <https://dl.acm.org/doi/abs/10.1145/3589132.3625596>`_ as shown in annotations. For parameter settings, follow the `empirical parameters <https://www.pnas.org/doi/epdf/10.1073/pnas.0906910106>`_:
 
-.. list-table:: Empirical Parameters
-   :widths: 25 25 25 25
+.. list-table::
+   :widths: 30 30 30 30
    :header-rows: 1
 
    * - distance (km)
@@ -109,7 +109,6 @@ Mobility simulation models the movement of nodes over time, which can represent 
 
 .. autoclass:: epilearn.utils.simulation.Time_geo
     :members:
-    :undoc-members: 
 
 
 First, we randomly generate a set of GPS coordinates. These coordinates will serve as the regions within which individuals will move. The generated GPS data simulates the geographic regions in which our individuals will perform their activities. This is essential for the Time_geo class to simulate realistic movements based on geographic locations.
