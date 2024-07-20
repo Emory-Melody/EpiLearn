@@ -110,21 +110,24 @@
 <h2>Dataset construction<a class="headerlink" href="#dataset-construction" title="Link to this heading"></a></h2>
 <p>To begin with, we need to choose and load data using a UniversalDataset defined by Epilearn.</p>
 <ol class="arabic simple">
-<li><p>Pre-compiled data is also available, which is adopted from other researches and processed. To view more available internal data, please refer to <a class="reference external" href="https://github.com/Emory-Melody/EpiLearn/tree/main/datasets">Datasets</a>.</p></li>
-<li><p>Users can also use external data, initializing UniversalDataset with the corresponding values directly.</p></li>
-<li><p>Epilearn also provides simulation methods to generate simulated data. See  <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/tutorials/simulation">Simulation</a> for more details.</p></li>
+<li><p>Users can use external data, initializing UniversalDataset with the corresponding values directly.</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">UniversalDataset</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">UniversalDataset</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">Features</span><span class="p">,</span>
+                 <span class="n">states</span><span class="o">=</span><span class="n">SIR_States</span><span class="p">,</span>
+                 <span class="n">y</span><span class="o">=</span><span class="n">Labels</span><span class="p">,</span>
+                 <span class="n">graph</span><span class="o">=</span><span class="n">Static_Graph</span><span class="p">,</span>
+                 <span class="n">dynamic_graph</span><span class="o">=</span><span class="n">Dynamic_Graph</span><span class="p">)</span>
 </pre></div>
 </div>
+<ol class="arabic simple" start="2">
+<li><p>Pre-compiled data is also available, which is adopted from other researches. To view more available internal data, please refer to <a class="reference external" href="https://github.com/Emory-Melody/EpiLearn/tree/main/datasets">Datasets</a>.</p></li>
+<li><p>Epilearn also provides simulation methods to generate simulated data. See  <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/tutorials/simulation">Simulation</a> for more details.</p></li>
+</ol>
 </section>
 <section id="transformations">
 <h2>Transformations<a class="headerlink" href="#transformations" title="Link to this heading"></a></h2>
-<ol class="arabic simple">
-<li><p>supported transformations 2. how it works 3. customizing your own transformations</p></li>
-</ol>
 <p>Epilearn provides numerous transformations including normalization, seasonal decomposition, converting to frequency domain, etc. The loading of these functions follows similar style to Torch, as shown below.</p>
-<p>To customize your own transformation, simply add new a new class following the style shown in <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/utils#transformation">Transformations</a>.</p>
+<p>To customize your own transformation, simply add a new class following the style shown in <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/utils#transformation">Transformations</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">transformation</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">({</span>
                                     <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_feat</span><span class="p">()],</span>
                                     <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_adj</span><span class="p">()]})</span>
@@ -134,9 +137,9 @@
 </section>
 <section id="model-customization">
 <h2>Model Customization<a class="headerlink" href="#model-customization" title="Link to this heading"></a></h2>
-<p>Epilearn supports three different models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])</p>
-<p>For models implemented, please refer to <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/models">Models</a>.</p>
-<p>To build a customized model, you can simply create a model class inherited from BaseModel with a forward function, as shown below.</p>
+<p>Epilearn supports three types of models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])</p>
+<p>For models implemented in Epilearn, please refer to <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/models">Models</a>.</p>
+<p>To build a customized model, you can simply create a model class inherited from BaseModel with a forward function, as shown below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
 <span class="k">class</span> <span class="nc">CustomizedModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -159,7 +162,7 @@
 </section>
 <section id="task-initialization-and-model-evaluation">
 <h2>Task Initialization and Model Evaluation<a class="headerlink" href="#task-initialization-and-model-evaluation" title="Link to this heading"></a></h2>
-<p>Epilearn currently supports two tasks: Forecast and Detection. Forecast task takes in a UniversalDataset, model prototype and other configurations like lookback window size and the horizon size. The same setting applies to the Detection task. After initializing, you can try functions like .train_model() and .evaluate_model() to the model performance on the given dataset.</p>
+<p>Epilearn currently supports two tasks: Forecast and Detection. The Forecast task takes in a UniversalDataset, model prototype and other configurations like lookback window size and the horizon size. The same setting applies to the Detection task. After initializing, you can try functions like .train_model() and .evaluate_model() to test the models performance on given datasets.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">task</span> <span class="o">=</span> <span class="n">Forecast</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">STGCN</span><span class="p">,</span>
                 <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>

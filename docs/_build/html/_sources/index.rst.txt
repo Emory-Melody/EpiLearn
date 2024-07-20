@@ -34,9 +34,3 @@ Epilearn is a python library built for epidemic modeling, providing abundant too
    API/utils
    API/visualization
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
