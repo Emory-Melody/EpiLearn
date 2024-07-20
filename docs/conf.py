@@ -23,6 +23,7 @@ release = '1'
 
 
 extensions = [
+    'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme',

@@ -43,8 +43,27 @@ def get_random_graph(num_nodes=None, connect_prob=None, block_sizes=None, num_ed
 
 def get_graph_from_features(features, adj=None, G=1):
     """
-    features: [num_nodes, feat]
-    adj: [num_nodes, num_nodes]; adj[i,j] denotes distance between node i and j
+    Generate a graph from node features using cosine similarity.
+
+    This function generates a graph where each edge weight is computed based on the cosine similarity
+    between the feature vectors of the connected nodes. If an adjacency matrix is provided, the cosine 
+    similarity is adjusted by the corresponding entry in the adjacency matrix.
+
+    Parameters
+    ----------
+    features : torch.Tensor
+        A tensor of shape (num_nodes, feat_dim) where num_nodes is the number of nodes and feat_dim is 
+        the dimensionality of the feature vectors.
+    adj : torch.Tensor, optional
+        A tensor of shape (num_nodes, num_nodes) representing the adjacency matrix, where adj[i, j] 
+        denotes the distance or weight between node i and node j. If None, the cosine similarity is 
+        used directly as the edge weight. Default is None.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor of shape (num_nodes, num_nodes) representing the generated graph's adjacency matrix, 
+        where each entry [i, j] contains the adjusted cosine similarity between nodes i and j.
     """
     n_nodes = len(features)
     graph = torch.zeros(n_nodes, n_nodes)
@@ -57,15 +76,72 @@ def get_graph_from_features(features, adj=None, G=1):
     return graph
 
 class Gravity_model(object):
+    """
+    A class to represent a gravity model for mobility analysis in an epidemic context.
+
+    The gravity model is used to estimate the influence and mobility between nodes (e.g., cities or regions)
+    based on their populations and the distance between them, according to the formula:
+
+    .. math::
+
+        e_{v,w} = \\frac{N_v^{\\rho} N_w^{\\theta}}{\\exp(d_{vw} / \\delta)},\\forall v, w \\in \\mathcal{V}
+        
+        
+    """
     def __init__(self, source, target, s):
+        """
+        Initialize the Gravity_model with specified parameters.
+
+        Parameters
+        ----------
+        source : float
+            Exponent for the source node population :math:`\\rho` in the gravity model.
+        target : float
+            Exponent for the target node population :math:`\\theta` in the gravity model.
+        s : float
+            Scaling factor for the distance :math:`\\delta` in the gravity model.
+        """
         self.source = source
         self.target = target
         self.s = s
     
     def get_influence(self, source_population, target_population, distance):
+        """
+        Calculate the influence between a source and a target node based on their populations and the distance between them.
+
+        Parameters
+        ----------
+        source_population : float
+            Population of the source node :math:`N_v`.
+        target_population : float
+            Population of the target node :math:`N_w`.
+        distance : float
+            Distance between the source and target nodes :math:`d_{vw}`.
+
+        Returns
+        -------
+        float
+            The calculated influence between the source and target nodes.
+        """
         return (source_population**self.source * target_population**self.target) / torch.exp(distance / self.s)
 
     def get_mobility_graph(self, node_populations, distance_graph):
+        """
+        Generate a mobility graph based on node populations and a distance graph.
+
+        Parameters
+        ----------
+        node_populations : torch.Tensor
+            A tensor of shape (num_nodes,) representing the population of each node.
+        distance_graph : torch.Tensor
+            A tensor of shape (num_nodes, num_nodes) representing the distances between nodes.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape (num_nodes, num_nodes) representing the mobility graph, where each entry [i, j]
+            represents the mobility influence from node i to node j.
+        """
         num_nodes = node_populations.shape[0]
         mobility_graph = torch.zeros(num_nodes, num_nodes)
 
