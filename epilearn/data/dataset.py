@@ -1,6 +1,7 @@
 import torch
 from torch_geometric.data import Data
 import numpy as np
+import os
 
 from .base import Dataset
 
@@ -143,8 +144,11 @@ class UniversalDataset(Dataset):
 
     
     def load_toy_dataset(self):
-        data1 = np.load("epilearn/data/graphs.npy")
-        data2 = np.load("epilearn/data/features.npy", allow_pickle= True)
+
+        current_file_path = os.path.abspath(__file__)
+        current_directory = os.path.dirname(current_file_path)
+        data1 = np.load(f"{current_directory}/graphs.npy")
+        data2 = np.load(f"{current_directory}/features.npy", allow_pickle= True)
 
         self.x = torch.FloatTensor(data2.tolist()['node'])
         self.y = torch.FloatTensor(data2.tolist()['node'])[:,:,0]
