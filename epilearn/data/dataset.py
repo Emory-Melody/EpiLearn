@@ -2,6 +2,7 @@ import torch
 from torch_geometric.data import Data
 import numpy as np
 import os
+import urllib.request
 
 from .base import Dataset
 
@@ -144,11 +145,21 @@ class UniversalDataset(Dataset):
 
     
     def load_toy_dataset(self):
+        if not os.path.exists("./datasets"):
+            os.mkdir("./datasets/")
+        if not os.path.exists("./datasets/features.npy"):
+            print("downloading toy features")
+            url_feature = "https://drive.google.com/uc?export=download&id=10VRjabU1m0pluQKOTQ-GKxF3sK9bLFYF"
+            urllib.request.urlretrieve(url_feature, './datasets/features.npy')
 
-        current_file_path = os.path.abspath(__file__)
-        current_directory = os.path.dirname(current_file_path)
-        data1 = np.load(f"{current_directory}/graphs.npy")
-        data2 = np.load(f"{current_directory}/features.npy", allow_pickle= True)
+        if not os.path.exists("./datasets/graphs.npy"):
+            print("downloading toy graphs")
+            url_graph = "https://drive.google.com/uc?export=download&id=10ZR4k19wdWXQdPN53Tz3QAQxBiZUXEPr"
+            
+            urllib.request.urlretrieve(url_graph, './datasets/graphs.npy')
+
+        data1 = np.load(f"./datasets/graphs.npy")
+        data2 = np.load(f"./datasets/features.npy",  allow_pickle= True)
 
         self.x = torch.FloatTensor(data2.tolist()['node'])
         self.y = torch.FloatTensor(data2.tolist()['node'])[:,:,0]

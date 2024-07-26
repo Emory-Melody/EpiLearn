@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="epilearn",
-    version="0.0.3",
+    version="0.0.5",
     author="Emory-Melody", 
     maintainer='Emory-Melody',
     author_email="zevin.liu@gmail.com",
@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/Emory-Melody/EpiLearn",
     include_package_data=True,
     install_requires = [
-          'matplotlib==3.9.19',
+          'matplotlib==3.9.1',
           'numpy==1.26.4',
           'scipy>=1.3.1',
           'networkx==3.2.1',
