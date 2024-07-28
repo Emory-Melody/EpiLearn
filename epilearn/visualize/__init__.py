@@ -1,1 +1,1 @@
-from .plot_series import *
+from .plot import *

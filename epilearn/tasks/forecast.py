@@ -1,5 +1,6 @@
 import torch
 
+from ..visualize import plot_series
 from ..utils import utils, metrics  
 from .base import BaseTask
 
@@ -58,20 +59,20 @@ class Forecast(BaseTask):
         if not hasattr(self, "model"):
             raise RuntimeError("model not exists, please use load_model() to load model first!")
 
-        train_split, val_split, test_split, ((features, norm), adj) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+        self.train_split, self.val_split, self.test_split, ((features, norm), adj) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
 
         try:
         # initialize model
             self.model = self.prototype(
                 num_nodes=adj.shape[0],
-                num_features=train_split[0].shape[3],
+                num_features=self.train_split[0].shape[3],
                 num_timesteps_input=self.lookback,
                 num_timesteps_output=self.horizon,
                 
                 ).to(device=self.device)
             print("spatial-temporal model loaded!")
         except:
-            self.model = self.prototype( num_features=train_split[0].shape[2],
+            self.model = self.prototype( num_features=self.train_split[0].shape[2],
                                     num_timesteps_input=self.lookback,
                                     num_timesteps_output=self.horizon)
 
@@ -79,16 +80,16 @@ class Forecast(BaseTask):
 
         # train
         self.model.fit(
-                train_input=train_split[0], 
-                train_target=train_split[1], 
-                train_states = train_split[2],
+                train_input=self.train_split[0], 
+                train_target=self.train_split[1], 
+                train_states = self.train_split[2],
                 train_graph=adj, 
-                train_dynamic_graph=train_split[3],
-                val_input=val_split[0], 
-                val_target=val_split[1], 
-                val_states=val_split[2],
+                train_dynamic_graph=self.train_split[3],
+                val_input=self.val_split[0], 
+                val_target=self.val_split[1], 
+                val_states=self.val_split[2],
                 val_graph=adj,
-                val_dynamic_graph=val_split[3],
+                val_dynamic_graph=self.val_split[3],
                 verbose=True,
                 batch_size=batch_size,
                 epochs=epochs,
@@ -96,10 +97,10 @@ class Forecast(BaseTask):
         
         # evaluate
         self.test_graph = adj
-        self.test_feature = test_split[0]
-        self.test_target = test_split[1]
-        self.test_states = test_split[2]
-        self.test_dynamic_graph = test_split[3]
+        self.test_feature = self.test_split[0]
+        self.test_target = self.test_split[1]
+        self.test_states = self.test_split[2]
+        self.test_dynamic_graph = self.test_split[3]
 
         out = self.model.predict(feature=self.test_feature, 
                                  graph=self.test_graph, 
@@ -184,46 +185,49 @@ class Forecast(BaseTask):
         self.feat_mean = feat_mean
         self.feat_std = feat_std
 
-
         features = features.to(self.device)
-        adj = adj.to(self.device)
-
-        if adj_dynamic is not None:
-            adj_dynamic = adj_dynamic.to(self.device)
-        if states is not None:
-            states = states.to(self.device)
 
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
-        train_original_data = features[:split_line1, :, :]
-        val_original_data = features[split_line1:split_line2, :, :]
-        test_original_data = features[split_line2:, :, :]
+        self.train_original_data = features[:split_line1, ...]
+        self.val_original_data = features[split_line1:split_line2, ...]
+        self.test_original_data = features[split_line2:, ...]
+        
+        train_original_states = None
+        val_original_states = None
+        test_original_states = None
 
-        train_original_states = states[:split_line1, :, :]
-        val_original_states = states[split_line1:split_line2, :, :]
-        test_original_states = states[split_line2:, :, :]
+        if adj is not None:
+            adj = adj.to(self.device)
+        if adj_dynamic is not None:
+            adj_dynamic = adj_dynamic.to(self.device)
+        if states is not None:
+            states = states.to(self.device)
+            train_original_states = states[:split_line1, ...]
+            val_original_states = states[split_line1:split_line2, ...]
+            test_original_states = states[split_line2:, ...]
 
 
         train_input, train_target, train_states, train_adj = dataset.generate_dataset(
-                                                                                        X=train_original_data, 
-                                                                                        Y=train_original_data[:, :, 0], 
+                                                                                        X=self.train_original_data, 
+                                                                                        Y=self.train_original_data[..., 0], 
                                                                                         states=train_original_states,
                                                                                         dynamic_adj = adj_dynamic,
                                                                                         lookback_window_size=self.lookback,
                                                                                         horizon_size=self.horizon, 
                                                                                         permute=permute)
         val_input, val_target, val_states, val_adj = dataset.generate_dataset(
-                                                                                X=val_original_data, 
-                                                                                Y=val_original_data[:, :, 0], 
+                                                                                X=self.val_original_data, 
+                                                                                Y=self.val_original_data[..., 0], 
                                                                                 states=val_original_states,
                                                                                 dynamic_adj = adj_dynamic,
                                                                                 lookback_window_size=self.lookback, 
                                                                                 horizon_size=self.horizon, 
                                                                                 permute=permute)
         test_input, test_target, test_states, test_adj = dataset.generate_dataset(
-                                                                                    X=test_original_data, 
-                                                                                    Y=test_original_data[:, :, 0], 
+                                                                                    X=self.test_original_data, 
+                                                                                    Y=self.test_original_data[..., 0], 
                                                                                     states=test_original_states,
                                                                                     dynamic_adj = adj_dynamic,
                                                                                     lookback_window_size=self.lookback, 
@@ -246,5 +250,33 @@ class Forecast(BaseTask):
             features = features[:,region_idx,:]
 
         return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (feat_std[0], feat_mean[0])), adj)
+    
+    def plot_forecasts(self, dataset=None, index_range=None):
+        if dataset is None:
+            data = self.test_original_data
+        else:
+            data = dataset.x
+
+        # save groundtruth and predictions
+        predictions = torch.FloatTensor()
+        groundtruth = torch.FloatTensor()
+        
+        with torch.no_grad():
+            
+            for i in range(0, len(data)-self.horizon-self.lookback, self.horizon):
+                history = torch.FloatTensor(data[i:i+self.lookback])
+                label = data[i+self.lookback:i+self.lookback+self.horizon]
+
+                output = self.model(history.unsqueeze(0))
+                preds = (output*self.feat_std + self.feat_mean).squeeze(0)
+                label = (label*self.feat_std + self.feat_mean).squeeze(-1)
+
+                groundtruth = torch.cat([groundtruth, label])
+                predictions = torch.cat([predictions, preds])
+        result = torch.stack([predictions, groundtruth], dim=1)
+        result = result[index_range[0]:index_range[1]]
+        plot_series(result, columns = ['prediction', 'groundtruth'])
+
+        return predictions, groundtruth
 
         

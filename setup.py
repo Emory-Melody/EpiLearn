@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="epilearn",
-    version="0.0.5",
+    version="0.0.6",
     author="Emory-Melody", 
     maintainer='Emory-Melody',
     author_email="zevin.liu@gmail.com",

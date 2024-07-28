@@ -93,6 +93,12 @@ class normalize_feat(nn.Module):
             The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
             and transferred to the specified device.
         """
+        if len(X.shape) == 2:
+            means = torch.mean(X, axis=0)
+            X = X - means
+            stds = torch.std(X, axis=0)
+            X = X / stds
+
         if len(X.shape) == 3:
             means = torch.mean(X, axis=(0, 1))
             X = X - means.unsqueeze(0).unsqueeze(0)
@@ -108,6 +114,14 @@ class normalize_feat(nn.Module):
         self.stds = stds
 
         return X.to(device)
+    
+    def denorm(self, X):
+        X = X*self.stds
+        X = X+self.means
+
+        return X
+
+
 
 
 
