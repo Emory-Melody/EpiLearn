@@ -15,7 +15,7 @@ Loading Measle and Tycho Datasets:
 ```python
 from epilearn.data import UniversalDataset
 tycho_dataset = UniversalDataset(name='Tycho_v1', root='./tmp/')
-measle_dataset = UniversalDataset(name='Measle', root='./tmp/')
+measle_dataset = UniversalDataset(name='Measles', root='./tmp/')
 
 ```
 
