@@ -15,6 +15,7 @@ class Forecast(BaseTask):
         super().__init__(prototype, model, dataset, lookback, horizon, device)
         self.feat_mean = 0
         self.feat_std = 1
+        self.device = device
 
 
     def train_model(self,
@@ -31,12 +32,15 @@ class Forecast(BaseTask):
                     initialize=True, 
                     verbose=False, 
                     patience=100, 
+                    device = None,
                     ):
         """
         Trains the forecast model using the provided dataset and configuration settings. It handles data splitting, model 
         initialization, and the training process, and also evaluates the model on the test set, reporting metrics such as 
         MAE and RMSE.
         """
+        if device is not None:
+            self.device = device
         if config is not None:
             permute_dataset = config.permute
             train_rate = config.train_rate
@@ -58,7 +62,8 @@ class Forecast(BaseTask):
         
         if not hasattr(self, "model"):
             raise RuntimeError("model not exists, please use load_model() to load model first!")
-
+        
+        self.region_index = region_idx
         self.train_split, self.val_split, self.test_split, ((features, norm), adj) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
 
         try:
@@ -68,14 +73,14 @@ class Forecast(BaseTask):
                 num_features=self.train_split[0].shape[3],
                 num_timesteps_input=self.lookback,
                 num_timesteps_output=self.horizon,
-                
-                ).to(device=self.device)
+                device=self.device
+                ).to(self.device)
             print("spatial-temporal model loaded!")
         except:
             self.model = self.prototype( num_features=self.train_split[0].shape[2],
                                     num_timesteps_input=self.lookback,
-                                    num_timesteps_output=self.horizon)
-
+                                    num_timesteps_output=self.horizon,
+                                    device=self.device).to(self.device)
             print("temporal model loaded!")
 
         # train
@@ -112,12 +117,14 @@ class Forecast(BaseTask):
         preds = out.detach().cpu()*norm[0]+norm[1]
         targets = self.test_target.detach().cpu()*norm[0]+norm[1]
         # metrics
+        mse = metrics.get_MSE(preds, targets)
         mae = metrics.get_MAE(preds, targets)
         rmse = metrics.get_RMSE(preds, targets)
+        print(f"Test MSE: {mse.item()}")
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mae":mae.item(), "rmse":rmse.item()}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item()}
 
 
     def evaluate_model(self,
@@ -158,12 +165,14 @@ class Forecast(BaseTask):
         preds = out.detach().cpu()*std+mean
         targets = targets.detach().cpu()*std+mean
         # metrics
+        mse = metrics.get_MSE(preds, targets)
         mae = metrics.get_MAE(preds, targets)
         rmse = metrics.get_RMSE(preds, targets)
+        print(f"Test MSE: {mse.item()}")
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mae":mae.item(), "rmse":rmse.item()}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item()}
     
 
 
@@ -185,8 +194,6 @@ class Forecast(BaseTask):
         self.feat_mean = feat_mean
         self.feat_std = feat_std
 
-        features = features.to(self.device)
-
         split_line1 = int(features.shape[0] * train_rate)
         split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
@@ -198,12 +205,7 @@ class Forecast(BaseTask):
         val_original_states = None
         test_original_states = None
 
-        if adj is not None:
-            adj = adj.to(self.device)
-        if adj_dynamic is not None:
-            adj_dynamic = adj_dynamic.to(self.device)
         if states is not None:
-            states = states.to(self.device)
             train_original_states = states[:split_line1, ...]
             val_original_states = states[split_line1:split_line2, ...]
             test_original_states = states[split_line2:, ...]
@@ -251,11 +253,13 @@ class Forecast(BaseTask):
 
         return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (feat_std[0], feat_mean[0])), adj)
     
-    def plot_forecasts(self, dataset=None, index_range=None):
-        if dataset is None:
-            data = self.test_original_data
-        else:
-            data = dataset.x
+    def plot_forecasts(self, index_range=None):
+        data = self.test_original_data
+        if data.shape[-1] >1:
+            raise ValueError("Multi channel is not supported. Please use single channel data.")
+        if self.region_index is not None:
+            data = data[:, self.region_index,:]
+
 
         # save groundtruth and predictions
         predictions = torch.FloatTensor()
@@ -267,7 +271,8 @@ class Forecast(BaseTask):
                 history = torch.FloatTensor(data[i:i+self.lookback])
                 label = data[i+self.lookback:i+self.lookback+self.horizon]
 
-                output = self.model(history.unsqueeze(0))
+                output = self.model(history.unsqueeze(0).to(self.device))
+                output = output.detach().cpu()
                 preds = (output*self.feat_std + self.feat_mean).squeeze(0)
                 label = (label*self.feat_std + self.feat_mean).squeeze(-1)
 

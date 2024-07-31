@@ -5,5 +5,6 @@ from . import (
     EINN,
     GRU,
     LSTM,
-    XGB
+    XGB,
+    CNN
 )

@@ -65,8 +65,8 @@ class DlinearModel(BaseModel):
         Each element corresponds to a predicted value for a specific future timestep. The output is averaged across the feature dimension to reduce it to a single predictive value per timestep.
 
     """
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output):
-        super(DlinearModel, self).__init__()
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, device='cpu'):
+        super(DlinearModel, self).__init__(device=device)
         self.num_features = num_features
         self.num_timesteps_input = num_timesteps_input
         self.num_timesteps_output = num_timesteps_output
@@ -122,4 +122,5 @@ class DlinearModel(BaseModel):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
+        
   

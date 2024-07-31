@@ -122,6 +122,9 @@ class BaseModel(nn.Module):
                 batch_graph = batch_graph.to(device)
             else:
                 batch_graph = None
+            
+            if graph is not None:
+                graph = graph.to(device)
 
             out = self.forward(X_batch, graph, X_states, batch_graph)
             loss = loss_fn(out, y_batch)
@@ -136,9 +139,18 @@ class BaseModel(nn.Module):
             feature = feature.to(device=device)
             target = target.to(device=device)
 
+            if graph is not None:
+                graph = graph.to(device)
+
+            if dynamic_graph is not None:
+                dynamic_graph = dynamic_graph.to(device)
+            
+            if states is not None:
+                states = states.to(device)
+
             out = self.forward(feature, graph, states, dynamic_graph)
-            val_loss = loss_fn(out, target).to(device="cpu")
-            val_loss = val_loss.detach().numpy().item()
+            val_loss = loss_fn(out, target)
+            val_loss = val_loss.detach().cpu().item()
             
             return val_loss, out
 
@@ -149,4 +161,17 @@ class BaseModel(nn.Module):
         torch.FloatTensor
         """
         self.eval()
-        return self.forward(feature, graph, states, dynamic_graph)
+        if graph is not None:
+            graph = graph.to(self.device)
+
+        if dynamic_graph is not None:
+            dynamic_graph = dynamic_graph.to(self.device)
+        
+        if states is not None:
+            states = states.to(self.device)
+        
+        if feature is not None:
+            feature = feature.to(self.device)
+
+        result = self.forward(feature, graph, states, dynamic_graph)
+        return result.detach().cpu()

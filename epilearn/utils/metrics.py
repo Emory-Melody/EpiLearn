@@ -100,6 +100,25 @@ def cross_entropy_loss(output, label):
 
 
 #--------------------metrics------------------
+def get_MSE(pred, target):
+    """
+    Calculates the Mean Absolute Error (MAE) between predictions and targets.
+
+    Parameters
+    ----------
+    pred : torch.Tensor
+        Predicted values.
+    target : torch.Tensor
+        Ground truth values.
+
+    Returns
+    -------
+    torch.Tensor
+        The MAE value as a scalar tensor.
+    """
+    mse_loss = nn.MSELoss(reduction='mean')
+    return mse_loss(pred, target)
+
 def get_MAE(pred, target):
     """
     Calculates the Mean Absolute Error (MAE) between predictions and targets.

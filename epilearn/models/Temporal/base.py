@@ -43,6 +43,7 @@ class BaseModel(nn.Module):
         early_stopping = patience
         best_val = float('inf')
         for epoch in tqdm(range(epochs)):
+            
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input,  target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
 
@@ -93,7 +94,7 @@ class BaseModel(nn.Module):
             X_batch, y_batch = feature[indices], target[indices]
             X_batch = X_batch.to(device=device)
             y_batch = y_batch.to(device=device)
-
+            
             out = self.forward(X_batch)
             loss = loss_fn(out, y_batch)
             loss.backward()
@@ -108,8 +109,8 @@ class BaseModel(nn.Module):
             target = target.to(device=device)
 
             out = self.forward(feature)
-            val_loss = loss_fn(out, target).to(device="cpu")
-            val_loss = val_loss.detach().numpy().item()
+            val_loss = loss_fn(out, target)
+            val_loss = val_loss.detach().cpu().numpy().item()
             
             return val_loss, out
 
@@ -120,5 +121,6 @@ class BaseModel(nn.Module):
         torch.FloatTensor
         """
         self.eval()
+        result = self.forward(feature.to(self.device))
 
-        return self.forward(feature)
+        return result.detach().cpu()

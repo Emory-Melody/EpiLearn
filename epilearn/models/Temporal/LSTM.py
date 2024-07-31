@@ -30,8 +30,8 @@ class LSTMModel(BaseModel):
         This tensor is the output from the last timestep processed through a linear layer to predict the desired number of future timesteps.
 
     """
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False):
-        super(LSTMModel, self).__init__()
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False, device='cpu'):
+        super(LSTMModel, self).__init__(device=device)
         self.num_features = num_features  
         self.num_timesteps_input = num_timesteps_input  
         self.num_timesteps_output = num_timesteps_output  
@@ -94,6 +94,7 @@ class LSTMModel(BaseModel):
         # Initialize the output layer
         init.xavier_uniform_(self.out.weight)
         self.out.bias.data.fill_(0)
+        
 
 
     
