@@ -25,36 +25,35 @@
 # dmp_simulation = dmp(None, initial_graph)
 
 import torch
-from epilearn.models.Temporal.GRU import GRUModel
-from epilearn.models.Temporal.LSTM import LSTMModel
-from epilearn.models.Temporal.Dlinear import DlinearModel
-from epilearn.models.Temporal.CNN import CNNModel
+from epilearn.models.Temporal import GRUModel, LSTMModel, DlinearModel, CNNModel
 from epilearn.data import UniversalDataset
 from epilearn.utils import transforms
-from epilearn.tasks.forecast import Forecast
+from epilearn.tasks import Forecast
 import urllib.request
 
 # initialize settings
 lookback = 8 # inputs size
 horizon = 1 # predicts size
-# url_data = "https://drive.google.com/uc?export=download&id=13b8_3OSAyIzTrM7lfWbhvxHlhWIiwCK5"
-# urllib.request.urlretrieve(url_data, 'JHU_covid.pt')
-jhu_data = torch.load('datasets/JHU_covid.pt')
-print(jhu_data.keys())
 
-print(jhu_data['feature_names'])
-print(jhu_data['feature_names'][100])
+# dataset = UniversalDataset(name='Measles', root='./test_downloads/')
+# print('Data shape: ',dataset.x.shape)
+# print("Regions: ", dataset.features)
 
-data = jhu_data['features'][100].float().unsqueeze(1)
-print('length: ', data.shape[0])
+# # Choose one city
+# print('Chosen Region:', dataset.features[100])
+# data = dataset.x[100].float().unsqueeze(1)
+# dataset.x = data
+# print('data length: ', data.shape[0])
+
+
+dataset = UniversalDataset(name='Tycho_v1', root='./test_downloads/')
+print(dataset.features)
+# choose one disease
+print(dataset.features[1])
+dataset.x = dataset.x[1].unsqueeze(1)
+print(dataset.x.shape)
 
 import matplotlib.pyplot as plt
-# visualize the data starting from
-plt.plot(data)
-plt.xlabel('day')
-plt.ylabel('confirmed cases')
-
-dataset = UniversalDataset(x=data) # data shape should be length*1
 
 # Adding Transformations
 transformation = transforms.Compose({

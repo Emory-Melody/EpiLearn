@@ -4,3 +4,6 @@ from . import (
     projection,
     surveillance
 )
+
+from .detection import Detection
+from .forecast import Forecast

@@ -32,6 +32,8 @@ class UniversalDataset(Dataset):
     """
     def __init__(
                 self,
+                name=None,
+                root='./',
                 x=None, # timestep * Num nodes * features 
                 states=None,
                 y=None,
@@ -41,7 +43,6 @@ class UniversalDataset(Dataset):
                 edge_weight=None,
                 edge_attr = None
                 ):
-        
         super().__init__()
 
         self.x = x # N*D; L*D; L*N*D; 
@@ -53,6 +54,74 @@ class UniversalDataset(Dataset):
         self.edge_attr = edge_attr # same as edge_index
         self.states = states # same as x
         self.output_dim = None
+
+        if name is not None:
+            if not os.path.exists(root):
+                    os.mkdir(root)
+                    self.root = root
+            if name == 'JHU_covid':
+                if not os.path.exists(f"{root}/JHU_covid.pt"):
+                    print("downloading JHU Covid Dataset")
+                    url_feature = "https://drive.google.com/uc?export=download&id=13i9OpTweVYOvSOET-91-ZNVMJRURwxb0"
+                    urllib.request.urlretrieve(url_feature, f"{root}/JHU_covid.pt")
+                data = torch.load(f"{root}/JHU_covid.pt")
+                for k, v in data.items():
+                    if k=='features':
+                        self.x = v.float()
+                    if k=='feature_names':
+                        self.features=v
+                    if k=='index':
+                        self.index=v
+
+            elif name == 'Measles':
+                if not os.path.exists(f"{root}/measles.pt"):
+                    print("downloading Measles Dataset")
+                    url_feature = "https://drive.google.com/uc?export=download&id=1-kLtvyUGN_mYJL5MgafEAd30KyfSmE4U"
+                    urllib.request.urlretrieve(url_feature, f"{root}/measles.pt")
+
+                data = torch.load(f"{root}/measles.pt")
+                self.x = torch.FloatTensor(np.array(data['weekly_infection'])).T
+                self.features = list(data['weekly_infection'].columns)
+                self.anual_population = data['anual_population']
+                self.anual_birth = data['anual_birth']
+                self.coordinates = data['coordinates']
+
+            elif name == 'Tycho_v1':
+                if not os.path.exists(f"{root}/Tycho_v1.pt"):
+                    print("downloading Tycho_v1 Dataset")
+                    url_feature = "https://drive.google.com/uc?export=download&id=13gHDO6Rh5gZwqo8MLDyyiLtPCd9gD0nD"
+                    urllib.request.urlretrieve(url_feature, f"{root}/Tycho_v1.pt")
+                data = torch.load(f"{root}/Tycho_v1.pt")
+                self.features = list(data.keys())
+                self.x = []
+                for v in data.values():
+                    self.x.append(v.float())  
+
+            elif name.split('_')[0] == 'Covid':
+                country = name.split('_')[1]
+                if not os.path.exists(f"{root}/covid_static.pt"):
+                    print("downloading Covid Static Dataset") 
+                    url_feature = "https://drive.google.com/uc?export=download&id=1-l1yVWlKxB0VLwj0IqJRAbruUvyrBUUI"
+                    urllib.request.urlretrieve(url_feature, f"{root}/covid_static.pt")
+                if not os.path.exists(f"{root}/covid_dynamic.pt"):
+                    print("downloading Covid Dynamic Dataset") 
+                    url_feature = "https://drive.google.com/uc?export=download&id=1-lUm1uaSDgbto2IV8aalZ3_lXh7LS7z3"
+                    urllib.request.urlretrieve(url_feature, f"{root}/covid_dynamic.pt")
+
+                try:
+                    static_data = torch.load(f"{root}/covid_static.pt")
+                    data = static_data[country]
+                    self.graph = data['graph']
+                except:
+                    dynamic_data = torch.load(f"{root}/covid_dynamic.pt")
+                    data = dynamic_data[country]
+                    self.dynamic_graph = data['Dynamic_graph']
+
+                self.x = data['features']
+                self.features = data['feature_names']
+                self.timestamp = data['time_stamp'] 
+            else:
+                raise ValueError("Dataset Not Found!")
 
         self.transforms = None
 
