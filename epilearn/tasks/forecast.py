@@ -172,9 +172,8 @@ class Forecast(BaseTask):
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item()}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions":preds, "targets":targets}
     
-
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
         """

@@ -13,6 +13,10 @@ class UniversalDataset(Dataset):
 
     Parameters
     ----------
+    name : str, optional
+           Name of the deataset to be loaded (Supported dataset only).
+    root : str, optional
+           Location of the dataset to be downloaded (Supported dataset only).
     x : torch.Tensor, optional
         Node features tensor of shape (num_samples, num_nodes, num_features). Represents the node features over multiple timesteps.
     states : torch.Tensor, optional
