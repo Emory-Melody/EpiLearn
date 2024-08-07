@@ -6,3 +6,4 @@ test.ipynb
 .idea
 /build
 /epilearn.egg-info
+/tmp

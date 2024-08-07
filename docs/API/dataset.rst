@@ -3,10 +3,11 @@ Dataset
 
 In EpiLearn, we use **UniversalDataset** to load preprocessed datasets. For customized data, we can simply initialize the UniversalDataset given features, graphs, and states.
 
+
 UniversalDataset
 --------------------
 
-.. autoclass:: epilearn.data.dataset.UniversalDataset.
+.. autoclass:: epilearn.data.dataset.UniversalDataset
     :members:
 
 
@@ -17,6 +18,7 @@ We collect epidemic data from various sources including the followings:
 
 
 **Temporal Data**
+
    * `Tycho_v1.0.0 <https://www.tycho.pitt.edu/data/>`_: Including eight diseases collected across 50 US states and 122 US cities from 1916 to 2009.
    * `Measles <https://github.com/msylau/measles_competing_risks/tree/master>`_: Contains measles infections in England and Wales across 954 urban centers (cities and towns) from 1944 to 1964.
 
@@ -28,6 +30,7 @@ We collect epidemic data from various sources including the followings:
 **Dataset Loading**
 
 Loading Measle and Tycho Datasets:
+
 .. code-block:: python
 
     from epilearn.data import UniversalDataset  
@@ -38,6 +41,7 @@ Loading Measle and Tycho Datasets:
 
 
 For covid data, we support the Dataset from Johns Hopkings University:
+
 .. code-block:: python
 
     from epilearn.data import UniversalDataset
@@ -46,6 +50,7 @@ For covid data, we support the Dataset from Johns Hopkings University:
 
 
 For other countries, please use 'Covid\_'+'country' to acquire the correspnding covid dataset. Currently, we support countries like China, Brazil, Austria, England, France, Italy, Newzealand, and Spain.
+
 .. code-block:: python
 
     from epilearn.data import UniversalDataset
