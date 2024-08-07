@@ -10,6 +10,10 @@
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/epilearn)](https://pepy.tech/project/epilearn)
 [![Web Interface](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://epilearn.streamlit.app/)
+<a target="_blank" href="https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
 
 <!-- **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
  -->
@@ -43,7 +47,7 @@ python setup.py install
 pip install epilearn
 ```
 
-EpiLearn also   requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
+EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
 
 Tutorial
 ==============
