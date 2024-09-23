@@ -148,7 +148,7 @@ main_tab = st.tabs(['Visualization'])
 
 with main_tab[0]:
 
-    col1, col2 = st.columns([1,2])
+    col1, col2 = st.columns([1,1])
     color_map = {0: 'orange', 1: 'red', 2: 'blue', 3:'green'}
     nt = get_net()
     with col1:
