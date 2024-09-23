@@ -259,7 +259,6 @@ class Forecast(BaseTask):
         if self.region_index is not None:
             data = data[:, self.region_index,:]
 
-
         # save groundtruth and predictions
         predictions = torch.FloatTensor()
         groundtruth = torch.FloatTensor()
