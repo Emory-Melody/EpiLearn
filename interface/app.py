@@ -131,8 +131,8 @@ with st.sidebar:
         
         cur_time = st.slider('Current Time Step', 0, timesteps-1, 0, 1)
     
-    traced = st.multiselect('Select ids of nodes to be traced...', options=list(range(graphs.shape[1])))
-    plot_time_series = st.multiselect('Select ids of nodes to be plot', options=list(range(graphs.shape[1])))
+    traced = st.multiselect('Select ids of nodes to be traced...', options=list(range(graphs.shape[1])), default=0)
+    plot_time_series = st.multiselect('Select ids of nodes to be plot', options=list(range(graphs.shape[1])), default=0)
         
         
 #-------------------------------------------------------
@@ -148,7 +148,7 @@ main_tab = st.tabs(['Visualization'])
 
 with main_tab[0]:
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1,2])
     color_map = {0: 'orange', 1: 'red', 2: 'blue', 3:'green'}
     nt = get_net()
     with col1:
@@ -183,7 +183,7 @@ with main_tab[0]:
         nt.repulsion(node_distance=500, central_gravity=0.2, spring_length=800, spring_strength=0.05, damping=0.09)
         nt.show('example.html', notebook=False)
         # nt.show_buttons(filter_=['physics'])
-        components.html(open("example.html", 'r', encoding='utf-8').read(), height=600)
+        components.html(open("example.html", 'r', encoding='utf-8').read(), height=800)
     
     with col2:
         for node_id in plot_time_series:
