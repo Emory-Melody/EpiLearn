@@ -9,7 +9,6 @@ import io
 import pandas as pd
 import urllib.request
 import os
-import matplotlib.pyplot as plt
 
 from sims import get_random_graph
 from NetSIR import NetSIR
