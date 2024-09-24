@@ -9,6 +9,7 @@ import io
 import pandas as pd
 import urllib.request
 import os
+import matplotlib.pyplot as plt
 
 from sims import get_random_graph
 from NetSIR import NetSIR
@@ -132,7 +133,7 @@ with st.sidebar:
         cur_time = st.slider('Current Time Step', 0, timesteps-1, 0, 1)
     
     traced = st.multiselect('Select ids of nodes to be traced...', options=list(range(graphs.shape[1])), default=0)
-    plot_time_series = st.multiselect('Select ids of nodes to be plot', options=list(range(graphs.shape[1])), default=0)
+    plot_time_series = st.multiselect('Select ids of nodes to be plot', options=list(range(graphs.shape[1])), default=[0, 1])
         
         
 #-------------------------------------------------------
@@ -192,7 +193,8 @@ with main_tab[0]:
             # fig = ff.create_distplot([y], ['Infected Count'])
             # # Plot!
             # st.plotly_chart(fig, use_container_width=True)
-            st.line_chart(pd.DataFrame({"Infected Count": y}), y=["Infected Count"])
+            # plt.figure(figsize=(12, 6))
+            st.line_chart(pd.DataFrame({"Infected Count": y}), y=["Infected Count"], height=250)
 
 
 
