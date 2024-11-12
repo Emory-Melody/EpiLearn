@@ -58,32 +58,40 @@ class BaseModel(nn.Module):
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, graph=train_graph,
                                     batch_size = batch_size, device = self.device, shuffle=shuffle)
             training_losses.append(loss)
+            if val_input.numel():
+                val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, graph=val_graph,
+                                                batch_size = batch_size, device = self.device, shuffle=shuffle)
+                validation_losses.append(val_loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, graph=val_graph,
-                                             batch_size = batch_size, device = self.device, shuffle=shuffle)
-            validation_losses.append(val_loss)
+                if best_val > val_loss:
+                    best_epoch = epoch
+                    best_train = loss
+                    best_val = val_loss
+                    self.best_output = output
+                    best_weights = deepcopy(self.state_dict())
+                    self.best_model = best_weights
+                    patience = early_stopping
+                else:
+                    patience -= 1
 
-            if best_val > val_loss:
-                best_epoch = epoch
-                best_train = loss
-                best_val = val_loss
-                self.best_output = output
+
+                if verbose and epoch%1 == 0:
+                    print(f"######### epoch:{epoch}")
+                    print("Training loss: {}".format(training_losses[-1]))
+                    print("Validation loss: {}".format(validation_losses[-1]))
+
+                if epoch > early_stopping and patience <= 0:
+                    es_flag = True
+                    #print(f"Early stop at Epoch {epoch}")
+                    break
+            else:
+                validation_losses.append(None)
                 best_weights = deepcopy(self.state_dict())
                 self.best_model = best_weights
-                patience = early_stopping
-            else:
-                patience -= 1
-
-
-            if verbose and epoch%1 == 0:
-                print(f"######### epoch:{epoch}")
-                print("Training loss: {}".format(training_losses[-1]))
-                print("Validation loss: {}".format(validation_losses[-1]))
-
-            if epoch > early_stopping and patience <= 0:
-                es_flag = True
-                #print(f"Early stop at Epoch {epoch}")
-                break
+                if verbose and epoch%50 == 0:
+                    print(f"######### epoch:{epoch}")
+                    print("Training loss: {}".format(training_losses[-1]))
+                    print("Validation loss: {}".format(validation_losses[-1]))
 
             
 

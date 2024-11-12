@@ -44,7 +44,9 @@ class BaseModel(nn.Module):
         validation_losses = []
         early_stopping = patience
         best_val = float('inf')
+        best_weights = deepcopy(self.state_dict())
         for epoch in tqdm(range(epochs)):
+            # train one epoch
             loss = self.train_epoch(optimizer=optimizer, 
                                     loss_fn=loss_fn, 
                                     feature=train_input, 
@@ -55,31 +57,38 @@ class BaseModel(nn.Module):
                                     batch_size=batch_size, 
                                     device=self.device)
             training_losses.append(loss)
+            # validate
+            if val_input.numel():
+                val_loss, output = self.evaluate(loss_fn=loss_fn, 
+                                                feature=val_input, 
+                                                graph=val_graph, 
+                                                dynamic_graph=val_dynamic_graph,
+                                                target=val_target, 
+                                                states=val_states, 
+                                                device=self.device)
+                validation_losses.append(val_loss)
+                if val_loss is not None and best_val > val_loss:
+                    best_val = val_loss
+                    self.best_output = output
+                    best_weights = deepcopy(self.state_dict())
+                    patience = early_stopping
+                else:
+                    patience -= 1
 
-            val_loss, output = self.evaluate(loss_fn=loss_fn, 
-                                             feature=val_input, 
-                                             graph=val_graph, 
-                                             dynamic_graph=val_dynamic_graph,
-                                             target=val_target, 
-                                             states=val_states, 
-                                             device=self.device)
-            validation_losses.append(val_loss)
+                if epoch > early_stopping and patience <= 0:
+                    break
 
-            if best_val > val_loss:
-                best_val = val_loss
-                self.best_output = output
-                best_weights = deepcopy(self.state_dict())
-                patience = early_stopping
+                if verbose and epoch%50 == 0:
+                    print(f"######### epoch:{epoch}")
+                    print("Training loss: {}".format(training_losses[-1]))
+                    print("Validation loss: {}".format(validation_losses[-1]))
             else:
-                patience -= 1
-
-            if epoch > early_stopping and patience <= 0:
-                break
-
-            if verbose and epoch%50 == 0:
+                validation_losses.append(None)
+                best_weights = deepcopy(self.state_dict())
                 print(f"######### epoch:{epoch}")
                 print("Training loss: {}".format(training_losses[-1]))
                 print("Validation loss: {}".format(validation_losses[-1]))
+            
 
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))

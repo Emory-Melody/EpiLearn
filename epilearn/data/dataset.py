@@ -1,5 +1,6 @@
 import torch
 from torch_geometric.data import Data
+from torch_geometric.utils import subgraph
 import numpy as np
 import os
 import urllib.request
@@ -133,25 +134,80 @@ class UniversalDataset(Dataset):
             self.output_dim = self.y.shape
         
         if self.graph is not None and self.edge_index is None:
-            sparse_adj = self.graph.to_sparse()
+            sparse_adj = torch.FloatTensor(self.graph).to_sparse()
             self.edge_index = sparse_adj.indices()
             self.edge_weight = sparse_adj.values()
     
-    def get_transformed(self, transformations=None):
+    def get_transformed(self, input_data=None, transformations=None):
         if transformations is None:
             if self.transforms is not None:
                 transformations = self.transforms
-            else:
-                raise AttributeError("transformation does not exists!")
-            
-        input_data = {"features": self.x, 
-                      "graph": self.graph, 
-                      "dynamic_graph": self.dynamic_graph, 
-                      "states": self.states
-                    }
-        transformed_data = self.transforms(input_data)
+        if input_data is None:
+            input_data = {"features": self.x, 
+                        "target": self.y,
+                        "graph": self.graph, 
+                        "dynamic_graph": self.dynamic_graph, 
+                        "states": self.states
+                        }
+        if transformations is not None:
+            input_data = transformations(input_data)
 
-        return transformed_data['features'], transformed_data['graph'], transformed_data['dynamic_graph'], transformed_data['states']
+        return input_data # input_data['features'], input_data['target'], input_data['graph'], input_data['dynamic_graph'], input_data['states']
+
+    def get_split(self, inputs, idx1, idx2):
+        if inputs is None:
+            return None, None, None
+        
+        train_outputs = inputs[:idx1, ...]
+        val_outputs = inputs[idx1:idx2, ...]
+        test_outputs = inputs[idx2:, ...]
+
+        return train_outputs, val_outputs, test_outputs
+    
+    def ganerate_splits(self, train_rate=0.6, val_rate=0.1):
+        dataset = {
+            "features": self.x,
+            "target": self.y,
+            "graph": self.graph,
+            "dynamic_graph": self.dynamic_graph,
+            "states": self.states
+        }
+
+        transformed_dataset = self.get_transformed(dataset)
+
+        adj_static = self.graph
+
+        split_line1 = int(self.x.shape[0] * train_rate)
+        split_line2 = int(self.x.shape[0] * (train_rate + val_rate))
+
+        train_features, val_features, test_features = self.get_split(transformed_dataset['features'], split_line1, split_line2)
+        train_target, val_target, test_target = self.get_split(transformed_dataset['target'], split_line1, split_line2)
+        train_states, val_states, test_states = self.get_split(transformed_dataset['states'], split_line1, split_line2)
+        train_dynamic_adj, val_dynamic_adj, test_dynamic_adj = self.get_split(transformed_dataset['dynamic_graph'], split_line1, split_line2)
+        
+        train_dataset = {
+            "features": train_features,
+            "target": train_target,
+            "graph": adj_static,
+            "dynamic_graph": train_dynamic_adj,
+            "states": train_states
+        }
+        val_dataset = {
+            "features": val_features,
+            "target": val_target,
+            "graph": adj_static,
+            "dynamic_graph": val_dynamic_adj,
+            "states": val_states
+        }
+        test_dataset = {
+            "features": test_features,
+            "target": test_target,
+            "graph": adj_static,
+            "dynamic_graph": test_dynamic_adj,
+            "states": test_states
+        }
+
+        return train_dataset, val_dataset, test_dataset
 
         
     def __getitem__(self, index):
@@ -172,7 +228,7 @@ class UniversalDataset(Dataset):
     def save(self):
         pass
 
-    def generate_dataset(self, X = None, Y = None, states = None, dynamic_adj = None, lookback_window_size = 1, horizon_size = 1, permute = False, feat_idx = None, target_idx = None):
+    def generate_dataset(self, X = None, Y = None, states = None, dynamic_adj = None, lookback_window_size = 1, horizon_size = 1, permute = False):
         """
         Takes node features for the graph and divides them into multiple samples
         along the time-axis by sliding a window of size (num_timesteps_input+
@@ -190,14 +246,12 @@ class UniversalDataset(Dataset):
         if Y is None:
             Y = self.y
 
-        if feat_idx is not None:
-            X = X[:, :, feat_idx]
-
         indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
         target = []
         for i, j in indices:
             target.append(Y[i + lookback_window_size: j])
-        targets = torch.stack(target)
+        
+        targets = torch.stack(target) if len(target) > 0 else torch.Tensor([[[]]])
         if permute:
             targets = targets.transpose(1,2)
 
@@ -207,12 +261,9 @@ class UniversalDataset(Dataset):
                 tmp = []
                 for i, j in indices:
                     tmp.append(inputs[1][i: i + lookback_window_size])
-                input_list[m][0] = torch.stack(tmp)
+                input_list[m][0] = torch.stack(tmp) if len(tmp) else torch.Tensor([[[]]])
                 if permute:
                     inputs[0] = inputs[0].transpose(1,2)
-
-        if target_idx is not None:
-            targets = targets[:,target_idx, :]
 
         return input_list[0][0], targets, input_list[1][0], input_list[2][0]
 

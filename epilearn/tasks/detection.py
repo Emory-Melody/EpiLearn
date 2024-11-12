@@ -53,12 +53,17 @@ class Detection(BaseTask):
         if not hasattr(self, "model"):
             raise RuntimeError("model not exists, please use load_model() to load model first!")
 
-        train_split, val_split, test_split, ((features, norm), adj_norm) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+        self.train_split, self.val_split, self.test_split, self.adj = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+
+        try:
+            self.target_mean, self.target_std = self.dataset.transforms.target_mean, dataset.transforms.target_std
+        except:
+            self.target_mean, self.target_std = 0, 1
 
         try:
             self.model = self.prototype(
-                                        num_nodes=adj_norm.shape[0],
-                                        num_features=train_split[0].shape[-1],
+                                        num_nodes=self.adj.shape[0],
+                                        num_features=self.train_split['features'].shape[-1],
                                         num_timesteps_input=self.lookback,
                                         num_timesteps_output=self.horizon,
                                         device=self.device
@@ -67,17 +72,17 @@ class Detection(BaseTask):
         except:
             try:
                 self.model = self.prototype( 
-                                        num_features=train_split[0].shape[2],
+                                        num_features=self.train_split['features'].shape[2],
                                         num_timesteps_input=self.lookback,
                                         num_timesteps_output=self.horizon,
                                         device=self.device).to(device=self.device)
                                         
                 print("temporal model loaded!")
             except:
-                if len(train_split[0].shape) == 4:
-                    num_features = train_split[0].shape[-1] * train_split[0].shape[-2]
+                if len(self.train_split['features'].shape) == 4:
+                    num_features = self.train_split['features'].shape[-1] * self.train_split['features'].shape[-2]
                 else:
-                    num_features = train_split[0].shape[-1]
+                    num_features = self.train_split['features'].shape[-1]
                 self.model = self.prototype(
                                         num_features=num_features,
                                         num_classes=self.horizon,
@@ -91,31 +96,38 @@ class Detection(BaseTask):
 
         # train
         self.model.fit(
-                train_input=train_split[0], 
-                train_target=train_split[1], 
-                train_states=train_split[2],
-                train_graph=adj_norm, 
-                train_dynamic_graph=train_split[3],
-                val_input=val_split[0], 
-                val_target=val_split[1], 
-                val_states=val_split[2],
-                val_graph=adj_norm,
-                val_dynamic_graph=val_split[3],
+                train_input=self.train_split['features'], 
+                train_target=self.train_split['targets'], 
+                train_states = self.train_split['states'],
+                train_graph=self.adj, 
+                train_dynamic_graph=self.train_split['dynamic_graph'],
+                val_input=self.val_split['features'], 
+                val_target=self.val_split['targets'], 
+                val_states=self.val_split['states'],
+                val_graph=self.adj,
+                val_dynamic_graph=self.val_split['dynamic_graph'],
                 verbose=True,
                 batch_size=batch_size,
                 epochs=epochs,
                 loss=loss)
         
+
         # evaluate
-        out = self.model.predict(feature=test_split[0], graph=adj_norm, states=test_split[2], dynamic_graph=test_split[3])
+        self.test_graph = self.adj
+        self.test_feature = self.test_split['features']
+        self.test_target = self.test_split['targets']
+        self.test_states = self.test_split['states']
+        self.test_dynamic_graph = self.test_split['dynamic_graph']
+        # evaluate
+        out = self.model.predict(feature=self.test_feature, graph=self.test_graph, states=self.test_states, dynamic_graph=self.test_dynamic_graph)
         if type(out) is tuple:
             out = out[0]
         preds = out.detach().cpu().argmax(2)
         # metrics
-        acc = metrics.get_ACC(preds, test_split[1])
+        acc = metrics.get_ACC(preds, self.test_target)
         print(f"Test ACC: {acc.item()}")
         
-        return {'acc': acc}
+        return {'acc': acc, "predictions": preds, "targets": self.test_target}
 
 
     def evaluate_model(self,
@@ -136,6 +148,12 @@ class Detection(BaseTask):
             if not hasattr(self, "model"):
                 raise RuntimeError("model not exists, please use load_model() to load model first!")
             model = self.model
+        
+        features = self.test_feature if features is None else features
+        graph = self.test_graph if graph is None else graph
+        states = self.test_states if states is None else states
+        dynamic_graph = self.test_dynamic_graph if dynamic_graph is None else dynamic_graph
+        targets = self.test_target if targets is None else targets
 
         # evaluate
         out = self.model.predict(feature=features, graph=graph, states=states, dynamic_graph=dynamic_graph)
@@ -143,59 +161,80 @@ class Detection(BaseTask):
         # metrics
         acc = metrics.get_ACC(preds, targets)
         print(f"Test ACC: {acc.item()}")
-    
+        return {'acc': acc, "predictions": preds, "targets": self.test_target}
 
-    def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
-        '''
-        Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.
-        '''
+    # def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
+    #     '''
+    #     Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.
+    #     '''
+    #     if dataset is None:
+    #         try:
+    #             dataset = self.dataset
+    #         except:
+    #             raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
+
+    #     # preprocessing
+    #     features, adj, adj_dynamic, states = dataset.get_transformed()
+    #     feat_mean, feat_std = dataset.transforms.feat_mean, dataset.transforms.feat_std
+
+    #     features = features.to(self.device)
+    #     adj = adj.to(self.device)
+
+    #     if adj_dynamic is not None:
+    #         adj_dynamic = adj_dynamic.to(self.device)
+    #     if states is not None:
+    #         states = states.to(self.device)
+
+    #     split_line1 = int(features.shape[0] * train_rate)
+    #     split_line2 = int(features.shape[0] * (train_rate + val_rate))
+
+    #     train_feature = features[:split_line1, :, :]
+    #     val_feature  = features[split_line1:split_line2, :, :]
+    #     test_feature  = features[split_line2:, :, :]
+
+    #     train_target = dataset.y[:split_line1, :]
+    #     val_target = dataset.y[split_line1:split_line2, :]
+    #     test_target = dataset.y[split_line2:, :]
+    #     try:
+    #         train_states = states[:split_line1, :, :]
+    #         val_states = states[split_line1:split_line2, :, :]
+    #         test_states = states[split_line2:, :, :]
+    #     except:
+    #         train_states = None
+    #         val_states = None
+    #         test_states = None
+
+    #     if dataset.dynamic_graph is not None: # hasattr(dataset, 'dynamic_graph') and 
+    #         train_graph = adj_dynamic[:split_line1, :, :]
+    #         val_graph = adj_dynamic[split_line1:split_line2, :, :]
+    #         test_graph = adj_dynamic[split_line2:, :, :]
+    #     else:
+    #         train_graph = None
+    #         val_graph = None
+    #         test_graph = None
+
+    #     return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (feat_std, feat_mean)), adj)
+
+
+    def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
+        """
+        Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles 
+        preprocessing to normalize the data and prepare it for the model.
+        """
         if dataset is None:
             try:
                 dataset = self.dataset
             except:
                 raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
-
+            
         # preprocessing
-        features, adj, adj_dynamic, states = dataset.get_transformed()
-        feat_mean, feat_std = dataset.transforms.feat_mean, dataset.transforms.feat_std
+        self.train_dataset, self.val_dataset, self.test_dataset = dataset.ganerate_splits(train_rate=train_rate, val_rate=val_rate)
+        adj = dataset.graph
 
-        features = features.to(self.device)
-        adj = adj.to(self.device)
-
-        if adj_dynamic is not None:
-            adj_dynamic = adj_dynamic.to(self.device)
-        if states is not None:
-            states = states.to(self.device)
-
-        split_line1 = int(features.shape[0] * train_rate)
-        split_line2 = int(features.shape[0] * (train_rate + val_rate))
-
-        train_feature = features[:split_line1, :, :]
-        val_feature  = features[split_line1:split_line2, :, :]
-        test_feature  = features[split_line2:, :, :]
-
-        train_target = dataset.y[:split_line1, :]
-        val_target = dataset.y[split_line1:split_line2, :]
-        test_target = dataset.y[split_line2:, :]
-        try:
-            train_states = states[:split_line1, :, :]
-            val_states = states[split_line1:split_line2, :, :]
-            test_states = states[split_line2:, :, :]
-        except:
-            train_states = None
-            val_states = None
-            test_states = None
-
-        if dataset.dynamic_graph is not None: # hasattr(dataset, 'dynamic_graph') and 
-            train_graph = adj_dynamic[:split_line1, :, :]
-            val_graph = adj_dynamic[split_line1:split_line2, :, :]
-            test_graph = adj_dynamic[split_line2:, :, :]
-        else:
-            train_graph = None
-            val_graph = None
-            test_graph = None
-
-        return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (feat_std, feat_mean)), adj)
+        return  {'features': self.train_dataset['features'], 'targets': self.train_dataset['target'], 'states': self.train_dataset['states'], 'dynamic_graph': self.train_dataset['dynamic_graph']}, \
+                {'features': self.val_dataset['features'], 'targets': self.val_dataset['target'], 'states': self.val_dataset['states'], 'dynamic_graph': self.val_dataset['dynamic_graph']}, \
+                {'features': self.test_dataset['features'], 'targets': self.test_dataset['target'], 'states': self.test_dataset['states'], 'dynamic_graph': self.test_dataset['dynamic_graph']}, \
+                adj
 
         
 

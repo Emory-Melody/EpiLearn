@@ -46,25 +46,32 @@ class BaseModel(nn.Module):
             
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input,  target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
+            if val_input.numel():
+                val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input,  target = val_target, device = self.device)
+                validation_losses.append(val_loss)
 
-            val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input,  target = val_target, device = self.device)
-            validation_losses.append(val_loss)
+                if best_val > val_loss:
+                    best_val = val_loss
+                    self.output = output
+                    best_weights = deepcopy(self.state_dict())
+                    patience = early_stopping
+                else:
+                    patience -= 1
 
-            if best_val > val_loss:
-                best_val = val_loss
-                self.output = output
-                best_weights = deepcopy(self.state_dict())
-                patience = early_stopping
+                if epoch > early_stopping and patience <= 0:
+                    break
+
+                if verbose and epoch%50 == 0:
+                    print(f"######### epoch:{epoch}")
+                    print("Training loss: {}".format(training_losses[-1]))
+                    print("Validation loss: {}".format(validation_losses[-1]))
             else:
-                patience -= 1
-
-            if epoch > early_stopping and patience <= 0:
-                break
-
-            if verbose and epoch%50 == 0:
-                print(f"######### epoch:{epoch}")
-                print("Training loss: {}".format(training_losses[-1]))
-                print("Validation loss: {}".format(validation_losses[-1]))
+                validation_losses.append(None)
+                best_weights = deepcopy(self.state_dict())
+                if verbose and epoch%50 == 0:
+                    print(f"######### epoch:{epoch}")
+                    print("Training loss: {}".format(training_losses[-1]))
+                    print("Validation loss: {}".format(validation_losses[-1]))
 
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))

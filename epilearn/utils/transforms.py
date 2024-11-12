@@ -50,6 +50,8 @@ class Compose:
                 data[dt] = t(data[dt], device=self.device)
                 if type(t).__name__ == 'normalize_feat':
                     self.feat_mean, self.feat_std = t.means, t.stds
+                if type(t).__name__ == 'normalize_target':
+                    self.target_mean, self.target_std = t.means, t.stds
         return data
 
     def __repr__(self):

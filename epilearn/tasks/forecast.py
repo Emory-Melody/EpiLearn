@@ -64,20 +64,25 @@ class Forecast(BaseTask):
             raise RuntimeError("model not exists, please use load_model() to load model first!")
         
         self.region_index = region_idx
-        self.train_split, self.val_split, self.test_split, ((features, norm), adj) = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+        self.train_split, self.val_split, self.test_split, self.adj = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+
+        try:
+            self.target_mean, self.target_std = self.dataset.transforms.target_mean, dataset.transforms.target_std
+        except:
+            self.target_mean, self.target_std = 0, 1
 
         try:
         # initialize model
             self.model = self.prototype(
-                num_nodes=adj.shape[0],
-                num_features=self.train_split[0].shape[3],
+                num_nodes=self.adj.shape[0],
+                num_features=self.train_split['features'].shape[3],
                 num_timesteps_input=self.lookback,
                 num_timesteps_output=self.horizon,
                 device=self.device
                 ).to(self.device)
             print("spatial-temporal model loaded!")
         except:
-            self.model = self.prototype( num_features=self.train_split[0].shape[2],
+            self.model = self.prototype( num_features=self.train_split['features'].shape[2],
                                     num_timesteps_input=self.lookback,
                                     num_timesteps_output=self.horizon,
                                     device=self.device).to(self.device)
@@ -85,27 +90,27 @@ class Forecast(BaseTask):
 
         # train
         self.model.fit(
-                train_input=self.train_split[0], 
-                train_target=self.train_split[1], 
-                train_states = self.train_split[2],
-                train_graph=adj, 
-                train_dynamic_graph=self.train_split[3],
-                val_input=self.val_split[0], 
-                val_target=self.val_split[1], 
-                val_states=self.val_split[2],
-                val_graph=adj,
-                val_dynamic_graph=self.val_split[3],
+                train_input=self.train_split['features'], 
+                train_target=self.train_split['targets'], 
+                train_states = self.train_split['states'],
+                train_graph=self.adj, 
+                train_dynamic_graph=self.train_split['dynamic_graph'],
+                val_input=self.val_split['features'], 
+                val_target=self.val_split['targets'], 
+                val_states=self.val_split['states'],
+                val_graph=self.adj,
+                val_dynamic_graph=self.val_split['dynamic_graph'],
                 verbose=True,
                 batch_size=batch_size,
                 epochs=epochs,
                 loss=loss)
         
         # evaluate
-        self.test_graph = adj
-        self.test_feature = self.test_split[0]
-        self.test_target = self.test_split[1]
-        self.test_states = self.test_split[2]
-        self.test_dynamic_graph = self.test_split[3]
+        self.test_graph = self.adj
+        self.test_feature = self.test_split['features']
+        self.test_target = self.test_split['targets']
+        self.test_states = self.test_split['states']
+        self.test_dynamic_graph = self.test_split['dynamic_graph']
 
         out = self.model.predict(feature=self.test_feature, 
                                  graph=self.test_graph, 
@@ -114,8 +119,8 @@ class Forecast(BaseTask):
                                  )
         if type(out) is tuple:
             out = out[0]
-        preds = out.detach().cpu()*norm[0]+norm[1]
-        targets = self.test_target.detach().cpu()*norm[0]+norm[1]
+        preds = out.detach().cpu()*self.target_std+self.target_mean
+        targets = self.test_target.detach().cpu()*self.target_std+self.target_mean
         # metrics
         mse = metrics.get_MSE(preds, targets)
         mae = metrics.get_MAE(preds, targets)
@@ -124,7 +129,7 @@ class Forecast(BaseTask):
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item()}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": preds, "targets": targets}
 
 
     def evaluate_model(self,
@@ -151,8 +156,8 @@ class Forecast(BaseTask):
         states = self.test_states if states is None else states
         dynamic_graph = self.test_dynamic_graph if dynamic_graph is None else dynamic_graph
         targets = self.test_target if targets is None else targets
-        mean = self.feat_mean[0] if norm is None else norm['mean']
-        std = self.feat_std[0] if norm is None else norm['std']
+        mean = self.target_mean if norm is None else norm['mean']
+        std = self.target_std if norm is None else norm['std']
 
         # evaluate
         out = self.model.predict(feature=features, 
@@ -187,50 +192,30 @@ class Forecast(BaseTask):
                 raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
             
         # preprocessing
-        features, adj, adj_dynamic, states = dataset.get_transformed()
-
-        feat_mean, feat_std = dataset.transforms.feat_mean, dataset.transforms.feat_std
-        self.feat_mean = feat_mean
-        self.feat_std = feat_std
-
-        split_line1 = int(features.shape[0] * train_rate)
-        split_line2 = int(features.shape[0] * (train_rate + val_rate))
-
-        self.train_original_data = features[:split_line1, ...]
-        self.val_original_data = features[split_line1:split_line2, ...]
-        self.test_original_data = features[split_line2:, ...]
-        
-        train_original_states = None
-        val_original_states = None
-        test_original_states = None
-
-        if states is not None:
-            train_original_states = states[:split_line1, ...]
-            val_original_states = states[split_line1:split_line2, ...]
-            test_original_states = states[split_line2:, ...]
-
+        self.train_dataset, self.val_dataset, self.test_dataset = dataset.ganerate_splits(train_rate=train_rate, val_rate=val_rate)
+        adj = dataset.graph
 
         train_input, train_target, train_states, train_adj = dataset.generate_dataset(
-                                                                                        X=self.train_original_data, 
-                                                                                        Y=self.train_original_data[..., 0], 
-                                                                                        states=train_original_states,
-                                                                                        dynamic_adj = adj_dynamic,
+                                                                                        X=self.train_dataset['features'], 
+                                                                                        Y=self.train_dataset['target'], 
+                                                                                        states=self.train_dataset['states'],
+                                                                                        dynamic_adj = self.train_dataset['dynamic_graph'],
                                                                                         lookback_window_size=self.lookback,
                                                                                         horizon_size=self.horizon, 
                                                                                         permute=permute)
         val_input, val_target, val_states, val_adj = dataset.generate_dataset(
-                                                                                X=self.val_original_data, 
-                                                                                Y=self.val_original_data[..., 0], 
-                                                                                states=val_original_states,
-                                                                                dynamic_adj = adj_dynamic,
+                                                                                X=self.val_dataset['features'], 
+                                                                                Y=self.val_dataset['target'], 
+                                                                                states=self.val_dataset['states'],
+                                                                                dynamic_adj = self.val_dataset['dynamic_graph'],
                                                                                 lookback_window_size=self.lookback, 
                                                                                 horizon_size=self.horizon, 
                                                                                 permute=permute)
         test_input, test_target, test_states, test_adj = dataset.generate_dataset(
-                                                                                    X=self.test_original_data, 
-                                                                                    Y=self.test_original_data[..., 0], 
-                                                                                    states=test_original_states,
-                                                                                    dynamic_adj = adj_dynamic,
+                                                                                    X=self.test_dataset['features'], 
+                                                                                    Y=self.test_dataset['target'], 
+                                                                                    states=self.test_dataset['states'],
+                                                                                    dynamic_adj = self.test_dataset['dynamic_graph'],
                                                                                     lookback_window_size=self.lookback, 
                                                                                     horizon_size=self.horizon, 
                                                                                     permute=permute)
@@ -250,7 +235,11 @@ class Forecast(BaseTask):
 
             features = features[:,region_idx,:]
 
-        return (train_input, train_target, train_states, train_adj), (val_input, val_target, val_states, val_adj), (test_input, test_target, test_states, test_adj), ((features, (feat_std[0], feat_mean[0])), adj)
+        return  {'features': train_input, 'targets': train_target, 'states': train_states, 'dynamic_graph': train_adj}, \
+                {'features': val_input, 'targets': val_target, 'states': val_states, 'dynamic_graph': val_adj}, \
+                {'features': test_input, 'targets': test_target, 'states': test_states, 'dynamic_graph': test_adj}, \
+                adj
+                
     
     def plot_forecasts(self, index_range=None):
         data = self.test_original_data
