@@ -4,7 +4,7 @@
 </p>
 
 
-## <p align="center">Epidemic Modeling with Pytorch</p>
+## <p align="center">Epidemic Modeling with Python</p>
 <!-- [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/) -->
 [![Documentation Status](https://readthedocs.org/projects/exe/badge/?version=latest)](https://epilearn-doc.readthedocs.io/en/latest/)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Emory-Melody/EpiLearn/blob/main/LICENSE)
@@ -19,15 +19,16 @@
  -->
 **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
 
+**[Colab Tutorial](https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T#scrollTo=ISt5vlDKlJ1R)**
 
-**EpiLearn** is a Pytorch-based machine learning tool-kit for epidemic data modeling and analysis. We provide numerour features including:
+**EpiLearn** is a Python machine learning toolkit for epidemic data modeling and analysis. We provide numerous features including:
 
 - Implementation of Epidemic Models
 - Simulation of Epidemic Spreading
 - Visualization of Epidemic Data
 - Unified Pipeline for Epidemic Tasks
   
-For more models, please refer to our [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers)
+For more machine models in epidemic modeling, feel free to check out our curated paper list [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers).
 
 
 Installation
@@ -47,13 +48,13 @@ python setup.py install
 pip install epilearn
 ```
 
-EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
+EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For the GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
 
 Tutorial
 ==============
-We provide a complete tutorial of EpiLearn in our [documentation](https://epilearn-doc.readthedocs.io/en/latest/), including [pipelines](https://epilearn-doc.readthedocs.io/en/latest/tutorials/task_building.html), [simulations](https://epilearn-doc.readthedocs.io/en/latest/tutorials/simulation.html) and other [utilities](https://epilearn-doc.readthedocs.io/en/latest/tutorials/utils.html). For more examples, please refer to the [example](https://github.com/Emory-Melody/EpiLearn/tree/main/examples) folder. For the overal framework of EpiLearn, please check our [paper](https://arxiv.org/abs/2406.06016).
+We provide a quick tutorial of EpiLearn in [Google Colab](https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T#scrollTo=qv6sHNCee68F). A more completed tutorial can be found in our [documentation](https://epilearn-doc.readthedocs.io/en/latest/), including [pipelines](https://epilearn-doc.readthedocs.io/en/latest/tutorials/task_building.html), [simulations](https://epilearn-doc.readthedocs.io/en/latest/tutorials/simulation.html) and other [utilities](https://epilearn-doc.readthedocs.io/en/latest/tutorials/utils.html). For more examples, please refer to the [example](https://github.com/Emory-Melody/EpiLearn/tree/main/examples) folder. For the overall framework of EpiLearn, please check our [paper](https://arxiv.org/abs/2406.06016).
 
-Here we also offer a quickstart of how to use the EpiLearn for forecast and detection task.
+Below we also offer a quick start on how to use EpiLearn for forecast and detection tasks.
 
 ## Forecast Pipeline ##
 ```python
