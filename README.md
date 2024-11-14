@@ -13,6 +13,8 @@
 <a target="_blank" href="https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
+[![Feedback](https://img.shields.io/badge/Feedback-8A2BE2)](https://join.slack.com/t/epilearn/shared_invite/zt-2uq9tdbe8-thaXoYN~8UIWjwDqKm8vgg)
+
 
 
 <!-- **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
@@ -29,6 +31,12 @@
 - Unified Pipeline for Epidemic Tasks
   
 For more machine models in epidemic modeling, feel free to check out our curated paper list [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers).
+
+Announcement
+==============
+EpiLearn is currently updating. We will release a new version very soon! --- 11/13/2024
+
+If you have any suggestions, please feel free to click the feedback button on top and join our slack channel!
 
 
 Installation

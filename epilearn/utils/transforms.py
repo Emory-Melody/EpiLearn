@@ -124,6 +124,68 @@ class normalize_feat(nn.Module):
         return X
 
 
+class normalize_target(nn.Module):
+    """
+    A normalization module for feature standardization in PyTorch. This module adjusts features
+    to have zero mean and unit variance along specified dimensions, handling 3D and 4D tensors.
+
+    Parameters
+    ----------
+    dim : int, optional
+        The dimension over which to calculate the mean and standard deviation for normalization. Default: 1.
+    """
+    def __init__(self, dim=1):
+        super().__init__()
+        self.dim = dim
+        self.means = None
+        self.stds = None
+    
+    def forward(self, X, device='cpu'):
+        """
+        Forward pass of the normalization module that normalizes a given input tensor X.
+
+        Parameters
+        ----------
+        X : torch.Tensor
+            The input tensor to be normalized. Can be either a 3D or 4D tensor.
+        device : str, optional
+            The device to which the normalized tensor is transferred. Default: 'cpu'.
+
+        Returns
+        -------
+        torch.Tensor
+            The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
+            and transferred to the specified device.
+        """
+        if len(X.shape) == 2:
+            means = torch.mean(X, axis=0)
+            X = X - means
+            stds = torch.std(X, axis=0)
+            X = X / stds
+
+        if len(X.shape) == 3:
+            means = torch.mean(X, axis=(0, 1))
+            X = X - means.unsqueeze(0).unsqueeze(0)
+            stds = torch.std(X, axis=(0, 1))
+            X = X / stds.unsqueeze(0).unsqueeze(0)
+        elif len(X.shape) == 4:
+            means = torch.mean(X, dim=(0, 1, 2))
+            X = X - means.unsqueeze(0).unsqueeze(0).unsqueeze(0)
+            stds = torch.std(X, dim=(0, 1, 2))
+            X = X / stds.unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        X[torch.where(torch.isnan(X))]=0
+        self.means = means
+        self.stds = stds
+
+        return X.to(device)
+    
+    def denorm(self, X):
+        X = X*self.stds
+        X = X+self.means
+
+        return X
+
+
 
 
 

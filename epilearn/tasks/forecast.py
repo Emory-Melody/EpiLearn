@@ -242,7 +242,8 @@ class Forecast(BaseTask):
                 
     
     def plot_forecasts(self, index_range=None):
-        data = self.test_original_data
+        data = self.test_dataset['features']
+        target = self.test_dataset['target']
         if data.shape[-1] >1:
             raise ValueError("Multi channel is not supported. Please use single channel data.")
         if self.region_index is not None:
@@ -256,12 +257,12 @@ class Forecast(BaseTask):
             
             for i in range(0, len(data)-self.horizon-self.lookback, self.horizon):
                 history = torch.FloatTensor(data[i:i+self.lookback])
-                label = data[i+self.lookback:i+self.lookback+self.horizon]
+                label = target[i+self.lookback:i+self.lookback+self.horizon]
 
                 output = self.model(history.unsqueeze(0).to(self.device))
                 output = output.detach().cpu()
-                preds = (output*self.feat_std + self.feat_mean).squeeze(0)
-                label = (label*self.feat_std + self.feat_mean).squeeze(-1)
+                preds = (output*self.target_std + self.target_mean).squeeze(0)
+                label = (label*self.target_std + self.target_mean).squeeze(-1)
 
                 groundtruth = torch.cat([groundtruth, label])
                 predictions = torch.cat([predictions, preds])
