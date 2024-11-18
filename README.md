@@ -32,11 +32,16 @@
   
 For more machine models in epidemic modeling, feel free to check out our curated paper list [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers).
 
+
 Announcement
 ==============
 EpiLearn is currently updating. We will release a new version very soon! --- 11/13/2024
 
 If you have any suggestions, please feel free to click the feedback button on top and join our slack channel!
+
+Encounter Any Issues?
+====
+If you experience any issues, please don’t hesitate to open a **[GitHub Issue](https://github.com/Emory-Melody/EpiLearn/issues)**. We will do our best to address it within **three business days**. You are also warmly invited to join our **[User Slack Channel](https://join.slack.com/t/epilearn/shared_invite/zt-2uq9tdbe8-thaXoYN~8UIWjwDqKm8vgg)** for more efficient communication. Alternatively, reaching out to us via email is also perfectly fine!
 
 
 Installation

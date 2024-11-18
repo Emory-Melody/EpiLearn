@@ -58,3 +58,11 @@ For other countries, please use 'Covid\_'+'country' to acquire the correspnding 
     covid_dataset = UniversalDataset(name='Covid_Brazil', root='./tmp/')
 
 
+Customize Your Own Dataset
+--------------------
+
+
+
+
+
+
