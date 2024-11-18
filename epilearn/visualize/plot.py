@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-def plot_series(x : np.array, columns : list):
+def plot_series(x : np.array, columns : list, fig_size=None):
     """
     Plots time series data from an array using Seaborn's line plot functionality. Each series
     is represented as a separate line on the plot.
@@ -25,6 +25,8 @@ def plot_series(x : np.array, columns : list):
     data = dict.fromkeys(columns)
     for i ,s in enumerate(columns):
         data[s] = x[:, i]
+    if fig_size is not None:
+        plt.figure(figsize=fig_size)
     sb.relplot(data, kind = "line", legend = columns)
 
 def plot_graph(states: np.array, graph : np.array, classes=None, layout=None):

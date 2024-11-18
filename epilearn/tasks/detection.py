@@ -27,6 +27,7 @@ class Detection(BaseTask):
                     initialize=True, 
                     verbose=False, 
                     patience=100, 
+                    model_args={},
                     ):
         '''
         Trains the detection model using the provided dataset and configuration settings. It handles data splitting, model initialization, and the training process, and also evaluates the model on the test set, reporting the accuracy.
@@ -60,38 +61,39 @@ class Detection(BaseTask):
         except:
             self.target_mean, self.target_std = 0, 1
 
-        try:
-            self.model = self.prototype(
-                                        num_nodes=self.adj.shape[0],
-                                        num_features=self.train_split['features'].shape[-1],
-                                        num_timesteps_input=self.lookback,
-                                        num_timesteps_output=self.horizon,
-                                        device=self.device
-                                        ).to(device=self.device)
-            print("spatial-temporal model loaded!")
-        except:
-            try:
-                self.model = self.prototype( 
-                                        num_features=self.train_split['features'].shape[2],
-                                        num_timesteps_input=self.lookback,
-                                        num_timesteps_output=self.horizon,
-                                        device=self.device).to(device=self.device)
-                                        
-                print("temporal model loaded!")
-            except:
-                if len(self.train_split['features'].shape) == 4:
-                    num_features = self.train_split['features'].shape[-1] * self.train_split['features'].shape[-2]
-                else:
-                    num_features = self.train_split['features'].shape[-1]
-                self.model = self.prototype(
-                                        num_features=num_features,
-                                        num_classes=self.horizon,
-                                        device=self.device).to(device=self.device)
-                print("spatial model loaded!")
 
-        #print(train_split[0].shape) # torch.Size([323, 47, 4])
-        #print(train_split[1].shape) # torch.Size([323, 47])
-        # torch.Size([323, 47, 2])
+        if len(model_args) != 0:
+            self.model = self.prototype(**model_args)
+            print("Model Initialized!")
+        else:
+            try:
+                self.model = self.prototype(
+                                            num_nodes=self.adj.shape[0],
+                                            num_features=self.train_split['features'].shape[-1],
+                                            num_timesteps_input=self.lookback,
+                                            num_timesteps_output=self.horizon,
+                                            device=self.device
+                                            ).to(device=self.device)
+                print("spatial-temporal model loaded!")
+            except:
+                try:
+                    self.model = self.prototype( 
+                                            num_features=self.train_split['features'].shape[2],
+                                            num_timesteps_input=self.lookback,
+                                            num_timesteps_output=self.horizon,
+                                            device=self.device).to(device=self.device)
+                                            
+                    print("temporal model loaded!")
+                except:
+                    if len(self.train_split['features'].shape) == 4:
+                        num_features = self.train_split['features'].shape[-1] * self.train_split['features'].shape[-2]
+                    else:
+                        num_features = self.train_split['features'].shape[-1]
+                    self.model = self.prototype(
+                                            num_features=num_features,
+                                            num_classes=self.horizon,
+                                            device=self.device).to(device=self.device)
+                    print("spatial model loaded!")
         
 
         # train
@@ -106,10 +108,14 @@ class Detection(BaseTask):
                 val_states=self.val_split['states'],
                 val_graph=self.adj,
                 val_dynamic_graph=self.val_split['dynamic_graph'],
-                verbose=True,
+                verbose=verbose,
+                lr=lr,
                 batch_size=batch_size,
                 epochs=epochs,
-                loss=loss)
+                loss=loss,
+                initialize=initialize,
+                patience=patience
+                )
         
 
         # evaluate
@@ -132,12 +138,9 @@ class Detection(BaseTask):
 
     def evaluate_model(self,
                     model=None,
-                    dataset=None,
-                    config=None,
                     features=None,
                     graph=None,
                     dynamic_graph=None,
-                    norm={"std":1, 'mean':0},
                     states=None,
                     targets=None,
                     ):
@@ -157,64 +160,11 @@ class Detection(BaseTask):
 
         # evaluate
         out = self.model.predict(feature=features, graph=graph, states=states, dynamic_graph=dynamic_graph)
-        preds = out.detach().cpu().argmax(1)
+        preds = out.detach().cpu().argmax(-1)
         # metrics
         acc = metrics.get_ACC(preds, targets)
-        print(f"Test ACC: {acc.item()}")
+        print(f"ACC: {acc.item()}")
         return {'acc': acc, "predictions": preds, "targets": self.test_target}
-
-    # def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, preprocess=False, region_idx=None, permute=False):
-    #     '''
-    #     Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles preprocessing if necessary.
-    #     '''
-    #     if dataset is None:
-    #         try:
-    #             dataset = self.dataset
-    #         except:
-    #             raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
-
-    #     # preprocessing
-    #     features, adj, adj_dynamic, states = dataset.get_transformed()
-    #     feat_mean, feat_std = dataset.transforms.feat_mean, dataset.transforms.feat_std
-
-    #     features = features.to(self.device)
-    #     adj = adj.to(self.device)
-
-    #     if adj_dynamic is not None:
-    #         adj_dynamic = adj_dynamic.to(self.device)
-    #     if states is not None:
-    #         states = states.to(self.device)
-
-    #     split_line1 = int(features.shape[0] * train_rate)
-    #     split_line2 = int(features.shape[0] * (train_rate + val_rate))
-
-    #     train_feature = features[:split_line1, :, :]
-    #     val_feature  = features[split_line1:split_line2, :, :]
-    #     test_feature  = features[split_line2:, :, :]
-
-    #     train_target = dataset.y[:split_line1, :]
-    #     val_target = dataset.y[split_line1:split_line2, :]
-    #     test_target = dataset.y[split_line2:, :]
-    #     try:
-    #         train_states = states[:split_line1, :, :]
-    #         val_states = states[split_line1:split_line2, :, :]
-    #         test_states = states[split_line2:, :, :]
-    #     except:
-    #         train_states = None
-    #         val_states = None
-    #         test_states = None
-
-    #     if dataset.dynamic_graph is not None: # hasattr(dataset, 'dynamic_graph') and 
-    #         train_graph = adj_dynamic[:split_line1, :, :]
-    #         val_graph = adj_dynamic[split_line1:split_line2, :, :]
-    #         test_graph = adj_dynamic[split_line2:, :, :]
-    #     else:
-    #         train_graph = None
-    #         val_graph = None
-    #         test_graph = None
-
-    #     return (train_feature, train_target, train_states, train_graph), (val_feature, val_target, val_states, val_graph), (test_feature, test_target, test_states, test_graph), ((features, (feat_std, feat_mean)), adj)
-
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
         """

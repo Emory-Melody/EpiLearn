@@ -116,6 +116,7 @@ def get_MSE(pred, target):
     torch.Tensor
         The MAE value as a scalar tensor.
     """
+    pred = pred.reshape(target.shape)
     mse_loss = nn.MSELoss(reduction='mean')
     return mse_loss(pred, target)
 
@@ -135,6 +136,7 @@ def get_MAE(pred, target):
     torch.Tensor
         The MAE value as a scalar tensor.
     """
+    pred = pred.reshape(target.shape)
     return torch.mean(torch.absolute(pred - target))
 
 def get_RMSE(pred, target):
@@ -153,6 +155,7 @@ def get_RMSE(pred, target):
     torch.Tensor
         The RMSE value as a scalar tensor.
     """
+    pred = pred.reshape(target.shape)
     mse_loss = nn.MSELoss(reduction='mean')
     return torch.sqrt(mse_loss(pred, target))
 
@@ -172,5 +175,5 @@ def get_ACC(pred, target):
     torch.Tensor
         The accuracy as a scalar tensor.
     """
-    result = pred.eq(target).sum()/len(pred)
+    result = pred.eq(target).sum()/len(pred.reshape(-1))
     return result

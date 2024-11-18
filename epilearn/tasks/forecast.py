@@ -33,6 +33,7 @@ class Forecast(BaseTask):
                     verbose=False, 
                     patience=100, 
                     device = None,
+                    model_args={},
                     ):
         """
         Trains the forecast model using the provided dataset and configuration settings. It handles data splitting, model 
@@ -71,22 +72,28 @@ class Forecast(BaseTask):
         except:
             self.target_mean, self.target_std = 0, 1
 
-        try:
-        # initialize model
-            self.model = self.prototype(
-                num_nodes=self.adj.shape[0],
-                num_features=self.train_split['features'].shape[3],
-                num_timesteps_input=self.lookback,
-                num_timesteps_output=self.horizon,
-                device=self.device
-                ).to(self.device)
-            print("spatial-temporal model loaded!")
-        except:
-            self.model = self.prototype( num_features=self.train_split['features'].shape[2],
-                                    num_timesteps_input=self.lookback,
-                                    num_timesteps_output=self.horizon,
-                                    device=self.device).to(self.device)
-            print("temporal model loaded!")
+
+        if len(model_args) != 0:
+            self.model = self.prototype(**model_args)
+        else:
+            try:
+            # initialize model
+                self.model = self.prototype(
+                    num_nodes=self.adj.shape[0],
+                    num_features=self.train_split['features'].shape[3],
+                    num_timesteps_input=self.lookback,
+                    num_timesteps_output=self.horizon,
+                    device=self.device,
+                    ).to(self.device)
+                print("spatial-temporal model loaded!")
+            except:
+                self.model = self.prototype(
+                                        num_features=self.train_split['features'].shape[2],
+                                        num_timesteps_input=self.lookback,
+                                        num_timesteps_output=self.horizon,
+                                        device=self.device,
+                                        ).to(self.device)
+                print("temporal model loaded!")
 
         # train
         self.model.fit(
@@ -100,10 +107,13 @@ class Forecast(BaseTask):
                 val_states=self.val_split['states'],
                 val_graph=self.adj,
                 val_dynamic_graph=self.val_split['dynamic_graph'],
-                verbose=True,
+                verbose=verbose,
                 batch_size=batch_size,
+                lr=lr,
                 epochs=epochs,
-                loss=loss)
+                loss=loss,
+                initialize=initialize,
+                patience=patience)
         
         # evaluate
         self.test_graph = self.adj
@@ -116,20 +126,20 @@ class Forecast(BaseTask):
                                  graph=self.test_graph, 
                                  states=self.test_states, 
                                  dynamic_graph=self.test_dynamic_graph
-                                 )
+                                 ).reshape(self.test_target.shape)
         if type(out) is tuple:
             out = out[0]
-        preds = out.detach().cpu()*self.target_std+self.target_mean
-        targets = self.test_target.detach().cpu()*self.target_std+self.target_mean
+        self.preds = out.detach().cpu()#*self.target_std+self.target_mean
+        self.targets = self.test_target.detach().cpu()#*self.target_std+self.target_mean
         # metrics
-        mse = metrics.get_MSE(preds, targets)
-        mae = metrics.get_MAE(preds, targets)
-        rmse = metrics.get_RMSE(preds, targets)
+        mse = metrics.get_MSE(self.preds, self.targets)
+        mae = metrics.get_MAE(self.preds, self.targets)
+        rmse = metrics.get_RMSE(self.preds, self.targets)
         print(f"Test MSE: {mse.item()}")
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": preds, "targets": targets}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": self.preds, "targets": self.targets}
 
 
     def evaluate_model(self,
@@ -164,20 +174,21 @@ class Forecast(BaseTask):
                                  graph=graph, 
                                  states=states, 
                                  dynamic_graph=dynamic_graph
-                                 )
+                                 ).reshape(targets.shape)
         if type(out) is tuple:
             out = out[0]
-        preds = out.detach().cpu()*std+mean
-        targets = targets.detach().cpu()*std+mean
+        self.preds = out.detach().cpu()*std+mean
+        self.targets = targets.detach().cpu()*std+mean
+
         # metrics
-        mse = metrics.get_MSE(preds, targets)
-        mae = metrics.get_MAE(preds, targets)
-        rmse = metrics.get_RMSE(preds, targets)
+        mse = metrics.get_MSE(self.preds, self.targets)
+        mae = metrics.get_MAE(self.preds, self.targets)
+        rmse = metrics.get_RMSE(self.preds, self.targets)
         print(f"Test MSE: {mse.item()}")
         print(f"Test MAE: {mae.item()}")
         print(f"Test RMSE: {rmse.item()}")
         
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions":preds, "targets":targets}
+        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions":self.preds, "targets":self.targets}
     
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
@@ -241,9 +252,9 @@ class Forecast(BaseTask):
                 adj
                 
     
-    def plot_forecasts(self, index_range=None):
-        data = self.test_dataset['features']
-        target = self.test_dataset['target']
+    def plot_forecasts(self, dataset, index_range=None, fig_size=None):
+        data = dataset['features']
+        target = dataset['target']
         if data.shape[-1] >1:
             raise ValueError("Multi channel is not supported. Please use single channel data.")
         if self.region_index is not None:
@@ -268,7 +279,7 @@ class Forecast(BaseTask):
                 predictions = torch.cat([predictions, preds])
         result = torch.stack([predictions, groundtruth], dim=1)
         result = result[index_range[0]:index_range[1]]
-        plot_series(result, columns = ['prediction', 'groundtruth'])
+        plot_series(result, columns = ['prediction', 'groundtruth'], fig_size=fig_size)
 
         return predictions, groundtruth
 

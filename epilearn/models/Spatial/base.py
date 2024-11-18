@@ -64,7 +64,6 @@ class BaseModel(nn.Module):
                 validation_losses.append(val_loss)
 
                 if best_val > val_loss:
-                    best_epoch = epoch
                     best_train = loss
                     best_val = val_loss
                     self.best_output = output
@@ -99,9 +98,6 @@ class BaseModel(nn.Module):
             print(f"Early stop at Epoch {epoch}!")
         print("\nFinal Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
-        print("Best Epoch: {}".format(best_epoch))
-        print("Best Training loss: {}".format(best_train))
-        print("Best Validation loss: {}".format(best_val))
 
         self.load_state_dict(best_weights)
 

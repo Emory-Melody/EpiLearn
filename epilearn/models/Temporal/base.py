@@ -103,7 +103,7 @@ class BaseModel(nn.Module):
             y_batch = y_batch.to(device=device)
             
             out = self.forward(X_batch)
-            loss = loss_fn(out, y_batch)
+            loss = loss_fn(out.reshape(y_batch.shape), y_batch)
             loss.backward()
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
@@ -116,7 +116,7 @@ class BaseModel(nn.Module):
             target = target.to(device=device)
 
             out = self.forward(feature)
-            val_loss = loss_fn(out, target)
+            val_loss = loss_fn(out.reshape(target.shape), target)
             val_loss = val_loss.detach().cpu().numpy().item()
             
             return val_loss, out
