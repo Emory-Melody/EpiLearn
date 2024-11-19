@@ -46,7 +46,7 @@ class BaseModel(nn.Module):
             
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input,  target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
-            if val_input.numel():
+            if val_input is not None and val_input.numel():
                 val_loss, output = self.evaluate(loss_fn = loss_fn, feature = val_input,  target = val_target, device = self.device)
                 validation_losses.append(val_loss)
 

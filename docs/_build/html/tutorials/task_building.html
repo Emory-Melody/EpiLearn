@@ -52,10 +52,11 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pipeline for Epidemic Modling</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#dataset-construction">Dataset construction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#transformations">Transformations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#model-customization">Model Customization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#task-initialization-and-model-evaluation">Task Initialization and Model Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#colab-tutorial">0. Colab Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dataset-construction">1. Dataset construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transformations">2. Transformations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-customization">3. Model Customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-initialization-and-model-evaluation">4. Task Initialization and Model Evaluation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation</a></li>
@@ -64,6 +65,7 @@
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../API/dataset.html">Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/dataset.html#preprocessed-datasets">Preprocessed Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/models.html">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/models.html#spatial-models">Spatial Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../API/models.html#temporal-models">Temporal Models</a></li>
@@ -106,12 +108,16 @@
 <h1>Pipeline for Epidemic Modling<a class="headerlink" href="#pipeline-for-epidemic-modling" title="Link to this heading"></a></h1>
 <p>In this section, we will walk you through the building of epidemic modeling tasks using <strong>Epilearn</strong>, from dataset construction to model evaluation.</p>
 <p>If you haven’t installed or tried <strong>Epilearn</strong>, please refer to <a class="reference external" href="https://epilearn-doc.readthedocs.io/en/latest/Installation.html">Installation</a> and <a class="reference external" href="https://epilearn-doc.readthedocs.io/en/latest/Quickstart.html">Quickstart</a>.</p>
+<section id="colab-tutorial">
+<h2>0. Colab Tutorial<a class="headerlink" href="#colab-tutorial" title="Link to this heading"></a></h2>
+<p>If you are new to pytorch and EpiLearn, our <a class="reference external" href="https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T">Lab Tutorial</a> will help you understand how to use this package through a case study.</p>
+</section>
 <section id="dataset-construction">
-<h2>Dataset construction<a class="headerlink" href="#dataset-construction" title="Link to this heading"></a></h2>
+<h2>1. Dataset construction<a class="headerlink" href="#dataset-construction" title="Link to this heading"></a></h2>
 <p>To begin with, we need to choose and load data using a UniversalDataset defined by Epilearn.</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><p>Users can use external data, initializing UniversalDataset with the corresponding values directly.</p></li>
-</ol>
+</ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">UniversalDataset</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">Features</span><span class="p">,</span>
                  <span class="n">states</span><span class="o">=</span><span class="n">SIR_States</span><span class="p">,</span>
                  <span class="n">y</span><span class="o">=</span><span class="n">Labels</span><span class="p">,</span>
@@ -119,14 +125,20 @@
                  <span class="n">dynamic_graph</span><span class="o">=</span><span class="n">Dynamic_Graph</span><span class="p">)</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>Pre-compiled data is also available, which is adopted from other researches. To view more available internal data, please refer to <a class="reference external" href="https://github.com/Emory-Melody/EpiLearn/tree/main/datasets">Datasets</a>.</p></li>
+<ul class="simple">
+<li><p>Pre-compiled data is also available, which is adopted from other researches. Simply input the dataset name and the location to store the data:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">measle_dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Measles&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;./tmp/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To view more available internal data, please refer to <a class="reference external" href="https://github.com/Emory-Melody/EpiLearn/tree/main/datasets">Datasets</a>.</p>
+<ul class="simple">
 <li><p>Epilearn also provides simulation methods to generate simulated data. See  <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/tutorials/simulation">Simulation</a> for more details.</p></li>
-</ol>
+</ul>
 </section>
 <section id="transformations">
-<h2>Transformations<a class="headerlink" href="#transformations" title="Link to this heading"></a></h2>
-<p>Epilearn provides numerous transformations including normalization, seasonal decomposition, converting to frequency domain, etc. The loading of these functions follows similar style to Torch, as shown below.</p>
+<h2>2. Transformations<a class="headerlink" href="#transformations" title="Link to this heading"></a></h2>
+<p>Epilearn provides numerous transformations including normalization, seasonal decomposition, converting to frequency domain, etc. The loading of these functions follows similar style to Pytorch, as shown below.</p>
 <p>To customize your own transformation, simply add a new class following the style shown in <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/utils#transformation">Transformations</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">transformation</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">({</span>
                                     <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_feat</span><span class="p">()],</span>
@@ -136,7 +148,7 @@
 </div>
 </section>
 <section id="model-customization">
-<h2>Model Customization<a class="headerlink" href="#model-customization" title="Link to this heading"></a></h2>
+<h2>3. Model Customization<a class="headerlink" href="#model-customization" title="Link to this heading"></a></h2>
 <p>Epilearn supports three types of models: 1. Spatial models (input size: [Batch*Nodes*Channels]) 2. Temporal models (Input size: [Batch*Window*Channels]) 3. Spatial-Temporal model (input size: [Batch*Window*Nodes*Channels])</p>
 <p>For models implemented in Epilearn, please refer to <a class="reference external" href="https://vermillion-malasada-a2864e.netlify.app/html/api/models">Models</a>.</p>
 <p>To build a customized model, you can simply create a model class inherited from BaseModel with a forward function, as shown below:</p>
@@ -161,14 +173,29 @@
 </div>
 </section>
 <section id="task-initialization-and-model-evaluation">
-<h2>Task Initialization and Model Evaluation<a class="headerlink" href="#task-initialization-and-model-evaluation" title="Link to this heading"></a></h2>
+<h2>4. Task Initialization and Model Evaluation<a class="headerlink" href="#task-initialization-and-model-evaluation" title="Link to this heading"></a></h2>
 <p>Epilearn currently supports two tasks: Forecast and Detection. The Forecast task takes in a UniversalDataset, model prototype and other configurations like lookback window size and the horizon size. The same setting applies to the Detection task. After initializing, you can try functions like .train_model() and .evaluate_model() to test the models performance on given datasets.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">task</span> <span class="o">=</span> <span class="n">Forecast</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">STGCN</span><span class="p">,</span>
-                <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<ul class="simple">
+<li><p>Initialize Task</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">task</span> <span class="o">=</span> <span class="n">Forecast</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">customized_model</span><span class="p">,</span>
                 <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
-                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
-<span class="n">task</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">customized_dataset</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span>
+                <span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Train and evaluate_model</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span>
+                        <span class="n">dataset</span><span class="o">=</span><span class="n">customized_dataset</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span>    <span class="c1"># specificy the loss function to be Mean Squared Error (MSE)</span>
+                        <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>      <span class="c1"># number of training epochs/iterations</span>
+                        <span class="n">train_rate</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>  <span class="c1"># 60% is used for training</span>
+                        <span class="n">val_rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>    <span class="c1"># 20% is used for validation; the rest 20% is for testing</span>
+                        <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># batch size for training</span>
+                        <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>  <span class="c1"># use CPU for model training; set `device=&#39;cuda&#39;` to enable GPU training</span>
+
 <span class="n">task</span><span class="o">.</span><span class="n">evaluate_model</span><span class="p">()</span>
 </pre></div>
 </div>

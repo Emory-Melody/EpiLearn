@@ -47,8 +47,9 @@
               <p class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#from-source">From Source</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#from-pypi">From PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#from-source">1.1 From Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#from-pypi">1.2 From PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-mandatory-packages">2 Install Mandatory Packages</a></li>
 </ul>
 </li>
 </ul>
@@ -62,6 +63,7 @@
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="API/dataset.html">Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/dataset.html#preprocessed-datasets">Preprocessed Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html#spatial-models">Spatial Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html#temporal-models">Temporal Models</a></li>
@@ -102,27 +104,40 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>This section provides instructions on how to install the project either from source or from PyPI.</p>
+<p>This section provides instructions on how to install the project either from source or from PyPI. Please prepare a terminal to run the following commands.</p>
+<p>First, Please download and install <a class="reference external" href="https://www.anaconda.com/download/success">Anaconda</a> so that you can use commands from conda.</p>
 <section id="from-source">
-<h2>From Source<a class="headerlink" href="#from-source" title="Link to this heading"></a></h2>
+<h2>1.1 From Source<a class="headerlink" href="#from-source" title="Link to this heading"></a></h2>
 <p>To install the project from source, follow these steps:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Emory-Melody/EpiLearn.git
 <span class="nb">cd</span><span class="w"> </span>EpiLearn
 
+<span class="c1"># create a new environment using conda</span>
 conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>epilearn<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
-conda<span class="w"> </span>activate<span class="w"> </span>epilearn
 
-python<span class="w"> </span>setup.py<span class="w"> </span>install
-pip<span class="w"> </span>install<span class="w"> </span>pytorch_geometric
+<span class="c1"># activate environment</span>
+conda<span class="w"> </span>activate<span class="w"> </span>epilearn
 </pre></div>
 </div>
 </section>
 <section id="from-pypi">
-<h2>From PyPI<a class="headerlink" href="#from-pypi" title="Link to this heading"></a></h2>
+<h2>1.2 From PyPI<a class="headerlink" href="#from-pypi" title="Link to this heading"></a></h2>
 <p>To install the project from PyPI, use the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>epilearn
 </pre></div>
 </div>
+</section>
+<section id="install-mandatory-packages">
+<h2>2 Install Mandatory Packages<a class="headerlink" href="#install-mandatory-packages" title="Link to this heading"></a></h2>
+<p>EpiLearn also requires pytorch&gt;=1.20, torch_geometric and torch_scatter.</p>
+<p>For CPU version, Please follow:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch
+pip<span class="w"> </span>install<span class="w"> </span>torch_geometric
+pip<span class="w"> </span>install<span class="w"> </span>torch_scatter
+</pre></div>
+</div>
+<p>For GPU version, please install correct versions that match the cuda version on your machine.
+For more information, please refer to <a class="reference external" href="https://pytorch.org/">Pytorch</a>, <a class="reference external" href="https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html">PyG</a> and <a class="reference external" href="https://pytorch-geometric.com/whl/torch-1.5.0.html">torch_scatter</a>.</p>
 </section>
 </section>
 

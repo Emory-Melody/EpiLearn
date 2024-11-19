@@ -58,7 +58,7 @@ class BaseModel(nn.Module):
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, graph=train_graph,
                                     batch_size = batch_size, device = self.device, shuffle=shuffle)
             training_losses.append(loss)
-            if val_input.numel():
+            if val_input is not None and val_input.numel():
                 val_loss, output = self.evaluate(loss_fn = loss_fn, dataset=val_dataset, graph=val_graph,
                                                 batch_size = batch_size, device = self.device, shuffle=shuffle)
                 validation_losses.append(val_loss)

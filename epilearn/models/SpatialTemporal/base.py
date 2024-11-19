@@ -58,7 +58,7 @@ class BaseModel(nn.Module):
                                     device=self.device)
             training_losses.append(loss)
             # validate
-            if val_input.numel():
+            if val_input is not None and val_input.numel():
                 val_loss, output = self.evaluate(loss_fn=loss_fn, 
                                                 feature=val_input, 
                                                 graph=val_graph, 

@@ -58,6 +58,7 @@
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dataset.html">Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataset.html#preprocessed-datasets">Preprocessed Datasets</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#spatial-models">Spatial Models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#gat">GAT</a><ul>
@@ -88,6 +89,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#code-example">Code Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#temporal-models">Temporal Models</a><ul>
@@ -157,6 +159,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Code Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#spatial-temporal-models">Spatial-Temporal Models</a><ul>
@@ -260,6 +263,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Code Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
@@ -496,6 +500,34 @@ torch.Tensor</p>
 </dd></dl>
 
 </section>
+<section id="code-example">
+<h2>Code Example<a class="headerlink" href="#code-example" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">epilearn.models.Spatial</span> <span class="kn">import</span> <span class="n">GCN</span>
+
+<span class="n">num_features</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># predicts size</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">47</span><span class="p">,</span><span class="mi">47</span><span class="p">)))</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">47</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)))</span>
+<span class="n">node_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">47</span><span class="p">)))</span>
+
+<span class="n">model</span><span class="o">=</span><span class="n">GCN</span><span class="p">(</span><span class="n">num_features</span><span class="o">=</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">train_input</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">train_target</span><span class="o">=</span><span class="n">node_target</span><span class="p">,</span>
+        <span class="n">train_graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span>
+        <span class="n">val_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;ce&#39;</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="temporal-models">
 <h1>Temporal Models<a class="headerlink" href="#temporal-models" title="Link to this heading"></a></h1>
@@ -563,7 +595,7 @@ of the data (defined by <cite>subset_samples</cite>) to demonstrate the model’
 <h2>DLINEAR<a class="headerlink" href="#dlinear" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="epilearn.models.Temporal.Dlinear.DlinearModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.Dlinear.</span></span><span class="sig-name descname"><span class="pre">DlinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.Dlinear.</span></span><span class="sig-name descname"><span class="pre">DlinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.Dlinear.DlinearModel" title="Link to this definition"></a></dt>
 <dd><p>Dynamic Linear Model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -631,7 +663,7 @@ for the future time steps, reduced to a single predictive value per time step by
 <h2>GRU<a class="headerlink" href="#gru" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="epilearn.models.Temporal.GRU.GRUModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.GRU.</span></span><span class="sig-name descname"><span class="pre">GRUModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.GRU.GRUModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.GRU.</span></span><span class="sig-name descname"><span class="pre">GRUModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.GRU.GRUModel" title="Link to this definition"></a></dt>
 <dd><p>Single-layer Gated Recurrent Unit (GRU) Network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -682,7 +714,7 @@ for a future timestep.</p>
 <h2>LSTM<a class="headerlink" href="#lstm" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="epilearn.models.Temporal.LSTM.LSTMModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.LSTM.</span></span><span class="sig-name descname"><span class="pre">LSTMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.LSTM.LSTMModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.models.Temporal.LSTM.</span></span><span class="sig-name descname"><span class="pre">LSTMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_timesteps_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.models.Temporal.LSTM.LSTMModel" title="Link to this definition"></a></dt>
 <dd><p>Long Short-Term Memory (LSTM) Model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1027,6 +1059,31 @@ squared error of the training and validation datasets if <cite>verbose</cite> is
 
 </dd></dl>
 
+</section>
+<section id="id1">
+<h2>Code Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">epilearn.models.Temporal.GRU</span> <span class="kn">import</span> <span class="n">GRUModel</span>
+
+<span class="n">num_features</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># predicts size</span>
+
+<span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="n">lookback</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)))</span>
+<span class="n">node_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)))</span>
+
+<span class="n">model</span><span class="o">=</span><span class="n">GRUModel</span><span class="p">(</span><span class="n">num_features</span><span class="o">=</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_timesteps_input</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">num_timesteps_output</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">train_input</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">train_target</span><span class="o">=</span><span class="n">node_target</span><span class="p">,</span>
+        <span class="n">val_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="spatial-temporal-models">
@@ -1759,6 +1816,35 @@ num_features).</p>
 
 </dd></dl>
 
+</section>
+<section id="id2">
+<h2>Code Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">epilearn.models.SpatialTemporal</span> <span class="kn">import</span> <span class="n">ColaGNN</span>
+
+<span class="n">num_nodes</span><span class="o">=</span><span class="mi">47</span>
+<span class="n">num_features</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># predicts size</span>
+
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">)))</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="n">lookback</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)))</span>
+<span class="n">node_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">)))</span>
+
+<span class="n">model</span><span class="o">=</span><span class="n">ColaGNN</span><span class="p">(</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="n">num_nodes</span><span class="p">,</span> <span class="n">num_features</span><span class="o">=</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_timesteps_input</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">num_timesteps_output</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">train_input</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">train_target</span><span class="o">=</span><span class="n">node_target</span><span class="p">,</span>
+        <span class="n">train_graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span>
+        <span class="n">val_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 

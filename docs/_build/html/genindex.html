@@ -55,6 +55,7 @@
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="API/dataset.html">Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API/dataset.html#preprocessed-datasets">Preprocessed Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html#spatial-models">Spatial Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API/models.html#temporal-models">Temporal Models</a></li>
@@ -96,7 +97,8 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
@@ -110,10 +112,19 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#X"><strong>X</strong></a>
  
 </div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.Gravity_model.__init__">__init__() (epilearn.utils.simulation.Gravity_model method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -175,17 +186,19 @@
 </li>
       <li><a href="API/models.html#epilearn.models.Temporal.Dlinear.DlinearModel.decomposition">decomposition (epilearn.models.Temporal.Dlinear.DlinearModel attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/utils.html#epilearn.utils.utils.Degree_Matrix">Degree_Matrix() (in module epilearn.utils.utils)</a>
 </li>
-      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection">Detection (class in epilearn.tasks.detection)</a>, <a href="tutorials/simulation.html#epilearn.tasks.detection.Detection">[1]</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection">Detection (class in epilearn.tasks.detection)</a>
 </li>
       <li><a href="API/utils.html#epilearn.utils.utils.diff">diff() (in module epilearn.utils.utils)</a>
 </li>
       <li><a href="API/models.html#epilearn.models.Temporal.Dlinear.DlinearModel">DlinearModel (class in epilearn.models.Temporal.Dlinear)</a>
 </li>
       <li><a href="API/models.html#epilearn.models.SpatialTemporal.DMP.DMP">DMP (class in epilearn.models.SpatialTemporal.DMP)</a>
+</li>
+      <li><a href="API/dataset.html#epilearn.data.dataset.UniversalDataset.download">download() (epilearn.data.dataset.UniversalDataset method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -205,7 +218,7 @@
 </li>
       <li><a href="API/models.html#epilearn.models.SpatialTemporal.EpiGNN.EpiGNN">EpiGNN (class in epilearn.models.SpatialTemporal.EpiGNN)</a>
 </li>
-      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.evaluate_model">evaluate_model() (epilearn.tasks.detection.Detection method)</a>, <a href="tutorials/simulation.html#epilearn.tasks.detection.Detection.evaluate_model">[1]</a>
+      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.evaluate_model">evaluate_model() (epilearn.tasks.detection.Detection method)</a>
 
       <ul>
         <li><a href="API/tasks.html#epilearn.tasks.forecast.Forecast.evaluate_model">(epilearn.tasks.forecast.Forecast method)</a>
@@ -313,7 +326,13 @@
 </li>
       <li><a href="API/models.html#epilearn.models.Spatial.GCN.GCN">GCN (class in epilearn.models.Spatial.GCN)</a>
 </li>
+      <li><a href="API/dataset.html#epilearn.data.dataset.UniversalDataset.generate_dataset">generate_dataset() (epilearn.data.dataset.UniversalDataset method)</a>
+</li>
       <li><a href="API/utils.html#epilearn.utils.metrics.get_ACC">get_ACC() (in module epilearn.utils.metrics)</a>
+</li>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.get_graph_from_features">get_graph_from_features() (in module epilearn.utils.simulation)</a>
+</li>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.Gravity_model.get_influence">get_influence() (epilearn.utils.simulation.Gravity_model method)</a>
 </li>
       <li><a href="API/utils.html#epilearn.utils.metrics.get_loss">get_loss() (in module epilearn.utils.metrics)</a>
 </li>
@@ -321,9 +340,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/utils.html#epilearn.utils.metrics.get_MAE">get_MAE() (in module epilearn.utils.metrics)</a>
 </li>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.Gravity_model.get_mobility_graph">get_mobility_graph() (epilearn.utils.simulation.Gravity_model method)</a>
+</li>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.get_random_graph">get_random_graph() (in module epilearn.utils.simulation)</a>
+</li>
       <li><a href="API/utils.html#epilearn.utils.metrics.get_RMSE">get_RMSE() (in module epilearn.utils.metrics)</a>
 </li>
-      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.get_splits">get_splits() (epilearn.tasks.detection.Detection method)</a>, <a href="tutorials/simulation.html#epilearn.tasks.detection.Detection.get_splits">[1]</a>
+      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.get_splits">get_splits() (epilearn.tasks.detection.Detection method)</a>
 
       <ul>
         <li><a href="API/tasks.html#epilearn.tasks.forecast.Forecast.get_splits">(epilearn.tasks.forecast.Forecast method)</a>
@@ -332,6 +355,8 @@
       <li><a href="API/models.html#epilearn.models.Spatial.GIN.GIN">GIN (class in epilearn.models.Spatial.GIN)</a>
 </li>
       <li><a href="API/models.html#epilearn.models.SpatialTemporal.GraphWaveNet.GraphWaveNet">GraphWaveNet (class in epilearn.models.SpatialTemporal.GraphWaveNet)</a>
+</li>
+      <li><a href="tutorials/simulation.html#epilearn.utils.simulation.Gravity_model">Gravity_model (class in epilearn.utils.simulation)</a>
 </li>
       <li><a href="API/models.html#epilearn.models.Temporal.GRU.GRUModel">GRUModel (class in epilearn.models.Temporal.GRU)</a>
 </li>
@@ -397,11 +422,7 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/visualization.html#epilearn.visualize.plot_series.plot_graph">plot_graph() (in module epilearn.visualize.plot_series)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/visualization.html#epilearn.visualize.plot_series.plot_series">plot_series() (in module epilearn.visualize.plot_series)</a>
+      <li><a href="API/tasks.html#epilearn.tasks.forecast.Forecast.plot_forecasts">plot_forecasts() (epilearn.tasks.forecast.Forecast method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -410,6 +431,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/models.html#epilearn.models.Spatial.SAGE.SAGE">SAGE (class in epilearn.models.Spatial.SAGE)</a>
+</li>
+      <li><a href="API/dataset.html#epilearn.data.dataset.UniversalDataset.save">save() (epilearn.data.dataset.UniversalDataset method)</a>
 </li>
       <li><a href="API/utils.html#epilearn.utils.transforms.seasonality_and_trend_decompose">seasonality_and_trend_decompose (class in epilearn.utils.transforms)</a>
 </li>
@@ -445,12 +468,20 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.train_model">train_model() (epilearn.tasks.detection.Detection method)</a>, <a href="tutorials/simulation.html#epilearn.tasks.detection.Detection.train_model">[1]</a>
+      <li><a href="API/tasks.html#epilearn.tasks.detection.Detection.train_model">train_model() (epilearn.tasks.detection.Detection method)</a>
 
       <ul>
         <li><a href="API/tasks.html#epilearn.tasks.forecast.Forecast.train_model">(epilearn.tasks.forecast.Forecast method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/dataset.html#epilearn.data.dataset.UniversalDataset">UniversalDataset (class in epilearn.data.dataset)</a>
+</li>
   </ul></td>
 </tr></table>
 

@@ -18,9 +18,9 @@ When the function accepts inputs as number of nodes and connect probability, it 
 
 .. code-block:: python
 
-    import epilearn as epi
+    import epilearn
 
-    adj = epi.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.2, block_sizes=None, num_edges=None, graph_type='erdos_renyi')
+    adj = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.2, block_sizes=None, num_edges=None, graph_type='erdos_renyi')
 
 
 Static Features 
@@ -34,7 +34,7 @@ Given static node features, a graph can be obtained by calculating cosine simila
 
 .. code-block:: python
 
-    import epilearn as epi
+    import epilearn
     import torch
 
     # Randomly generate a 10x20 feature matrix. 10 is the number of node and 20 is the feature dimension.
@@ -44,8 +44,8 @@ Given static node features, a graph can be obtained by calculating cosine simila
     adj = torch.randint(10,100, (10,10)) 
 
     # The feature, adj and any other parameters can be replaced by your own.
-    graph1 = epi.utils.simulation.get_graph_from_features(features=feature, adj=None)
-    graph2 = epi.utils.simulation.get_graph_from_features(features=feature, adj=adj) # If providing adj, then the similarity will be divided by distance in adj repectively.
+    graph1 = epilearn.utils.simulation.get_graph_from_features(features=feature, adj=None)
+    graph2 = epilearn.utils.simulation.get_graph_from_features(features=feature, adj=adj) # If providing adj, then the similarity will be divided by distance in adj repectively.
 
 
 Gravity Model
@@ -81,7 +81,7 @@ Given population numbers in each node (or say region) and distance between each 
 
 .. code-block:: python
 
-    import epilearn as epi
+    import epilearn
 
     # Assume we have three nodes, and the populations for the three nodes.
     node_populations = torch.tensor([1000, 2000, 1500]) 
@@ -94,7 +94,7 @@ Given population numbers in each node (or say region) and distance between each 
     ]) 
 
     # Create gravity model by giving the three parameters 
-    gravity_model = epi.utils.simulation.Gravity_model(source=0.46, target=0.64, s=82)
+    gravity_model = epilearn.utils.simulation.Gravity_model(source=0.46, target=0.64, s=82)
 
     # Choose two nodes from the graph along with their distance, and get the influence between this node pair.
     source_population = 1000
@@ -173,7 +173,7 @@ Define a TimeGeo function utilizes the Time_geo class to simulate trajectories b
 .. code-block:: python
 
     from tqdm import tqdm
-    import epilearn as epi
+    import epilearn
 
     def TimeGeo(data, param):
         TG = {}
@@ -186,7 +186,7 @@ Define a TimeGeo function utilizes the Time_geo class to simulate trajectories b
             detrans = lambda x:locations[x]
 
             input = np.array([to_fixed({'loc': list(map(trans, traj['loc'])), 'tim': traj['tim'], 'sta': traj['sta']}, param.tim_size, 10) for traj in trajs.values()])
-            time_geo = epi.utils.simulation.Time_geo(param.GPS[np.ix_(locations)], np.bincount(input.flatten()) / np.cumprod(input.shape)[-1], simu_slot=param.tim_size//10)
+            time_geo = epilearn.utils.simulation.Time_geo(param.GPS[np.ix_(locations)], np.bincount(input.flatten()) / np.cumprod(input.shape)[-1], simu_slot=param.tim_size//10)
             TG[uid] = {id: to_std(r['trace'][:, 0], param.tim_size, detrans) for id, r in enumerate(time_geo.pop_info)}
     
         return TG
@@ -267,10 +267,10 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
 
 .. code-block:: python
 
-    import epilearn as epi
+    import epilearn
 
     # Generate random static graph
-    initial_graph = epi.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+    initial_graph = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
 
     # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
@@ -281,14 +281,14 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
     initial_states[10, 1] = 1
 
     # Create an instance of the SIR model with specified parameters.
-    model = epi.models.Temporal.SIR.SIR(horizon=190, infection_rate=0.05, recovery_rate=0.05)
+    model = epilearn.models.Temporal.SIR.SIR(horizon=190, infection_rate=0.05, recovery_rate=0.05)
 
     # Run the model to generate predictions.
     # Steps control the number of steps for the simulation. If None, it runs for the full horizon.
     preds = model(initial_states.sum(0), steps = None)
 
     # Plot the simulation.
-    layout = epi.visualize.plot_series(preds.detach().numpy(), columns=['Suspected', 'Infected', 'Recovered'])
+    layout = epilearn.visualize.plot_series(preds.detach().numpy(), columns=['Suspected', 'Infected', 'Recovered'])
 
 
 NetworkSIR
@@ -302,10 +302,10 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
 
 .. code-block:: python
 
-    import epilearn as epi
+    import epilearn
 
     # Generate random static graph
-    initial_graph = epi.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
+    initial_graph = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
 
     # Set infected individual: 3
     initial_states = torch.zeros(25,3) # [S,I,R]
@@ -316,11 +316,11 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
     initial_states[10, 1] = 1
 
     # Create an instance of the NetworkSIR model with specified parameters:
-    model = epi.models.SpatialTemporal.NetworkSIR.NetSIR(num_nodes=initial_graph.shape[0], horizon=120, infection_rate=0.05, recovery_rate=0.05)
+    model = epilearn.models.SpatialTemporal.NetworkSIR.NetSIR(num_nodes=initial_graph.shape[0], horizon=120, infection_rate=0.05, recovery_rate=0.05)
     
     # Run the model to generate predictions.
     # Steps control the number of steps for the simulation. If None, it runs for the full horizon.
     preds = model(initial_states, initial_graph, steps = None)
 
     # Plot the simulation.
-    layout = epi.visualize.plot_graph(preds.argmax(2)[15].detach().numpy(), initial_graph.to_sparse().indices().detach().numpy(), classes=['Suspected', 'Infected', 'Recovered'])
+    layout = epilearn.visualize.plot_graph(preds.argmax(2)[15].detach().numpy(), initial_graph.to_sparse().indices().detach().numpy(), classes=['Suspected', 'Infected', 'Recovered'])

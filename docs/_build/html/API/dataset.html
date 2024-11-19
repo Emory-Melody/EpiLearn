@@ -58,7 +58,19 @@
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Dataset</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#universaldataset">UniversalDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#universaldataset">UniversalDataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epilearn.data.dataset.UniversalDataset"><code class="docutils literal notranslate"><span class="pre">UniversalDataset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.data.dataset.UniversalDataset.download"><code class="docutils literal notranslate"><span class="pre">UniversalDataset.download()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.data.dataset.UniversalDataset.generate_dataset"><code class="docutils literal notranslate"><span class="pre">UniversalDataset.generate_dataset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#epilearn.data.dataset.UniversalDataset.save"><code class="docutils literal notranslate"><span class="pre">UniversalDataset.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#preprocessed-datasets">Preprocessed Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#customize-your-own-dataset">Customize Your Own Dataset</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
@@ -101,8 +113,105 @@
              
   <section id="dataset">
 <h1>Dataset<a class="headerlink" href="#dataset" title="Link to this heading"></a></h1>
+<p>In EpiLearn, we use <strong>UniversalDataset</strong> to load preprocessed datasets. For customized data, we can simply initialize the UniversalDataset given features, graphs, and states.</p>
 <section id="universaldataset">
 <h2>UniversalDataset<a class="headerlink" href="#universaldataset" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="epilearn.data.dataset.UniversalDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epilearn.data.dataset.</span></span><span class="sig-name descname"><span class="pre">UniversalDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.data.dataset.UniversalDataset" title="Link to this definition"></a></dt>
+<dd><p>UniversalDataset class is designed to handle various types of graph data,
+enabling operations on datasets that include features, states, dynamic graphs, and edge attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the deataset to be loaded (Supported dataset only).</p></li>
+<li><p><strong>root</strong> (<em>str</em><em>, </em><em>optional</em>) – Location of the dataset to be downloaded (Supported dataset only).</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Node features tensor of shape (num_samples, num_nodes, num_features). Represents the node features over multiple timesteps.</p></li>
+<li><p><strong>states</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Tensor representing various states of nodes, similar in structure to node features.</p></li>
+<li><p><strong>y</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Tensor representing target labels or values for each node, structured similar to node features.</p></li>
+<li><p><strong>graph</strong> (<em>torch.Tensor</em><em> or </em><em>scipy.sparse matrix</em><em>, </em><em>optional</em>) – Static graph structure as an adjacency matrix.</p></li>
+<li><p><strong>dynamic_graph</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Dynamic graph information over time, providing evolving adjacency matrices.</p></li>
+<li><p><strong>edge_index</strong> (<em>torch.LongTensor</em><em>, </em><em>optional</em>) – Tensor containing edge indices, typically of shape (2, num_edges), for defining which nodes are connected.</p></li>
+<li><p><strong>edge_weight</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Edge weights corresponding to the edge_index, providing the strength or capacity of connections.</p></li>
+<li><p><strong>edge_attr</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Attributes or features for each edge, aligned with the structure defined in edge_index.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.data.dataset.UniversalDataset.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.data.dataset.UniversalDataset.download" title="Link to this definition"></a></dt>
+<dd><p>Download selected files of the dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.data.dataset.UniversalDataset.generate_dataset">
+<span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_adj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback_window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.data.dataset.UniversalDataset.generate_dataset" title="Link to this definition"></a></dt>
+<dd><p>Takes node features for the graph and divides them into multiple samples
+along the time-axis by sliding a window of size (num_timesteps_input+
+num_timesteps_output) across it in steps of 1.
+:param X: Node features of shape (num_vertices, num_features,
+num_timesteps)
+:return:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Node features divided into multiple samples. Shape is</p></li>
+</ul>
+<p>(num_samples, num_vertices, num_features, num_timesteps_input).
+- Node targets for the samples. Shape is
+(num_samples, num_vertices, num_features, num_timesteps_output).</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epilearn.data.dataset.UniversalDataset.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#epilearn.data.dataset.UniversalDataset.save" title="Link to this definition"></a></dt>
+<dd><p>Save current dataset.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="preprocessed-datasets">
+<h1>Preprocessed Datasets<a class="headerlink" href="#preprocessed-datasets" title="Link to this heading"></a></h1>
+<p>We collect epidemic data from various sources including the followings:</p>
+<p><strong>Temporal Data</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://www.tycho.pitt.edu/data/">Tycho_v1.0.0</a>: Including eight diseases collected across 50 US states and 122 US cities from 1916 to 2009.</p></li>
+<li><p><a class="reference external" href="https://github.com/msylau/measles_competing_risks/tree/master">Measles</a>: Contains measles infections in England and Wales across 954 urban centers (cities and towns) from 1944 to 1964.</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Spatial&amp;Temporal Data</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Covid_static</strong>: Contains covid infections with static graph. <a class="reference external" href="https://github.com/littlecherry-art/DASTGN/tree/master">[1]</a></p></li>
+<li><p><strong>Covid_dynamic</strong>: Contains covid infections with dynamic graph. <a class="reference external" href="https://github.com/HySonLab/pandemic_tgnn/tree/main">[2]</a> <a class="reference external" href="https://github.com/deepkashiwa20/MepoGNN/tree/main">[3]</a></p></li>
+</ul>
+</div></blockquote>
+<p><strong>Dataset Loading</strong></p>
+<p>Loading Measle and Tycho Datasets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+
+<span class="n">tycho_dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Tycho_v1&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;./tmp/&#39;</span><span class="p">)</span>
+
+<span class="n">measle_dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Measles&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;./tmp/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For covid data, we support the Dataset from Johns Hopkings University:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+
+<span class="n">jhu_dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;JHU_covid&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;./tmp/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For other countries, please use ‘Covid_’+’country’ to acquire the correspnding covid dataset. Currently, we support countries like China, Brazil, Austria, England, France, Italy, Newzealand, and Spain.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+
+<span class="n">covid_dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Covid_Brazil&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;./tmp/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="customize-your-own-dataset">
+<h2>Customize Your Own Dataset<a class="headerlink" href="#customize-your-own-dataset" title="Link to this heading"></a></h2>
 </section>
 </section>
 
