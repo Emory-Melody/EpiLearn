@@ -123,6 +123,105 @@
 </section>
 <section id="model-customization">
 <h2>Model Customization<a class="headerlink" href="#model-customization" title="Link to this heading"></a></h2>
+<p>EpiLearn builds base classes for temporal, spatial, and spatial-temporal models. To build your own customized models, the model must also inherit from the corresponding base model.
+Here we provide an example of building a cusotmized LSTM model. For more information, please refer to <a class="reference external" href="https://github.com/Emory-Melody/EpiLearn/blob/main/examples/model_customization.ipynb">Model Customization</a>.</p>
+<p><strong>Step 1</strong>
+Import the base class corresponding to yout task. For temporal task, we import the tempora base class, which is the BaseModel shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.models.Temporal.base</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+</pre></div>
+</div>
+<p><strong>Step 2</strong>
+Build your new model class inherited from the BaseModel. Then, define your __init__ function to pass the hyperparameters used to initialize your model. Note that the names of the hyperparameters are not fixed, the default names below will be used if you do not pass your hyper parameters in <strong>Step 5</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomizedTemporal</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">num_features</span><span class="p">,</span>
+                    <span class="n">num_timesteps_input</span><span class="p">,</span>
+                    <span class="n">num_timesteps_output</span><span class="p">,</span>
+                    <span class="n">hidden_size</span><span class="p">,</span>
+                    <span class="n">num_layers</span><span class="p">,</span>
+                    <span class="n">bidirectional</span><span class="p">,</span>
+                    <span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">CustomizedTemporal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_feats</span> <span class="o">=</span> <span class="n">num_features</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">hidden_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">=</span> <span class="n">num_layers</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bidirectional</span><span class="o">=</span><span class="n">bidirectional</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">=</span> <span class="n">num_timesteps_input</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">num_timesteps_output</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_feats</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bidirectional</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bidirectional</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 3</strong></p>
+<p>Next, define the forward function of your model. This function defines how the input data is processed. As long as your dataset is initilized correctly, the input of this function is fixed. The output of this function is not fixed, but we require a fixed format. For example, for regression tasks, the output shape will be the same as the label, which is [batch, horizon, 1] (temporal) or [batch, horizon, num_nodes] (spatial-temporal). Below is an example of the forward function of the model in <strong>Step 2</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">states</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dynamic_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
+    <span class="c1"># Forward propagate LSTM</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>  <span class="c1"># out: tensor of shape (batch, seq_length, hidden_size * num_directions)</span>
+
+    <span class="c1"># Decode the last hidden state</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">out</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">out</span>
+</pre></div>
+</div>
+<p><strong>Step 4 (Optional)</strong>
+The initialization method of your model can be define here.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;weight_ih&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;weight_hh&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">orthogonal_</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;bias&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 5</strong>
+After your model class is defined, we can apply the same pipeline in <a class="reference external" href="https://epilearn-doc.readthedocs.io/en/latest/Quickstart.html">Quickstart</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate cosine data</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">cos_wave</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+
+<span class="c1"># Initialize dataset with generated data</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">cos_wave</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="c1"># Initialize forecast settings</span>
+<span class="n">lookback</span> <span class="o">=</span> <span class="mi">36</span> <span class="c1"># inputs size</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># predicts size</span>
+
+<span class="c1"># Adding Transformations</span>
+<span class="n">transformation</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">({</span>
+                <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_feat</span><span class="p">()],</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">normalize_feat</span><span class="p">()]</span>
+                <span class="p">})</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transformation</span>
+
+<span class="c1"># Initialize Task</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">Forecast</span><span class="p">(</span><span class="n">prototype</span><span class="o">=</span><span class="n">CustomizedTemporal</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># Define hyperparameters of your model</span>
+<span class="n">model_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_features&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;num_timesteps_input&quot;</span><span class="p">:</span> <span class="n">lookback</span><span class="p">,</span> <span class="s2">&quot;num_timesteps_output&quot;</span><span class="p">:</span> <span class="n">horizon</span><span class="p">,</span> <span class="s2">&quot;hidden_size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;num_layers&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;bidirectional&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s1">&#39;cpu&#39;</span><span class="p">}</span>
+
+<span class="c1"># Training</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                        <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span>
+                        <span class="n">epochs</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                        <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="n">train_rate</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                        <span class="n">val_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                        <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+                        <span class="n">permute_dataset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">model_args</span><span class="o">=</span><span class="n">model_args</span><span class="p">)</span> <span class="c1"># pass the hyperparameters of your model</span>
+</pre></div>
+</div>
 </section>
 </section>
 
