@@ -23,6 +23,7 @@ Epilearn is a python library built for epidemic modeling, providing abundant too
    tutorials/task_building
    tutorials/simulation
    tutorials/utils
+   tutorials/customization
 
 .. toctree::
    :maxdepth: 1

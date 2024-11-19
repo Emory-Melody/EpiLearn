@@ -49,7 +49,6 @@ class GCN(BaseModel):
         if with_bn:
             self.bns = nn.ModuleList()
 
-
         if nlayers == 1:
             self.layers.append(GCNConv(num_features, hidden_dim, bias=with_bias))
         else:

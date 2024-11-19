@@ -50,7 +50,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart for EpiLearn</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart for EpiLearn</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#forecasting">forecasting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#detection">Detection</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/utils.html">Utilities</a></li>
@@ -99,7 +103,9 @@
              
   <section id="quickstart-for-epilearn">
 <h1>Quickstart for EpiLearn<a class="headerlink" href="#quickstart-for-epilearn" title="Link to this heading"></a></h1>
-<p>For forecast task, Epilearn initialzes a Forecast class with model prototyes and the dataset. Before building the task, a UniversalDataset is used to load the spatial&amp;temporal data and transformations are defined and applied.</p>
+<section id="forecasting">
+<h2>forecasting<a class="headerlink" href="#forecasting" title="Link to this heading"></a></h2>
+<p>For forecasting task, Epilearn initialzes a Forecast class with model prototyes and the dataset. Before building the task, a UniversalDataset is used to load the spatial&amp;temporal data and transformations are defined and applied.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">epilearn.models.Temporal</span> <span class="kn">import</span> <span class="n">DlinearModel</span>
 <span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
@@ -144,6 +150,9 @@
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/demo.png"><img alt="Demo" class="align-center" src="_images/demo.png" style="width: 500px;" /></a>
+</section>
+<section id="detection">
+<h2>Detection<a class="headerlink" href="#detection" title="Link to this heading"></a></h2>
 <p>For detection task, the process is the same as the forecast task except that we initialze a Detection task.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">epilearn.tasks.detection</span> <span class="kn">import</span> <span class="n">Detection</span>
@@ -178,6 +187,7 @@
                                 <span class="n">targets</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">train_split</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
+</section>
 </section>
 
 
