@@ -107,7 +107,7 @@ Next, you can use your own data to establish a `UniversalDataset` class by passi
 
 
 
-For more sample code in a real training process, you can refer to `exampls/dataset_customization.ipynb`.
+For more sample code in a real training process, you can refer to `examples/dataset_customization.ipynb` on the github page.
 
 
 
