@@ -89,6 +89,7 @@ First, you should form your data as a dictionary with keys of features, graph, d
 Next, you can use your own data to establish a `UniversalDataset` class by passing the correponding parameters due to your needs. Not every parameters are required. You can refer to `UniversalDataset`_ to obtain detailed descriptions and customize your parameters.
 
 .. code-block:: python
+    
     from epilearn.data import UniversalDataset
 
     dataset_sample1 = UniversalDataset(x=node_features, 
