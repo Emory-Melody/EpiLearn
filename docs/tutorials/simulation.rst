@@ -41,7 +41,7 @@ Given static node features, a graph can be obtained by calculating cosine simila
     feature = torch.rand(10,20) 
 
     # Randomly generate a adjacency matrix by 10 nodes.
-    adj = torch.randint(10,100, (10,10)) 
+    adj = torch.randint(10, 100, (10,10)) 
 
     # The feature, adj and any other parameters can be replaced by your own.
     graph1 = epilearn.utils.simulation.get_graph_from_features(features=feature, adj=None)
@@ -82,6 +82,7 @@ Given population numbers in each node (or say region) and distance between each 
 .. code-block:: python
 
     import epilearn
+    import torch
 
     # Assume we have three nodes, and the populations for the three nodes.
     node_populations = torch.tensor([1000, 2000, 1500]) 
@@ -99,7 +100,7 @@ Given population numbers in each node (or say region) and distance between each 
     # Choose two nodes from the graph along with their distance, and get the influence between this node pair.
     source_population = 1000
     target_population = 2000
-    distance = 10
+    distance = torch.tensor(10)
     influence = gravity_model.get_influence(source_population, target_population, distance)
     
     # Use population for each node and the distances to generate a set of graph weight, forming an adjency matrix.
@@ -145,6 +146,8 @@ Next we define several helper functions to process the trajectories of individua
 
 .. code-block:: python
 
+    import numpy as np
+
     def padding(traj, tim_size):
         def intcount(seq):
             a, b = np.array(seq[:-1]), np.array(seq[1:])
@@ -174,6 +177,7 @@ Define a TimeGeo function utilizes the Time_geo class to simulate trajectories b
 
     from tqdm import tqdm
     import epilearn
+    import numpy as np
 
     def TimeGeo(data, param):
         TG = {}
@@ -268,11 +272,9 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
 .. code-block:: python
 
     import epilearn
+    import torch
 
-    # Generate random static graph
-    initial_graph = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
-
-    # Set infected individual: 3
+    # Set two infected individuals: 3, 10, the first column represents S, the second is I, and the thirs is R.
     initial_states = torch.zeros(25,3) # [S,I,R]
     initial_states[:, 0] = 1
     initial_states[3, 0] = 0
@@ -281,7 +283,7 @@ The SIR model is a simple mathematical model used to simulate the spread of a di
     initial_states[10, 1] = 1
 
     # Create an instance of the SIR model with specified parameters.
-    model = epilearn.models.Temporal.SIR.SIR(horizon=190, infection_rate=0.05, recovery_rate=0.05)
+    model = epilearn.models.Temporal.SIR(horizon=190, infection_rate=0.05, recovery_rate=0.05)
 
     # Run the model to generate predictions.
     # Steps control the number of steps for the simulation. If None, it runs for the full horizon.
@@ -307,7 +309,7 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
     # Generate random static graph
     initial_graph = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
 
-    # Set infected individual: 3
+    # Set two infected individuals: 3, 10, the first column represents S, the second is I, and the thirs is R.
     initial_states = torch.zeros(25,3) # [S,I,R]
     initial_states[:, 0] = 1
     initial_states[3, 0] = 0
@@ -315,7 +317,7 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
     initial_states[10, 0] = 0
     initial_states[10, 1] = 1
 
-    # Create an instance of the NetworkSIR model with specified parameters:
+    # Create an instance of the NetworkSIR model with specified parameters.
     model = epilearn.models.SpatialTemporal.NetworkSIR.NetSIR(num_nodes=initial_graph.shape[0], horizon=120, infection_rate=0.05, recovery_rate=0.05)
     
     # Run the model to generate predictions.
