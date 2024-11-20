@@ -61,6 +61,56 @@ For other countries, please use 'Covid\_'+'country' to acquire the correspnding 
 Customize Your Own Dataset
 --------------------
 
+First, you should form your data as a dictionary with keys of features, graph, dynamic_graph, targets, and states. Here is an example:
+
+.. code-block:: python
+
+    data = torch.load("example.pt")
+    
+    data.keys()
+
+.. code-block:: text
+
+    dict_keys(['features', 'graph', 'dynamic_graph', 'targets', 'states'])
+
+.. code-block:: python
+
+    node_features = data['features']    # [time steps, nodes, channels]: torch.Size([539, 47, 4])
+
+    static_graph = torch.Tensor(data['graph'])  # [nodes, nodes]: (47, 47)
+
+    dynamic_graph = data['dynamic_graph']   # [time steps, nodes, nodes]: torch.Size([539, 47, 47])
+
+    targets = data['targets']   # [time steps, nodes]: torch.Size([539, 47])
+
+    node_status = data['states']    # [time steps, nodes]: torch.Size([539, 47])
+
+
+Next, you can use your own data to establish a `UniversalDataset` class by passing the correponding parameters due to your needs. Not every parameters are required. You can refer to `UniversalDataset`_ to obtain detailed descriptions and customize your parameters.
+
+.. code-block:: python
+    from epilearn.data import UniversalDataset
+
+    dataset_sample1 = UniversalDataset(x=node_features, 
+
+                            states=node_status, # e.g. additional information of each node, e.g. SIR states
+
+                            y=targets, # prediction target
+
+                            graph=static_graph, # adjacency matrix, we also support edge index: edge_index = ...
+
+                            dynamic_graph=dynamic_graph # # adjacency matrix
+
+                            )
+    
+    dataset_sample2 = UniversalDataset(x=features,y=node_target,graph=graph)
+
+
+
+For more sample code in a real training process, you can refer to `exampls/dataset_customization.ipynb`.
+
+
+
 
 
 
