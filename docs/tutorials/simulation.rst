@@ -305,6 +305,7 @@ The NetworkSIR model extends the SIR model by simulating the disease spread over
 .. code-block:: python
 
     import epilearn
+    import torch
 
     # Generate random static graph
     initial_graph = epilearn.utils.simulation.get_random_graph(num_nodes=25, connect_prob=0.20)
