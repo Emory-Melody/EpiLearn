@@ -35,6 +35,8 @@ For more machine models in epidemic modeling, feel free to check out our curated
 
 Announcement
 ==============
+To install the latest version, please use "pip install epilearn==0.0.15" --- 11/21/2024
+
 EpiLearn is currently updating. We will release a new version very soon! --- 11/13/2024
 
 If you have any suggestions, please feel free to click the feedback button on top and join our slack channel!
