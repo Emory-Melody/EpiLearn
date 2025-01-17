@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Models" href="models.html" />
-    <link rel="prev" title="Utilities" href="../tutorials/utils.html" /> 
+    <link rel="prev" title="Model&amp;Dataset Customization" href="../tutorials/customization.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,9 +51,10 @@
 <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/task_building.html">Pipeline for Epidemic Modeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/customization.html">Model&amp;Dataset Customization</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul class="current">
@@ -212,6 +213,45 @@ num_timesteps)
 </div>
 <section id="customize-your-own-dataset">
 <h2>Customize Your Own Dataset<a class="headerlink" href="#customize-your-own-dataset" title="Link to this heading"></a></h2>
+<p>First, you should form your data as a dictionary with keys of features, graph, dynamic_graph, targets, and states. Here is an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;example.pt&quot;</span><span class="p">)</span>
+
+<span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>dict_keys([&#39;features&#39;, &#39;graph&#39;, &#39;dynamic_graph&#39;, &#39;targets&#39;, &#39;states&#39;])
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">node_features</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]</span>    <span class="c1"># [time steps, nodes, channels]: torch.Size([539, 47, 4])</span>
+
+<span class="n">static_graph</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">])</span>  <span class="c1"># [nodes, nodes]: (47, 47)</span>
+
+<span class="n">dynamic_graph</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dynamic_graph&#39;</span><span class="p">]</span>   <span class="c1"># [time steps, nodes, nodes]: torch.Size([539, 47, 47])</span>
+
+<span class="n">targets</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span>   <span class="c1"># [time steps, nodes]: torch.Size([539, 47])</span>
+
+<span class="n">node_status</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;states&#39;</span><span class="p">]</span>    <span class="c1"># [time steps, nodes]: torch.Size([539, 47])</span>
+</pre></div>
+</div>
+<p>Next, you can use your own data to establish a <cite>UniversalDataset</cite> class by passing the correponding parameters due to your needs. Not every parameters are required. You can refer to <a class="reference internal" href="#universaldataset">UniversalDataset</a> to obtain detailed descriptions and customize your parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">epilearn.data</span> <span class="kn">import</span> <span class="n">UniversalDataset</span>
+
+<span class="n">dataset_sample1</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">node_features</span><span class="p">,</span>
+
+                        <span class="n">states</span><span class="o">=</span><span class="n">node_status</span><span class="p">,</span> <span class="c1"># e.g. additional information of each node, e.g. SIR states</span>
+
+                        <span class="n">y</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span> <span class="c1"># prediction target</span>
+
+                        <span class="n">graph</span><span class="o">=</span><span class="n">static_graph</span><span class="p">,</span> <span class="c1"># adjacency matrix, we also support edge index: edge_index = ...</span>
+
+                        <span class="n">dynamic_graph</span><span class="o">=</span><span class="n">dynamic_graph</span> <span class="c1"># # adjacency matrix</span>
+
+                        <span class="p">)</span>
+
+<span class="n">dataset_sample2</span> <span class="o">=</span> <span class="n">UniversalDataset</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">features</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">node_target</span><span class="p">,</span><span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more sample code in a real training process, you can refer to <cite>examples/dataset_customization.ipynb</cite> on the github page.</p>
 </section>
 </section>
 
@@ -219,7 +259,7 @@ num_timesteps)
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../tutorials/utils.html" class="btn btn-neutral float-left" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tutorials/customization.html" class="btn btn-neutral float-left" title="Model&amp;Dataset Customization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

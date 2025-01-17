@@ -1,4 +1,4 @@
-Pipeline for Epidemic Modling
+Pipeline for Epidemic Modeling
 ===================================
 
 

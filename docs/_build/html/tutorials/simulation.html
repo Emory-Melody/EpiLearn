@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Utilities" href="utils.html" />
-    <link rel="prev" title="Pipeline for Epidemic Modling" href="task_building.html" /> 
+    <link rel="prev" title="Pipeline for Epidemic Modeling" href="task_building.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,7 +52,7 @@
 <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Quickstart.html">Quickstart for EpiLearn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="task_building.html">Pipeline for Epidemic Modling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="task_building.html">Pipeline for Epidemic Modeling</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#static-properties">Static Properties</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#random-static-graph">Random Static Graph</a><ul>
@@ -78,6 +78,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Model&amp;Dataset Customization</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package API</span></p>
 <ul>
@@ -197,7 +198,7 @@ where each entry [i, j] contains the adjusted cosine similarity between nodes i 
 <span class="n">feature</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
 
 <span class="c1"># Randomly generate a adjacency matrix by 10 nodes.</span>
-<span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
 
 <span class="c1"># The feature, adj and any other parameters can be replaced by your own.</span>
 <span class="n">graph1</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_graph_from_features</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">feature</span><span class="p">,</span> <span class="n">adj</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -305,6 +306,7 @@ represents the mobility influence from node i to node j.</p>
 
 <p>Given population numbers in each node (or say region) and distance between each node, edge weights can be obtained along with given each parameter.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="c1"># Assume we have three nodes, and the populations for the three nodes.</span>
 <span class="n">node_populations</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">])</span>
@@ -322,7 +324,7 @@ represents the mobility influence from node i to node j.</p>
 <span class="c1"># Choose two nodes from the graph along with their distance, and get the influence between this node pair.</span>
 <span class="n">source_population</span> <span class="o">=</span> <span class="mi">1000</span>
 <span class="n">target_population</span> <span class="o">=</span> <span class="mi">2000</span>
-<span class="n">distance</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">distance</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">influence</span> <span class="o">=</span> <span class="n">gravity_model</span><span class="o">.</span><span class="n">get_influence</span><span class="p">(</span><span class="n">source_population</span><span class="p">,</span> <span class="n">target_population</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
 
 <span class="c1"># Use population for each node and the distances to generate a set of graph weight, forming an adjency matrix.</span>
@@ -362,7 +364,9 @@ represents the mobility influence from node i to node j.</p>
 <li><p><strong>to_fixed</strong>: Converts trajectories to a fixed time resolution.</p></li>
 <li><p><strong>to_std</strong>: Standardizes the trajectories into a specific format.</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">padding</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">tim_size</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">padding</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">tim_size</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">intcount</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seq</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
@@ -388,6 +392,7 @@ represents the mobility influence from node i to node j.</p>
 <p>Define a TimeGeo function utilizes the Time_geo class to simulate trajectories based on the input data and parameters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">import</span> <span class="nn">epilearn</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">TimeGeo</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
     <span class="n">TG</span> <span class="o">=</span> <span class="p">{}</span>
@@ -474,11 +479,9 @@ represents the mobility influence from node i to node j.</p>
 <li><p><strong>recovery_rate</strong>: The rate at which infected individuals recover.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="c1"># Generate random static graph</span>
-<span class="n">initial_graph</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_random_graph</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">connect_prob</span><span class="o">=</span><span class="mf">0.20</span><span class="p">)</span>
-
-<span class="c1"># Set infected individual: 3</span>
+<span class="c1"># Set two infected individuals: 3, 10, the first column represents S, the second is I, and the thirs is R.</span>
 <span class="n">initial_states</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># [S,I,R]</span>
 <span class="n">initial_states</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">initial_states</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -487,7 +490,7 @@ represents the mobility influence from node i to node j.</p>
 <span class="n">initial_states</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="c1"># Create an instance of the SIR model with specified parameters.</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Temporal</span><span class="o">.</span><span class="n">SIR</span><span class="o">.</span><span class="n">SIR</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">190</span><span class="p">,</span> <span class="n">infection_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">recovery_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Temporal</span><span class="o">.</span><span class="n">SIR</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">190</span><span class="p">,</span> <span class="n">infection_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">recovery_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 
 <span class="c1"># Run the model to generate predictions.</span>
 <span class="c1"># Steps control the number of steps for the simulation. If None, it runs for the full horizon.</span>
@@ -508,11 +511,12 @@ represents the mobility influence from node i to node j.</p>
 <li><p><strong>recovery_rate</strong>: The rate at which infected nodes recover.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">epilearn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="c1"># Generate random static graph</span>
 <span class="n">initial_graph</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">get_random_graph</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">connect_prob</span><span class="o">=</span><span class="mf">0.20</span><span class="p">)</span>
 
-<span class="c1"># Set infected individual: 3</span>
+<span class="c1"># Set two infected individuals: 3, 10, the first column represents S, the second is I, and the thirs is R.</span>
 <span class="n">initial_states</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># [S,I,R]</span>
 <span class="n">initial_states</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">initial_states</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -520,7 +524,7 @@ represents the mobility influence from node i to node j.</p>
 <span class="n">initial_states</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">initial_states</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1"># Create an instance of the NetworkSIR model with specified parameters:</span>
+<span class="c1"># Create an instance of the NetworkSIR model with specified parameters.</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">epilearn</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SpatialTemporal</span><span class="o">.</span><span class="n">NetworkSIR</span><span class="o">.</span><span class="n">NetSIR</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">initial_graph</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">infection_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">recovery_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 
 <span class="c1"># Run the model to generate predictions.</span>
@@ -539,7 +543,7 @@ represents the mobility influence from node i to node j.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="task_building.html" class="btn btn-neutral float-left" title="Pipeline for Epidemic Modling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="task_building.html" class="btn btn-neutral float-left" title="Pipeline for Epidemic Modeling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

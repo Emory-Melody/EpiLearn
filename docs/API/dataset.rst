@@ -59,7 +59,7 @@ For other countries, please use 'Covid\_'+'country' to acquire the correspnding 
 
 
 Customize Your Own Dataset
---------------------
+---------------------------
 
 First, you should form your data as a dictionary with keys of features, graph, dynamic_graph, targets, and states. Here is an example:
 
