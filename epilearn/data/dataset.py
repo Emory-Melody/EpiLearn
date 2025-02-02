@@ -134,7 +134,7 @@ class UniversalDataset(Dataset):
             self.output_dim = self.y.shape
         
         if self.graph is not None and self.edge_index is None:
-            sparse_adj = torch.FloatTensor(self.graph).to_sparse()
+            sparse_adj = torch.Tensor(self.graph).float().to_sparse()
             self.edge_index = sparse_adj.indices()
             self.edge_weight = sparse_adj.values()
     
@@ -291,7 +291,7 @@ class UniversalDataset(Dataset):
         self.dynamic_graph = torch.FloatTensor(data2.tolist()['od'])
         self.states = torch.FloatTensor(data2.tolist()['SIR'])
 
-        self.graph = data1
+        self.graph = torch.FloatTensor(data1)
         self.edge_index = torch.FloatTensor(data1).to_sparse_coo().indices()
         self.edge_weight = torch.FloatTensor(data1).to_sparse_coo().values()
     

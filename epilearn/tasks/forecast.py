@@ -177,6 +177,7 @@ class Forecast(BaseTask):
                                  ).reshape(targets.shape)
         if type(out) is tuple:
             out = out[0]
+        
         self.preds = out.detach().cpu()*std+mean
         self.targets = targets.detach().cpu()*std+mean
 
@@ -243,8 +244,6 @@ class Forecast(BaseTask):
             train_states = train_states[:,:,region_idx]
             val_states = val_states[:,:,region_idx]
             test_states = test_states[:,:,region_idx]
-
-            features = features[:,region_idx,:]
 
         return  {'features': train_input, 'targets': train_target, 'states': train_states, 'dynamic_graph': train_adj}, \
                 {'features': val_input, 'targets': val_target, 'states': val_states, 'dynamic_graph': val_adj}, \

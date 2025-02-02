@@ -29,7 +29,8 @@ setuptools.setup(
           'pyvis==0.3.2',
           'plotly==5.22.0',
           'fastdtw==0.3.4',
-          'einops==0.8.0' 
+          'einops==0.8.0',
+          "docutils==0.13.1"
       ],
     packages=setuptools.find_packages(),
     classifiers=[

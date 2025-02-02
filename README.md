@@ -48,7 +48,7 @@ If you experience any issues, please don’t hesitate to open a **[GitHub Issue]
 
 Installation
 ==============
-## From Source ##
+## From Source
 ```bash
 git clone https://github.com/Emory-Melody/EpiLearn.git
 cd EpiLearn
@@ -58,12 +58,21 @@ conda activate epilearn
 
 python setup.py install
 ```
-## From Pypi ##
+## From Pypi 
 ```bash
 pip install epilearn
 ```
 
+#### Installing Dependencies (CPU)
+```bash
+pip install torch==2.5
+pip install torch_geometric
+pip install torch_scatter -f https://data.pyg.org/whl/torch-2.5.0+cpu.html
+```
+
 EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For the GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
+
+
 
 Tutorial
 ==============
@@ -71,7 +80,7 @@ We provide a quick tutorial of EpiLearn in [Google Colab](https://colab.research
 
 Below we also offer a quick start on how to use EpiLearn for forecast and detection tasks.
 
-## Forecast Pipeline ##
+## Forecast Pipeline
 ```python
 from epilearn.models.SpatialTemporal.STGCN import STGCN
 from epilearn.data import UniversalDataset
@@ -104,7 +113,7 @@ result = task.train_model(dataset=dataset,
 evaluation = task.evaluate_model()
 ```
 
-## Detection Pipeline ##
+## Detection Pipeline
 ```python
 from epilearn.models.Spatial.GCN import GCN
 from epilearn.data import UniversalDataset
@@ -136,7 +145,7 @@ result = task.train_model(dataset=dataset,
 evaluation = task.evaluate_model()
 ```
 
-## Web Interface ##
+## Web Interface
 
 Our [web application](https://epilearn.streamlit.app/) is deployed online using [streamlit](https://streamlit.io/). But it also can be initiated using:
 ```bash
