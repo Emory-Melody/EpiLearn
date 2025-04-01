@@ -136,7 +136,8 @@ def Degree_Matrix(ST_matrix):
 
     ## degree matrix
     dim = len(ST_matrix)
-    D_matrix = torch.zeros(dim, dim)
+    import ipdb; ipdb.set_trace()
+    D_matrix = torch.zeros(dim, dim).to(ST_matrix.device)
     for i in range(dim):
         D_matrix[i, i] = 1 / max(torch.sqrt(row_sum[i]), 1)
 
@@ -164,11 +165,11 @@ def Static_full(n, t, A):
         The full spatio-temporal adjacency matrix.
     """
 
-    I_S = torch.diag_embed(torch.ones(n))
-    I_T = torch.diag_embed(torch.ones(t))
+    I_S = torch.diag_embed(torch.ones(n)).to(A.device)
+    I_T = torch.diag_embed(torch.ones(t)).to(A.device)
 
     C_S = A
-    C_T = torch.tril(torch.ones(t, t), diagonal=-1)
+    C_T = torch.tril(torch.ones(t, t), diagonal=-1).to(A.device)
 
     S = I_S + C_S
     A_ST = kronecker(C_T, S) + kronecker(I_T, C_S)

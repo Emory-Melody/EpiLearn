@@ -250,8 +250,9 @@ class MepoGNN(BaseModel):
                  kernel_size=2, 
                  blocks=2, 
                  layers=3, 
+                 nhids=None,
                  device = 'cpu'):
-        super(MepoGNN, self).__init__()
+        super(MepoGNN, self).__init__(device = device)
         self.stcell = stcell(num_nodes, dropout, num_features, num_timesteps_output, residual_channels, dilation_channels,
                              skip_channels, end_channels, kernel_size, blocks, layers)
         self.SIRcell = SIRcell()
@@ -310,6 +311,7 @@ class MepoGNN(BaseModel):
 
         if self.glm_type == 'Dynamic':
             incidence = torch.softmax(self.inc_init, dim=1)
+            # import ipdb; ipdb.set_trace()
             mob = torch.einsum('kl,blnmc->bknmc', incidence, od).squeeze(-1)
             g = mob.mean(1)
             g_t = g.permute(0, 2, 1)

@@ -86,8 +86,7 @@ class ColaGNN(BaseModel):
                 dropout = 0.5,
                 device='cpu'): 
         
-        super().__init__()
-        self.device = device
+        super().__init__(device)
         self.x_h = num_features 
         self.m = num_nodes
         self.w = num_timesteps_input
@@ -193,7 +192,7 @@ class ColaGNN(BaseModel):
         c = torch.sigmoid(a_mx @ self.Wb + self.wb)
         a_mx = adjs * c + a_mx * (1-c) 
         adj = a_mx 
-        
+        # import ipdb; ipdb.set_trace()
         x = r_l  
         x = F.relu(self.conv1(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)

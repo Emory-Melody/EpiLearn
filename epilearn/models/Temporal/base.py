@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from copy import deepcopy
 import torch
 from tqdm import tqdm
+import matplotlib.pyplot as plt 
 
 from ...utils.utils import *
 from ...utils.metrics import get_loss
@@ -28,14 +29,15 @@ class BaseModel(nn.Module):
             epochs=1000, 
             batch_size=10,
             lr=1e-3, 
+            weight_decay=0,
             initialize=True, 
             verbose=False, 
-            patience=100, 
+            patience=10, 
             **kwargs):
         if initialize:
             self.initialize()
         
-        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay)
         loss_fn = get_loss(loss)
 
         training_losses = []
@@ -59,16 +61,17 @@ class BaseModel(nn.Module):
                     patience -= 1
 
                 if epoch > early_stopping and patience <= 0:
+                    print("early stopping...")
                     break
 
-                if verbose and epoch%50 == 0:
+                if verbose and epoch%5 == 0:
                     print(f"######### epoch:{epoch}")
                     print("Training loss: {}".format(training_losses[-1]))
                     print("Validation loss: {}".format(validation_losses[-1]))
             else:
                 validation_losses.append(None)
                 best_weights = deepcopy(self.state_dict())
-                if verbose and epoch%50 == 0:
+                if verbose and epoch%5 == 0:
                     print(f"######### epoch:{epoch}")
                     print("Training loss: {}".format(training_losses[-1]))
                     print("Validation loss: {}".format(validation_losses[-1]))
@@ -76,6 +79,12 @@ class BaseModel(nn.Module):
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
+        # plt.figure()
+        # plt.plot(training_losses, label="train")
+        # plt.plot(validation_losses, label="val")
+        # plt.legend()
+        # plt.savefig("loss.png")
+        # plt.show()
 
         self.load_state_dict(best_weights)
 
@@ -91,7 +100,6 @@ class BaseModel(nn.Module):
         :return: Average loss for this epoch.
         """
         permutation = torch.randperm(feature.shape[0])
-
         epoch_training_losses = []
         for i in range(0, feature.shape[0], batch_size):
             self.train()

@@ -28,6 +28,7 @@ def plot_series(x : np.array, columns : list, fig_size=None):
     if fig_size is not None:
         plt.figure(figsize=fig_size)
     sb.relplot(data, kind = "line", legend = columns)
+    plt.savefig("plot_series.png")
 
 def plot_graph(states: np.array, graph : np.array, classes=None, layout=None):
     """

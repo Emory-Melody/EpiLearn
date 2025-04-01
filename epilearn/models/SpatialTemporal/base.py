@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from copy import deepcopy
 import torch
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from ...utils.utils import *
 from ...utils.metrics import get_loss
@@ -47,6 +48,7 @@ class BaseModel(nn.Module):
         best_weights = deepcopy(self.state_dict())
         for epoch in tqdm(range(epochs)):
             # train one epoch
+            # import ipdb; ipdb.set_trace()
             loss = self.train_epoch(optimizer=optimizer, 
                                     loss_fn=loss_fn, 
                                     feature=train_input, 
@@ -76,6 +78,7 @@ class BaseModel(nn.Module):
                     patience -= 1
 
                 if epoch > early_stopping and patience <= 0:
+                    print("Early stopping at epoch: ", epoch)
                     break
 
                 if verbose and epoch%50 == 0:
@@ -93,6 +96,13 @@ class BaseModel(nn.Module):
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
+
+        plt.figure()
+        plt.plot(training_losses, label="train")
+        plt.plot(validation_losses, label="val")
+        plt.legend()
+        plt.savefig("st_loss.png")
+        plt.show()
         
         self.load_state_dict(best_weights)
 
@@ -113,7 +123,7 @@ class BaseModel(nn.Module):
         for i in range(0, feature.shape[0], batch_size):
             self.train()
             optimizer.zero_grad()
-
+            
             indices = permutation[i:i + batch_size]
             X_batch, y_batch = feature[indices], target[indices]
 
@@ -134,9 +144,9 @@ class BaseModel(nn.Module):
             
             if graph is not None:
                 graph = graph.to(device)
-
             out = self.forward(X_batch, graph, X_states, batch_graph)
             loss = loss_fn(out, y_batch)
+            # import ipdb; ipdb.set_trace()
             loss.backward()
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
@@ -169,18 +179,19 @@ class BaseModel(nn.Module):
         -------
         torch.FloatTensor
         """
-        self.eval()
-        if graph is not None:
-            graph = graph.to(self.device)
+        with torch.no_grad():
+            self.eval()
+            if graph is not None:
+                graph = graph.to(self.device)
 
-        if dynamic_graph is not None:
-            dynamic_graph = dynamic_graph.to(self.device)
-        
-        if states is not None:
-            states = states.to(self.device)
-        
-        if feature is not None:
-            feature = feature.to(self.device)
-
-        result = self.forward(feature, graph, states, dynamic_graph)
+            if dynamic_graph is not None:
+                dynamic_graph = dynamic_graph.to(self.device)
+            
+            if states is not None:
+                states = states.to(self.device)
+            
+            if feature is not None:
+                feature = feature.to(self.device)
+            # import ipdb; ipdb.set_trace()
+            result = self.forward(feature, graph, states, dynamic_graph)
         return result.detach().cpu()

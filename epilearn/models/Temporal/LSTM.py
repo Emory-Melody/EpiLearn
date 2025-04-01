@@ -1,8 +1,7 @@
 from .base import BaseModel
-import torch.nn as nn
-from .base import BaseModel
 import torch.nn.init as init
 import torch
+import torch.nn as nn
 
 class LSTMModel(BaseModel):
     """
@@ -30,8 +29,8 @@ class LSTMModel(BaseModel):
         This tensor is the output from the last timestep processed through a linear layer to predict the desired number of future timesteps.
 
     """
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False, device='cpu'):
-        super(LSTMModel, self).__init__(device=device)
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False, **kwargs):
+        super(LSTMModel, self).__init__(device=kwargs.get('device', 'cpu'))
         self.num_features = num_features  
         self.num_timesteps_input = num_timesteps_input  
         self.num_timesteps_output = num_timesteps_output  
@@ -67,6 +66,7 @@ class LSTMModel(BaseModel):
             for the future timesteps. Each element corresponds to a predicted value 
             for a future timestep.
         """
+        # import ipdb; ipdb.set_trace()
         lstm_out, _ = self.lstm(x)
 
         if self.use_norm:

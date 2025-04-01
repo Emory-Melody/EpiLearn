@@ -11,8 +11,8 @@ class Forecast(BaseTask):
     in settings that involve spatial-temporal dynamics. The class supports model initialization, training, evaluation, 
     and preprocessing, facilitating the application of various neural network architectures and configurations.
     """
-    def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, device = 'cpu'):
-        super().__init__(prototype, model, dataset, lookback, horizon, device)
+    def __init__(self, prototype = None, model = None, dataset = None, lookback = None, horizon = None, ahead=0, device = 'cpu'):
+        super().__init__(prototype, model, dataset, lookback, horizon, ahead, device)
         self.feat_mean = 0
         self.feat_std = 1
         self.device = device
@@ -28,11 +28,13 @@ class Forecast(BaseTask):
                     epochs=1000, 
                     batch_size=10,
                     lr=1e-3, 
+                    weight_decay=0,
                     region_idx=None,
                     initialize=True, 
                     verbose=False, 
                     patience=100, 
                     device = None,
+                    pretrained = None,
                     model_args={},
                     ):
         """
@@ -42,6 +44,7 @@ class Forecast(BaseTask):
         """
         if device is not None:
             self.device = device
+        # import ipdb; ipdb.set_trace()
         if config is not None:
             permute_dataset = config.permute
             train_rate = config.train_rate
@@ -66,80 +69,96 @@ class Forecast(BaseTask):
         
         self.region_index = region_idx
         self.train_split, self.val_split, self.test_split, self.adj = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
+        if self.test_split['features'].numel() == 0:
+            self.test_split = self.val_split
 
         try:
             self.target_mean, self.target_std = self.dataset.transforms.target_mean, dataset.transforms.target_std
         except:
             self.target_mean, self.target_std = 0, 1
 
-
-        if len(model_args) != 0:
-            self.model = self.prototype(**model_args)
+       
+        if pretrained is not None:
+            # import ipdb; ipdb.set_trace()
+            self.model = pretrained
         else:
-            try:
-            # initialize model
-                self.model = self.prototype(
-                    num_nodes=self.adj.shape[0],
-                    num_features=self.train_split['features'].shape[3],
-                    num_timesteps_input=self.lookback,
-                    num_timesteps_output=self.horizon,
-                    device=self.device,
-                    ).to(self.device)
-                print("spatial-temporal model loaded!")
-            except:
-                self.model = self.prototype(
-                                        num_features=self.train_split['features'].shape[2],
-                                        num_timesteps_input=self.lookback,
-                                        num_timesteps_output=self.horizon,
-                                        device=self.device,
-                                        ).to(self.device)
-                print("temporal model loaded!")
-
+            if len(model_args) != 0:
+                self.model = self.prototype(**model_args)
+            else:
+                try:
+                # initialize model
+                    self.model = self.prototype(
+                        num_nodes=self.adj.shape[0],
+                        num_features=self.train_split['features'].shape[3],
+                        num_timesteps_input=self.lookback,
+                        num_timesteps_output=self.horizon,
+                        device=self.device,
+                        ).to(self.device)
+                    print("spatial-temporal model loaded!")
+                except:
+                    self.model = self.prototype(
+                                            num_features=self.train_split['features'].shape[2],
+                                            num_timesteps_input=self.lookback,
+                                            num_timesteps_output=self.horizon,
+                                            device=self.device,
+                                            ).to(self.device)
+                    print("temporal model loaded!")
+        self.model = self.model.to(self.device)
+        # import ipdb; ipdb.set_trace()
         # train
-        self.model.fit(
-                train_input=self.train_split['features'], 
-                train_target=self.train_split['targets'], 
-                train_states = self.train_split['states'],
-                train_graph=self.adj, 
-                train_dynamic_graph=self.train_split['dynamic_graph'],
-                val_input=self.val_split['features'], 
-                val_target=self.val_split['targets'], 
-                val_states=self.val_split['states'],
-                val_graph=self.adj,
-                val_dynamic_graph=self.val_split['dynamic_graph'],
-                verbose=verbose,
-                batch_size=batch_size,
-                lr=lr,
-                epochs=epochs,
-                loss=loss,
-                initialize=initialize,
-                patience=patience)
-        
-        # evaluate
-        self.test_graph = self.adj
-        self.test_feature = self.test_split['features']
-        self.test_target = self.test_split['targets']
-        self.test_states = self.test_split['states']
-        self.test_dynamic_graph = self.test_split['dynamic_graph']
+        try:
+            self.model.fit(
+                    train_input=self.train_split['features'], 
+                    train_target=self.train_split['targets'], 
+                    train_states = self.train_split['states'],
+                    train_graph=self.adj, 
+                    train_dynamic_graph=self.train_split['dynamic_graph'],
+                    val_input=self.val_split['features'], 
+                    val_target=self.val_split['targets'], 
+                    val_states=self.val_split['states'],
+                    val_graph=self.adj,
+                    val_dynamic_graph=self.val_split['dynamic_graph'],
+                    verbose=verbose,
+                    batch_size=batch_size,
+                    lr=lr,
+                    weight_decay=weight_decay,
+                    epochs=epochs,
+                    loss=loss,
+                    initialize=initialize,
+                    patience=patience)
 
-        out = self.model.predict(feature=self.test_feature, 
-                                 graph=self.test_graph, 
-                                 states=self.test_states, 
-                                 dynamic_graph=self.test_dynamic_graph
-                                 ).reshape(self.test_target.shape)
-        if type(out) is tuple:
-            out = out[0]
-        self.preds = out.detach().cpu()#*self.target_std+self.target_mean
-        self.targets = self.test_target.detach().cpu()#*self.target_std+self.target_mean
-        # metrics
-        mse = metrics.get_MSE(self.preds, self.targets)
-        mae = metrics.get_MAE(self.preds, self.targets)
-        rmse = metrics.get_RMSE(self.preds, self.targets)
-        print(f"Test MSE: {mse.item()}")
-        print(f"Test MAE: {mae.item()}")
-        print(f"Test RMSE: {rmse.item()}")
-        
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": self.preds, "targets": self.targets}
+            # import ipdb; ipdb.set_trace()
+            # evaluate
+            self.test_graph = self.adj
+            self.test_feature = self.test_split['features']
+            self.test_target = self.test_split['targets']
+            self.test_states = self.test_split['states']
+            self.test_dynamic_graph = self.test_split['dynamic_graph']
+            out = self.model.predict(feature=self.test_feature, 
+                                    graph=self.test_graph, 
+                                    states=self.test_states, 
+                                    dynamic_graph=self.test_dynamic_graph
+                                    ).reshape(self.test_target.shape)
+            if type(out) is tuple:
+                out = out[0]
+            self.preds = out.detach().cpu()#*self.target_std+self.target_mean
+            self.targets = self.test_target.detach().cpu()#*self.target_std+self.target_mean
+            # metrics
+            mse = metrics.get_MSE(self.preds, self.targets)
+            mae = metrics.get_MAE(self.preds, self.targets)
+            rmse = metrics.get_RMSE(self.preds, self.targets)
+            print(f"Test MSE: {mse.item()}")
+            print(f"Test MAE: {mae.item()}")
+            print(f"Test RMSE: {rmse.item()}")
+            
+            return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": self.preds, "targets": self.targets}
+        except Exception as e:
+            print("Training failed!")
+            print("Error message:", str(e))
+            import traceback
+            traceback.print_exc()
+            # import ipdb; ipdb.set_trace()
+
 
 
     def evaluate_model(self,
@@ -160,27 +179,28 @@ class Forecast(BaseTask):
             if not hasattr(self, "model"):
                 raise RuntimeError("model not exists, please use load_model() to load model first!")
             model = self.model
-        
+        # import ipdb; ipdb.set_trace()
         features = self.test_feature if features is None else features
         graph = self.test_graph if graph is None else graph
         states = self.test_states if states is None else states
         dynamic_graph = self.test_dynamic_graph if dynamic_graph is None else dynamic_graph
         targets = self.test_target if targets is None else targets
-        mean = self.target_mean if norm is None else norm['mean']
-        std = self.target_std if norm is None else norm['std']
 
         # evaluate
-        out = self.model.predict(feature=features, 
-                                 graph=graph, 
-                                 states=states, 
-                                 dynamic_graph=dynamic_graph
-                                 ).reshape(targets.shape)
+        # import ipdb; ipdb.set_trace()
+        with torch.no_grad():
+            out = model.predict(feature=features, 
+                                    graph=graph, 
+                                    states=states, 
+                                    dynamic_graph=dynamic_graph
+                                    ).reshape(targets.shape)
         if type(out) is tuple:
             out = out[0]
-        
-        self.preds = out.detach().cpu()*std+mean
-        self.targets = targets.detach().cpu()*std+mean
+        # import ipdb; ipdb.set_trace()
 
+        self.preds = self.inverse_norm(out.detach().cpu(), norm)
+        self.targets = self.inverse_norm(targets.detach().cpu(), norm)
+        
         # metrics
         mse = metrics.get_MSE(self.preds, self.targets)
         mae = metrics.get_MAE(self.preds, self.targets)
@@ -190,6 +210,15 @@ class Forecast(BaseTask):
         print(f"Test RMSE: {rmse.item()}")
         
         return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions":self.preds, "targets":self.targets}
+    
+    def inverse_norm(self, data, norm):
+        mean = self.target_mean if norm is None else norm['mean']
+        std = self.target_std if norm is None else norm['std']
+
+        if type(std) is int:
+            return data*std+mean
+        else:
+            return data*std.unsqueeze(-1)+mean.unsqueeze(-1)
     
 
     def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
@@ -205,8 +234,9 @@ class Forecast(BaseTask):
             
         # preprocessing
         self.train_dataset, self.val_dataset, self.test_dataset = dataset.ganerate_splits(train_rate=train_rate, val_rate=val_rate)
-        adj = dataset.graph
 
+        adj = self.train_dataset['graph']
+        
         train_input, train_target, train_states, train_adj = dataset.generate_dataset(
                                                                                         X=self.train_dataset['features'], 
                                                                                         Y=self.train_dataset['target'], 
@@ -214,6 +244,7 @@ class Forecast(BaseTask):
                                                                                         dynamic_adj = self.train_dataset['dynamic_graph'],
                                                                                         lookback_window_size=self.lookback,
                                                                                         horizon_size=self.horizon, 
+                                                                                        ahead=self.ahead,
                                                                                         permute=permute)
         val_input, val_target, val_states, val_adj = dataset.generate_dataset(
                                                                                 X=self.val_dataset['features'], 
@@ -222,6 +253,7 @@ class Forecast(BaseTask):
                                                                                 dynamic_adj = self.val_dataset['dynamic_graph'],
                                                                                 lookback_window_size=self.lookback, 
                                                                                 horizon_size=self.horizon, 
+                                                                                ahead=self.ahead,
                                                                                 permute=permute)
         test_input, test_target, test_states, test_adj = dataset.generate_dataset(
                                                                                     X=self.test_dataset['features'], 
@@ -230,8 +262,8 @@ class Forecast(BaseTask):
                                                                                     dynamic_adj = self.test_dataset['dynamic_graph'],
                                                                                     lookback_window_size=self.lookback, 
                                                                                     horizon_size=self.horizon, 
+                                                                                    ahead=self.ahead,
                                                                                     permute=permute)
-        
         if region_idx is not None:
             train_input = train_input[:,:,region_idx,:]
             val_input = val_input[:,:,region_idx,:]
