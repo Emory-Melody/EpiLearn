@@ -1,13 +1,26 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_scatter import scatter
 import numpy as np
 import networkx as nx
 import scipy.sparse as sp
 
 from .base import BaseModel
 
+def scatter_mul(src, index, dim_size):
+    """
+    Custom implementation of scatter multiplication using PyTorch
+    """
+    result = torch.ones(dim_size)
+    # Convert index to numpy for indexing if it's not already
+    if isinstance(index, torch.Tensor):
+        index = index.numpy()
+    # Group values by index
+    for idx in range(dim_size):
+        mask = (index == idx)
+        if mask.any():
+            result[idx] = torch.prod(src[mask])
+    return result
 
 class DMP(nn.Module):
     def __init__(self, 
@@ -48,9 +61,9 @@ class DMP(nn.Module):
         return edge_list
 
     def mulmul(self, Theta_t):
-        Theta = scatter(Theta_t, index=self.tar_nodes, reduce="mul", dim_size=self.N) # [N]
+        Theta = scatter_mul(Theta_t, self.tar_nodes, self.N) # [N]
         Theta = Theta[self.src_nodes] #[E]
-        Theta_cav = scatter(Theta_t, index=self.cave_index, reduce="mul", dim_size=self.E+1)[:self.E]
+        Theta_cav = scatter_mul(Theta_t, self.cave_index, self.E+1)[:self.E]
 
         mul = Theta / Theta_cav
         return mul
@@ -63,7 +76,7 @@ class DMP(nn.Module):
         self.Phi_ij_t = (1-self.weights)*(1-self.gamma)*self.Phi_ij_t - (self.Ps_ij_t-self.Ps_ij_t_1)
 
         # marginals
-        self.Ps_t = self.Ps_0 * scatter(self.Theta_ij_t, self.tar_nodes, reduce="mul", dim_size=self.N)
+        self.Ps_t = self.Ps_0 * scatter_mul(self.Theta_ij_t, self.tar_nodes, self.N)
         self.Pr_t = self.Pr_t + self.nodes_gamma*self.Pi_t
         self.Pi_t = 1 - self.Ps_t - self.Pr_t
         self.marginals.append([self.Ps_t, self.Pi_t, self.Pr_t])
@@ -130,7 +143,7 @@ class DMP(nn.Module):
         self.Phi_ij_t = (1-self.weights)*(1-self.gamma)*self.Phi_ij_0 - (self.Ps_ij_t-self.Ps_ij_t_1)
 
         # marginals
-        self.Ps_t = self.Ps_0 * scatter(self.Theta_ij_t, self.tar_nodes, reduce="mul", dim_size=self.N)
+        self.Ps_t = self.Ps_0 * scatter_mul(self.Theta_ij_t, self.tar_nodes, self.N)
         self.Pr_t = self.Pr_0 + self.nodes_gamma*self.Pi_0
         self.Pi_t = 1 - self.Ps_t - self.Pr_t
         self.marginals.append([self.Ps_t, self.Pi_t, self.Pr_t])

@@ -169,11 +169,12 @@ def Static(n, t, A, rho_IT, rho_CT1, rho_CT2):
     :param rho_CT2: the trainable paramter of the historical states of neighbors
     :return: a space-time dependency structure matrix
     """
-    I_S = torch.diag_embed(torch.ones(n))
-    I_T = torch.diag_embed(torch.ones(t))
+    import ipdb; ipdb.set_trace()
+    I_S = torch.diag_embed(torch.ones(n)).to(A.device)
+    I_T = torch.diag_embed(torch.ones(t)).to(A.device)
 
     C_S = A
-    C_T = torch.tril(torch.ones(t, t), diagonal=-1)
+    C_T = torch.tril(torch.ones(t, t), diagonal=-1).to(A.device)
 
     A_ST = kronecker(rho_IT * I_T, C_S) + kronecker(rho_CT1 * C_T, I_S) + kronecker(rho_CT2 * C_T, C_S)
     # A_ST = rho_CT1 * kronecker(C_T, I_S) + rho_CT2 * kronecker(C_T, C_S) + rho_IT * kronecker(I_T, C_S)
@@ -201,9 +202,10 @@ class STNB_layer(nn.Module):
         block_sum = torch.sum(block_matrix)
         if block_sum > judge:
             interven_cum = torch.cumsum(interven, dim=0) - interven           # cumulative historical interventions
-            interven_adjust = interven_cum.squeeze().view(self.dim, 1)
+            interven_adjust = interven_cum.squeeze().contiguous().view(self.dim, 1)
         else:
-            interven_adjust = interven.squeeze().view(self.dim, 1)            # current intervention
+            # import ipdb; ipdb.set_trace()  
+            interven_adjust = interven.squeeze().contiguous().view(self.dim, 1)            # current intervention
 
 
         Infor = torch.mm(block_matrix, features)
@@ -230,7 +232,7 @@ class Coarse_module(nn.Module):
         self.Gate_CT = STNB_layer(self.tot_nodes, num_timestamps, input_size)
 
     def forward(self, his_raw_features, interven, adj):
-        # ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
 
         features = his_raw_features.contiguous().view(-1, self.input_size)
         A_IT = Static(self.tot_nodes, self.num_timestamps, adj, rho_IT=1, rho_CT1=0, rho_CT2=0)     # current states of neighbors
@@ -280,6 +282,7 @@ class GConv(nn.Module):
         super(GConv, self).__init__()
 
         self.tot_nodes = tot_nodes
+        # import ipdb; ipdb.set_trace()
         self.sp_temp = torch.mm(D_temporal, torch.mm(A_temporal, D_temporal))
 
         self.his_temporal_weight = tw
@@ -327,8 +330,9 @@ class DASTGN(BaseModel):
                 num_timesteps_input,
                 num_timesteps_output,
                 GNN_layers = 2,
+                nhids = None,
                 device = 'cpu'):
-        super(DASTGN, self).__init__()
+        super(DASTGN, self).__init__(device=device)
 
         self.device = device
         self.num_timestamps = num_timesteps_input
@@ -398,7 +402,7 @@ class DASTGN(BaseModel):
 
                 coarse_matrix = self.Coarse_module(features, intervention, adj)            # NT * NT
                 fine_matrix = self.Fine_module(features, adj)                                 # NT * NT
-
+                import ipdb; ipdb.set_trace()
                 A_temporal = coarse_matrix * fine_matrix                                        # final ST weighted matrix
                 D_temporal = Degree_Matrix(A_temporal)
 

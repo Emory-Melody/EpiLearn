@@ -174,8 +174,8 @@ class UniversalDataset(Dataset):
         }
 
         transformed_dataset = self.get_transformed(dataset)
-
-        adj_static = self.graph
+        # import ipdb; ipdb.set_trace()
+        adj_static = transformed_dataset['graph'] if transformed_dataset['graph'] is not None else self.graph
 
         split_line1 = int(self.x.shape[0] * train_rate)
         split_line2 = int(self.x.shape[0] * (train_rate + val_rate))
@@ -228,7 +228,7 @@ class UniversalDataset(Dataset):
     def save(self):
         pass
 
-    def generate_dataset(self, X = None, Y = None, states = None, dynamic_adj = None, lookback_window_size = 1, horizon_size = 1, permute = False):
+    def generate_dataset(self, X = None, Y = None, states = None, dynamic_adj = None, lookback_window_size = 1, horizon_size = 1, ahead=0, permute = False):
         """
         Takes node features for the graph and divides them into multiple samples
         along the time-axis by sliding a window of size (num_timesteps_input+
@@ -245,11 +245,11 @@ class UniversalDataset(Dataset):
             X = self.x
         if Y is None:
             Y = self.y
-
-        indices = [(i, i + (lookback_window_size + horizon_size)) for i in range(X.shape[0] - (lookback_window_size + horizon_size) + 1)]
+        # import ipdb; ipdb.set_trace()
+        indices = [(i, i + (lookback_window_size + ahead +horizon_size)) for i in range(X.shape[0] - (lookback_window_size + ahead + horizon_size) + 1)]
         target = []
         for i, j in indices:
-            target.append(Y[i + lookback_window_size: j])
+            target.append(Y[i + lookback_window_size+ahead: j])
         
         targets = torch.stack(target) if len(target) > 0 else torch.Tensor([[[]]])
         if permute:

@@ -39,6 +39,7 @@ class GATLayer(nn.Module):
         nn.init.xavier_normal_(self.attn_fc.weight, gain=gain)
 
     def forward(self, adj, h):
+        import ipdb; ipdb.set_trace()  
         z = self.fc(h)
 
         sparse_adj = adj.to_sparse_coo()
@@ -111,8 +112,9 @@ class STAN(BaseModel):
                  gat_dim2=32, 
                  gru_dim=32, 
                  num_heads=1, 
+                 nhids=None,
                  device = 'cpu'):
-        super(STAN, self).__init__()
+        super(STAN, self).__init__(device=device)
         self.n_nodes = num_nodes
         self.nfeat = num_features
         self.history = num_timesteps_input
@@ -159,6 +161,7 @@ class STAN(BaseModel):
             1. Predicted new infections and recoveries, shape (batch_size, num_timesteps_output, num_nodes, 2).
             2. Physical model predictions based on current states, shape (batch_size, num_timesteps_output, num_nodes, 2).
         """
+        # import ipdb; ipdb.set_trace()
         last_diff_I = X[:, -1, :, 1].unsqueeze(2)
         last_diff_R = X[:, -1, :, 2].unsqueeze(2)
         X = X.transpose(1,2).flatten(2,3)
@@ -177,7 +180,7 @@ class STAN(BaseModel):
         self.beta_list = []
         self.alpha_scaled = []
         self.beta_scaled = [] 
-
+        # import ipdb; ipdb.set_trace()
         cur_h = self.layer1(adj, X)
         cur_h = F.elu(cur_h)
         cur_h = self.layer2(adj, cur_h)

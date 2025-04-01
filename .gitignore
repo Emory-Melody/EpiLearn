@@ -8,3 +8,6 @@ test.ipynb
 /epilearn.egg-info
 /tmp
 update.txt
+login/
+*.png
+course_work_example.py

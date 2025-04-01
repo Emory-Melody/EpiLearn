@@ -22,6 +22,8 @@ def get_loss(loss_name = 'mse'):
     loss_name = loss_name.lower()
     if loss_name == 'mse':
         return nn.MSELoss()
+    if loss_name == 'mae':
+        return nn.L1Loss()
     elif loss_name == 'stan':
         return stan_loss
     elif loss_name == 'epi_cola':

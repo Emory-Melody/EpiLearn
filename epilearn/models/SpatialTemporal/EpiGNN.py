@@ -127,7 +127,8 @@ class RegionAwareConv(nn.Module):
         self.activate = nn.Tanh()
     
     def forward(self, x):
-        x = x.view(-1, self.nfeat, self.P, self.m)
+        # import ipdb; ipdb.set_trace()
+        x = x.contiguous().view(-1, self.nfeat, self.P, self.m)
         batch_size = x.shape[0]
         # local pattern
         x_l1 = self.conv_l1(x)
@@ -186,15 +187,15 @@ class EpiGNN(BaseModel):
                 num_timesteps_input,
                 num_timesteps_output, 
                 k = 8, 
-                hidA = 64, 
-                hidR = 40, 
+                hidA = 128, 
+                hidR = 32, 
                 hidP=1, 
                 n_layer = 2, 
-                dropout = 0.5, 
+                dropout = 0, 
+                nhids=None,
                 device = 'cpu'):
-        super().__init__()
+        super().__init__(device)
         # arguments setting
-        self.device = device
         self.nfeat = num_features
         self.m = num_nodes
         self.w = num_timesteps_input
@@ -243,6 +244,7 @@ class EpiGNN(BaseModel):
         #self.GCNBlock2 = GraphConvLayer(in_features=self.hidR, out_features=self.hidR)
 
         # prediction
+        # import ipdb; ipdb.set_trace()
         if self.res == 0:
             self.output = nn.Linear(self.hidR*2, num_timesteps_output)
         else:
@@ -370,7 +372,10 @@ class EpiGNN(BaseModel):
             z = z.view(-1, self.m)
             res = res + z
         
-        return res.transpose(1,2)
+
+        # import ipdb; ipdb.set_trace()
+
+        return res
     
     def initialize(self):
         for layer in self.children():
