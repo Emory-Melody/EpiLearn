@@ -69,7 +69,7 @@ class UniversalDataset(Dataset):
                     print("downloading JHU Covid Dataset")
                     url_feature = "https://drive.google.com/uc?export=download&id=13i9OpTweVYOvSOET-91-ZNVMJRURwxb0"
                     urllib.request.urlretrieve(url_feature, f"{root}/JHU_covid.pt")
-                data = torch.load(f"{root}/JHU_covid.pt")
+                data = torch.load(f"{root}/JHU_covid.pt", weights_only=False)
                 for k, v in data.items():
                     if k=='features':
                         self.x = v.float()
@@ -84,7 +84,7 @@ class UniversalDataset(Dataset):
                     url_feature = "https://drive.google.com/uc?export=download&id=1-kLtvyUGN_mYJL5MgafEAd30KyfSmE4U"
                     urllib.request.urlretrieve(url_feature, f"{root}/measles.pt")
 
-                data = torch.load(f"{root}/measles.pt")
+                data = torch.load(f"{root}/measles.pt", weights_only=False)
                 self.x = torch.FloatTensor(np.array(data['weekly_infection'])).T
                 self.features = list(data['weekly_infection'].columns)
                 self.anual_population = data['anual_population']
@@ -92,11 +92,11 @@ class UniversalDataset(Dataset):
                 self.coordinates = data['coordinates']
 
             elif name == 'Tycho_v1':
-                if not os.path.exists(f"{root}/Tycho_v1.pt"):
+                if not os.path.exists(f"{root}/Tycho_v1.pt", weights_only=False):
                     print("downloading Tycho_v1 Dataset")
                     url_feature = "https://drive.google.com/uc?export=download&id=13gHDO6Rh5gZwqo8MLDyyiLtPCd9gD0nD"
                     urllib.request.urlretrieve(url_feature, f"{root}/Tycho_v1.pt")
-                data = torch.load(f"{root}/Tycho_v1.pt")
+                data = torch.load(f"{root}/Tycho_v1.pt", weights_only=False)
                 self.features = list(data.keys())
                 self.x = []
                 for v in data.values():
