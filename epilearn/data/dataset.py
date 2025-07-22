@@ -92,7 +92,7 @@ class UniversalDataset(Dataset):
                 self.coordinates = data['coordinates']
 
             elif name == 'Tycho_v1':
-                if not os.path.exists(f"{root}/Tycho_v1.pt", weights_only=False):
+                if not os.path.exists(f"{root}/Tycho_v1.pt"):
                     print("downloading Tycho_v1 Dataset")
                     url_feature = "https://drive.google.com/uc?export=download&id=13gHDO6Rh5gZwqo8MLDyyiLtPCd9gD0nD"
                     urllib.request.urlretrieve(url_feature, f"{root}/Tycho_v1.pt")
