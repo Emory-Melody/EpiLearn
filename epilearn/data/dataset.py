@@ -5,6 +5,10 @@ import numpy as np
 import os
 import urllib.request
 
+import pandas as pd
+import warnings
+
+
 from .base import Dataset
 
 class UniversalDataset(Dataset):
@@ -294,10 +298,149 @@ class UniversalDataset(Dataset):
         self.graph = torch.FloatTensor(data1)
         self.edge_index = torch.FloatTensor(data1).to_sparse_coo().indices()
         self.edge_weight = torch.FloatTensor(data1).to_sparse_coo().values()
-    
+    @classmethod
+    def from_csv(
+        cls,
+        feature_csv: str,
+        node_id_col: str,
+        time_col: str,
+        feature_cols: list,
+        target_cols: list | None = None,
+        edge_csv: str | None = None,
+        source_col: str = "source",
+        target_col: str = "target",
+        strict_numeric: bool = True,
+    ):
+        """
+        Load dataset from CSV files and build a UniversalDataset without changing existing behaviors.
 
+        Args:
+            feature_csv: Path to the CSV containing time series features/targets. Must include
+                `time_col`, `node_id_col`, `feature_cols`, and optionally `target_cols`.
+            node_id_col: Column name for node identifiers.
+            time_col: Column name for timestamps (sorted ascending).
+            feature_cols: List of feature column names (numeric).
+            target_cols: Optional list of target column names (numeric).
+            edge_csv: Optional path to an edges CSV with two columns: `source_col`, `target_col`.
+            source_col, target_col: Column names for edges CSV.
+            strict_numeric: If True, raise on any non-numeric entries in features/targets.
+                            If False, warn and keep NaNs.
 
-    
+        Returns:
+            UniversalDataset(x=[T,N,F], y=[T,N] or [T,N,Ty], graph=[N,N], edge_index=[2,E])
+        """
+        # --- 1) Read and column check
+        df = pd.read_csv(feature_csv)
+        must_have = [node_id_col, time_col] + list(feature_cols) + (list(target_cols) if target_cols else [])
+        miss = [c for c in must_have if c not in df.columns]
+        if miss:
+            raise ValueError(f"CSV is missing required columns: {miss}")
+
+        # --- 2) Numeric check: accept numbers only
+        issue = []
+        for c in feature_cols + (target_cols or []):
+            before = df[c].copy()
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+            bad = df[c].isna() & before.notna()
+            if bad.any():
+                issue.append((c, int(bad.sum())))
+        if issue:
+            msg = "Found non-numeric entries: " + ", ".join([f"{c}({n})" for c, n in issue])
+            if strict_numeric:
+                raise ValueError(msg + " Please ensure these columns are purely numeric.")
+            else:
+                warnings.warn(msg + " NaNs will be kept.")
+
+        # --- 3) Drop rows with all-NaN in key columns (avoid pivot failure); other missingness controlled by strict_numeric
+        key_cols = list(feature_cols) + (list(target_cols) if target_cols else [])
+        df = df.dropna(subset=key_cols, how="all")
+
+        # Sort & stable indices
+        times = sorted(df[time_col].unique().tolist())
+        nodes = sorted(df[node_id_col].unique().tolist())
+        node2idx = {n: i for i, n in enumerate(nodes)}
+
+        # --- 4) Pivot features -> x:[T,N,F]
+        piv_feat = df.pivot_table(index=time_col, columns=node_id_col, values=feature_cols)
+        # Complete grid for MultiIndex (feature, node) to ensure stable column order
+        col_index = pd.MultiIndex.from_product([feature_cols, nodes])
+        piv_feat = piv_feat.reindex(index=times, columns=col_index)
+        # If NaNs remain (e.g., some time-node-feature combos missing), handle per strict_numeric
+        if piv_feat.isna().any().any():
+            nan_cnt = int(piv_feat.isna().sum().sum())
+            msg = f"Missing data in {nan_cnt} cells (some time-node-feature combinations are missing)."
+            if strict_numeric:
+                raise ValueError(msg + " Please fill in and try again.")
+            else:
+                warnings.warn(msg + " Will keep as NaN; subsequent modeling/processing may fail.")
+
+        T = len(times)
+        F = len(feature_cols)
+        N = len(nodes)
+        x_np = piv_feat.values.reshape(T, F, N).transpose(0, 2, 1)  # [T,N,F]
+        x = torch.tensor(x_np, dtype=torch.float32)
+
+        # --- 5) Pivot targets -> y:[T,N] or [T,N,Ty]
+        y = None
+        if target_cols:
+            piv_y = df.pivot_table(index=time_col, columns=node_id_col, values=target_cols)
+            col_index_y = pd.MultiIndex.from_product([target_cols, nodes])
+            piv_y = piv_y.reindex(index=times, columns=col_index_y)
+            if piv_y.isna().any().any():
+                nan_cnt = int(piv_y.isna().sum().sum())
+                msg = f"Target columns have {nan_cnt} missing cells."
+                if strict_numeric:
+                    raise ValueError(msg + " Please fill in and try again.")
+                else:
+                    warnings.warn(msg + " Will keep as NaN.")
+            Ty = len(target_cols)
+            y_np = piv_y.values.reshape(T, Ty, N).transpose(0, 2, 1)  # [T,N,Ty]
+            if Ty == 1:
+                y_np = y_np[..., 0]  # [T,N]
+            y = torch.tensor(y_np, dtype=torch.float32)
+
+        # --- 6) Graph structure: edge_csv -> edge_index & graph
+        graph = None
+        edge_index = None
+        edge_weight = None
+        if edge_csv:
+            edf = pd.read_csv(edge_csv)
+            for c in [source_col, target_col]:
+                if c not in edf.columns:
+                    raise ValueError(f"Edge CSV is missing column: {c}")
+            # Keep only edges whose endpoints appear in the nodes set
+            edf = edf[edf[source_col].isin(nodes) & edf[target_col].isin(nodes)].copy()
+            # De-duplicate
+            edf.drop_duplicates(subset=[source_col, target_col], inplace=True)
+            src = edf[source_col].map(node2idx).to_numpy()
+            dst = edf[target_col].map(node2idx).to_numpy()
+            if len(src) > 0:
+                ei = np.vstack([src, dst])
+                edge_index = torch.as_tensor(ei, dtype=torch.long)
+                # Dense adjacency (undirected, unweighted)
+                graph = torch.zeros((N, N), dtype=torch.float32)
+                graph[edge_index[0], edge_index[1]] = 1.0
+                graph[edge_index[1], edge_index[0]] = 1.0
+                # Assign uniform weight 1 (could be None; other logic allows)
+                edge_weight = torch.ones(edge_index.shape[1], dtype=torch.float32)
+            else:
+                # No valid edges; leave empty
+                edge_index = None
+                graph = torch.zeros((N, N), dtype=torch.float32)
+
+        # --- 7) Build instance (consistent with existing behavior)
+        ds = cls(x=x, y=y, graph=graph, dynamic_graph=None,
+                 edge_index=edge_index, edge_weight=edge_weight, edge_attr=None)
+        # Convenience attributes (does not affect existing logic)
+        ds.node_id_mapping = node2idx
+        ds.time_index = times
+        ds.feature_names = list(feature_cols)
+        ds.target_names = list(target_cols) if target_cols else []
+        return ds
+
+    # Alias (as requested)
+    load_from_csv = from_csv
+
 
 # class SpatialDataset(Dataset):
 #     def __init__(   self,
