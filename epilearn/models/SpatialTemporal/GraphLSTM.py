@@ -2,16 +2,16 @@
 
 import torch
 import torch.nn as nn
-from torch_geometric.nn.inits import glorot, zeros
 from typing import Union, Tuple
-from torch_geometric.typing import OptPairTensor, Adj, Size
-
 from torch import Tensor, randn
 from torch.nn import Linear, Parameter
 import torch.nn.functional as F
+from torch import matmul
+
 from torch_sparse import SparseTensor, matmul
 from torch_geometric.nn.conv import MessagePassing
-from torch import matmul
+from torch_geometric.typing import OptPairTensor, Adj, Size
+from torch_geometric.nn.inits import glorot, zeros
 
 from .base import BaseModel
 

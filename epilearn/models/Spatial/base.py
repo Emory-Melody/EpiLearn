@@ -4,10 +4,8 @@ import torch.nn.functional as F
 from copy import deepcopy
 import torch
 from tqdm import tqdm
-from torch_geometric.loader import DataLoader
-
-
-from ...data import UniversalDataset
+from torch.utils.data import DataLoader
+from ...data.dataset import UniversalDataset, custom_collate
 from ...utils import utils, metrics
 
 
@@ -113,12 +111,13 @@ class BaseModel(nn.Module):
         :return: Average loss for this epoch.
         """
         
-        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate)
         '''edge_index = dataset.edge_index.long()
         edge_weight = dataset.edge_weight.float()'''
         
         epoch_training_losses = []
-        for batch_data in train_loader:              
+        for batch_data in train_loader:       
+            # import ipdb; ipdb.set_trace()       
             self.train()
             optimizer.zero_grad()
             batch_data = batch_data.to(device)
@@ -147,7 +146,7 @@ class BaseModel(nn.Module):
     def evaluate(self, loss_fn, dataset, batch_size=1, device = 'cpu', shuffle=False, graph=None):
         with torch.no_grad():
             self.eval()
-            val_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+            val_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate)
             '''edge_index = dataset.edge_index
             edge_weight = dataset.edge_weight'''
             val_losses = []
@@ -181,13 +180,13 @@ class BaseModel(nn.Module):
         assert self.out_shape is not None, "Please fit model first!"
         self.eval()
         dataset = UniversalDataset(x=feature, graph=graph, dynamic_graph=dynamic_graph)
-        test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+        test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate)
         '''edge_index = dataset.edge_index
         edge_weight = dataset.edge_weight'''
         outs = []
         for batch_data in tqdm(test_loader, total=len(test_loader)):
             batch_data = batch_data.to(self.device)
-            y_batch = batch_data.y
+            # y_batch = batch_data.y
             x_batch = batch_data.x
             
             edge_index = batch_data.edge_index.long()

@@ -17,7 +17,6 @@ class Forecast(BaseTask):
         self.feat_std = 1
         self.device = device
 
-
     def train_model(self,
                     dataset=None,
                     config=None,

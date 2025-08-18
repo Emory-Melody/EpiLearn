@@ -3,11 +3,21 @@
 
 # In[1]:
 
-
 import torch
 import os
 import matplotlib.pyplot as plt
-os.chdir("..")
+import sys
+import os
+
+# Get the current script directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Move to the parent directory
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+# Change the working directory (optional, if needed)
+os.chdir(parent_dir)
 
 from epilearn.models.SpatialTemporal.STGCN import STGCN
 from epilearn.models.Spatial.GCN import GCN
@@ -33,7 +43,6 @@ permute = True
 
 epochs = 50 # training epochs
 batch_size = 50 # training batch size
-
 
 # In[2]:
 

@@ -1,13 +1,59 @@
 import torch
-from torch_geometric.data import Data
-from torch_geometric.utils import subgraph
+from torch.utils.data import DataLoader, Dataset as TorchDataset
 import numpy as np
 import os
 import urllib.request
 
 from .base import Dataset
 
-class UniversalDataset(Dataset):
+class Data:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def to(self, device):
+        for key, value in self.__dict__.items():
+            if torch.is_tensor(value):
+                setattr(self, key, value.to(device))
+        return self
+
+def custom_collate(batch):
+    elem = batch[0]
+    collated = {}
+
+    # Stack tensor attributes
+    for key, value in elem.items():
+        if torch.is_tensor(value):
+            collated[key] = torch.stack([d[key] for d in batch])
+
+    # Handle edge_index and edge_attr batching
+    if 'edge_index' in elem and elem['edge_index'] is not None:
+        edge_indices = []
+        offset = 0
+        for d in batch:
+            edge_indices.append(d['edge_index'] + offset)
+            offset += d['x'].size(0)  # Increment offset by the number of nodes in the graph
+        collated['edge_index'] = torch.cat(edge_indices, dim=1)
+
+    if 'edge_attr' in elem and elem['edge_attr'] is not None:
+        collated['edge_attr'] = torch.cat([d['edge_attr'] for d in batch], dim=0)
+
+    # Create a batch tensor for node-level batching
+    if 'x' in collated:
+        batch_size = len(batch)
+        num_nodes = [d['x'].size(0) for d in batch]
+        collated['batch'] = torch.cat([torch.full((n,), i, dtype=torch.long) for i, n in enumerate(num_nodes)])
+    # import ipdb; ipdb.set_trace()
+    # Convert dict to Data object
+    data_obj = Data(**collated)
+
+    if len(data_obj.x.shape)>=3:
+        # Reshape x to (num_nodes, num_features) if it has more than 2 dimensions
+        data_obj.x = data_obj.x.view(-1, data_obj.x.size(-1))
+
+    return data_obj
+
+class UniversalDataset(TorchDataset):
     """
     UniversalDataset class is designed to handle various types of graph data,
     enabling operations on datasets that include features, states, dynamic graphs, and edge attributes.
@@ -211,16 +257,22 @@ class UniversalDataset(Dataset):
 
         
     def __getitem__(self, index):
-        batch_y = None if self.y is None else self.y[index].unsqueeze(0)
-        batch_dynamic = None if self.dynamic_graph is None else self.dynamic_graph[index].unsqueeze(0)
-
+        item = {'x': self.x[index]}
         if self.y is not None:
-            return Data(x=self.x[index], y=batch_y, edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
-        else:
-            return Data(x=self.x[index], edge_index=self.edge_index, edge_attr=self.edge_weight, dynamic_graph=batch_dynamic)
-        
+            item['y'] = self.y[index]
+        if self.dynamic_graph is not None:
+            item['dynamic_graph'] = self.dynamic_graph[index]
+
+        # Ensure edge_index and edge_attr are included
+        if self.edge_index is not None:
+            item['edge_index'] = self.edge_index
+        if self.edge_weight is not None:
+            item['edge_attr'] = self.edge_weight
+
+        return item
+
     def __len__(self):
-        return len(self.x)
+        return self.x.size(0)
 
     def download(self):
         pass
@@ -367,7 +419,7 @@ class UniversalDataset(Dataset):
     
 #     def __len__(self):
 #         return len(self.x)
-        
+
 
 
 

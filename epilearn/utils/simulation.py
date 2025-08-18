@@ -4,6 +4,7 @@ import random
 import math
 import time
 import urllib.request
+import networkx as nx
 
 from .utils import edge_to_adj
 
@@ -29,18 +30,19 @@ def get_random_graph(num_nodes=None, connect_prob=None, block_sizes=None, num_ed
     torch.Tensor
         Adjacency matrix of the generated graph.
     """
-    import torch_geometric
     if graph_type == 'erdos_renyi':
-        edges = torch_geometric.utils.erdos_renyi_graph(num_nodes, connect_prob)
+        nx_graph = nx.erdos_renyi_graph(num_nodes, connect_prob)
+        adj = nx.to_numpy_array(nx_graph)
     elif graph_type == 'stochastic_blockmodel':
-        edges = torch_geometric.utils.stochastic_blockmodel_graph(block_sizes, connect_prob)
+        nx_graph = nx.stochastic_block_model(block_sizes, connect_prob)
+        adj = nx.to_numpy_array(nx_graph)
     elif graph_type == 'barabasi_albert':
-        edges = torch_geometric.utils.barabasi_albert_graph(num_nodes, num_edges)
+        nx_graph = nx.barabasi_albert_graph(num_nodes, num_edges)
+        adj = nx.to_numpy_array(nx_graph)
     else:
         raise NameError("grap type not supported")
-    
-    adj = edge_to_adj(edges, num_nodes)
-    return adj
+
+    return torch.tensor(adj, dtype=torch.float32)
 
 def get_graph_from_features(features, adj=None, G=1):
     """
