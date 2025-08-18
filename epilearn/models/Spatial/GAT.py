@@ -1,9 +1,110 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GATConv, GATv2Conv
 import torch
 
 from .base import BaseModel
+
+
+class GATConv(nn.Module):
+    """Graph Attention Network Convolution layer"""
+    
+    def __init__(self, in_channels, out_channels, heads=1, concat=True, bias=True, dropout=0.0):
+        super(GATConv, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.heads = heads
+        self.concat = concat
+        self.dropout = dropout
+        
+        self.lin = nn.Linear(in_channels, heads * out_channels, bias=False)
+        self.att = nn.Parameter(torch.Tensor(1, heads, 2 * out_channels))
+        
+        if bias and concat:
+            self.bias = nn.Parameter(torch.Tensor(heads * out_channels))
+        elif bias and not concat:
+            self.bias = nn.Parameter(torch.Tensor(out_channels))
+        else:
+            self.register_parameter('bias', None)
+            
+        self.reset_parameters()
+    
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.lin.weight)
+        nn.init.xavier_uniform_(self.att)
+        if self.bias is not None:
+            nn.init.zeros_(self.bias)
+    
+    def forward(self, x, edge_index, edge_attr=None):
+        """GAT forward pass"""
+        if x.dim() == 3:
+            # Batch processing
+            batch_size, num_nodes, _ = x.shape
+            outputs = []
+            
+            for b in range(batch_size):
+                x_sample = x[b]  # [num_nodes, in_channels]
+                out = self._forward_single(x_sample, edge_index, edge_attr)
+                outputs.append(out)
+            
+            return torch.stack(outputs, dim=0)
+        else:
+            return self._forward_single(x, edge_index, edge_attr)
+    
+    def _forward_single(self, x, edge_index, edge_attr=None):
+        """Forward pass for single sample"""
+        H, C = self.heads, self.out_channels
+        
+        x = self.lin(x).view(-1, H, C)  # [N, H, C]
+        
+        if edge_index.size(1) == 0:
+            # No edges, return transformed features
+            if self.concat:
+                out = x.view(-1, H * C)
+            else:
+                out = x.mean(dim=1)
+            
+            if self.bias is not None:
+                out = out + self.bias
+            return out
+        
+        # Compute attention coefficients
+        row, col = edge_index
+        
+        # Create attention features
+        x_i = x[row]  # [E, H, C]
+        x_j = x[col]  # [E, H, C]
+        
+        # Concatenate for attention computation
+        att_input = torch.cat([x_i, x_j], dim=-1)  # [E, H, 2*C]
+        
+        # Compute attention scores
+        alpha = (att_input * self.att).sum(dim=-1)  # [E, H]
+        alpha = F.leaky_relu(alpha, 0.2)
+        
+        # Apply softmax per node
+        num_nodes = x.size(0)
+        alpha_sparse = torch.zeros(num_nodes, edge_index.size(1), H, device=x.device)
+        alpha_sparse[row, torch.arange(edge_index.size(1)), :] = alpha
+        alpha = F.softmax(alpha_sparse, dim=1)[row, torch.arange(edge_index.size(1)), :]
+        
+        # Apply dropout
+        alpha = F.dropout(alpha, p=self.dropout, training=self.training)
+        
+        # Aggregate messages
+        out = torch.zeros_like(x)
+        for i in range(edge_index.size(1)):
+            src, dst = row[i], col[i]
+            out[dst] += alpha[i].unsqueeze(-1) * x_j[i]
+        
+        if self.concat:
+            out = out.view(-1, H * C)
+        else:
+            out = out.mean(dim=1)
+            
+        if self.bias is not None:
+            out = out + self.bias
+            
+        return out
 
 class GAT(BaseModel):
     """

@@ -2,10 +2,120 @@
 
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
+import math
 import torch
+from torch.nn.parameter import Parameter
+from torch.nn.modules.module import Module
 
 from .base import BaseModel
+
+
+class GraphConvolution(Module):
+    """Simple GCN layer, similar to https://github.com/tkipf/pygcn
+    """
+
+    def __init__(self, in_features, out_features, with_bias=True):
+        super(GraphConvolution, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
+        if with_bias:
+            self.bias = Parameter(torch.FloatTensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        stdv = 1. / math.sqrt(self.weight.size(1))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)
+
+    def forward(self, input, adj):
+        """ Graph Convolutional Layer forward function
+        """
+        if input.data.is_sparse:
+            support = torch.spmm(input, self.weight)
+        else:
+            support = torch.mm(input, self.weight)
+        output = torch.spmm(adj, support)
+        if self.bias is not None:
+            return output + self.bias
+        else:
+            return output
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' (' \
+               + str(self.in_features) + ' -> ' \
+               + str(self.out_features) + ')'
+
+
+class GCNConv(GraphConvolution):
+    """GCNConv layer compatible with torch_geometric style usage, based on GraphConvolution"""
+    
+    def __init__(self, in_channels, out_channels, bias=True):
+        super(GCNConv, self).__init__(in_channels, out_channels, with_bias=bias)
+        
+    def forward(self, x, edge_index, edge_weight=None):
+        """
+        Forward pass compatible with torch_geometric style
+        
+        Args:
+            x: Input node features
+            edge_index: Edge indices (will be converted to adjacency matrix)
+            edge_weight: Edge weights
+        """
+        # Handle different input shapes
+        if x.dim() == 3:
+            # Input shape: [batch_size, num_nodes, in_channels]
+            batch_size, num_nodes, in_channels = x.shape
+            
+            # Create adjacency matrix for batch processing
+            adj_matrices = []
+            for b in range(batch_size):
+                adj = torch.zeros(num_nodes, num_nodes, device=x.device, dtype=x.dtype)
+                if edge_weight is not None:
+                    adj[edge_index[0], edge_index[1]] = edge_weight
+                else:
+                    adj[edge_index[0], edge_index[1]] = 1.0
+                
+                # Add self-loops and normalize
+                adj = adj + torch.eye(num_nodes, device=x.device, dtype=x.dtype)
+                row_sum = adj.sum(dim=1, keepdim=True)
+                row_sum[row_sum == 0] = 1  # Avoid division by zero
+                adj = adj / row_sum
+                adj_matrices.append(adj)
+            
+            # Apply GCN to each sample in the batch
+            outputs = []
+            for b in range(batch_size):
+                x_sample = x[b]  # [num_nodes, in_channels]
+                adj_sample = adj_matrices[b]  # [num_nodes, num_nodes]
+                output = super(GCNConv, self).forward(x_sample, adj_sample)
+                outputs.append(output)
+            
+            return torch.stack(outputs, dim=0)  # [batch_size, num_nodes, out_channels]
+        
+        else:
+            # Input shape: [num_nodes, in_channels]
+            num_nodes = x.size(0)
+            
+            # Create adjacency matrix
+            adj = torch.zeros(num_nodes, num_nodes, device=x.device, dtype=x.dtype)
+            if edge_weight is not None:
+                adj[edge_index[0], edge_index[1]] = edge_weight
+            else:
+                adj[edge_index[0], edge_index[1]] = 1.0
+            
+            # Add self-loops and normalize
+            adj = adj + torch.eye(num_nodes, device=x.device, dtype=x.dtype)
+            row_sum = adj.sum(dim=1, keepdim=True)
+            row_sum[row_sum == 0] = 1  # Avoid division by zero
+            adj = adj / row_sum
+            
+            return super(GCNConv, self).forward(x, adj)
+
+
 
 class GCN(BaseModel):
     """

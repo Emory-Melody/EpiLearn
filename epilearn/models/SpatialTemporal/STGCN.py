@@ -4,8 +4,6 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GATConv
-from torch_geometric.utils import dense_to_sparse
 
 from .base import BaseModel
 
@@ -51,44 +49,7 @@ class TimeBlock(nn.Module):
         self.conv3.reset_parameters()
 
 
-class GAT(nn.Module):
-    def __init__(self, in_channels, out_channels, heads):
-        super(GAT, self).__init__()
 
-        self.conv1 = GATConv(
-            in_channels,
-            out_channels,
-            heads=heads,
-            concat=False,
-            dropout=0.5,
-            bias=True
-        )
-    
-    # def forward(self, adj, h):
-    #     # import ipdb; ipdb.set_trace()
-    #     edge_index, edge_weight = dense_to_sparse(adj)
-    #     shapes = h.size()
-    #     h = h.transpose(1, 2)
-    #     h = h.contiguous().view(-1, h.size(2), h.size(3))
-    #     for t in range(h.shape[0]):
-    #         h[t] = F.elu(self.conv1(h[t], edge_index))
-    #     h = h.view(shapes)
-    #     return h  # Reshape back to original dimensions
-    
-    def forward(self, adj, h):
-        edge_index, _ = dense_to_sparse(adj)
-        original_shape = h.size()  # (batch, num_nodes, timesteps, features)
-        # Change to: (batch, timesteps, num_nodes, features)
-        h = h.transpose(1, 2).contiguous()
-        # Flatten batch and temporal dimensions ==> (batch * timesteps, num_nodes, features)
-        h_flat = h.view(-1, h.size(2), h.size(3))
-        # Apply GATConv for each time step without in-place modifications
-        out_list = [F.elu(self.conv1(h_flat[t], edge_index)) for t in range(h_flat.size(0))]
-        h_processed = torch.stack(out_list, dim=0)
-        # Restore original dimensions
-        h_processed = h_processed.view(h.size(0), h.size(1), h.size(2), h.size(3))
-        # Return tensor with original shape: (batch, num_nodes, timesteps, features)
-        return h_processed.transpose(1, 2)
 
 
 
@@ -148,7 +109,7 @@ class STGCNBlock(nn.Module):
         self.temporal2 = TimeBlock(in_channels=spatial_channels,
                                    out_channels=out_channels)
         self.batch_norm = nn.BatchNorm2d(num_nodes)
-        self.gat = GAT(in_channels=spatial_channels, out_channels=out_channels, heads=4)
+        # self.gat = GAT(in_channels=spatial_channels, out_channels=out_channels, heads=4)
         self.reset_parameters()
 
     def reset_parameters(self):

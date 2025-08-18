@@ -21,7 +21,7 @@
  -->
 **[Documentation](https://epilearn-doc.readthedocs.io/en/latest/) | [Paper](https://arxiv.org/abs/2406.06016) | [Web Interface](https://epilearn.streamlit.app/)**
 
-**[Colab Tutorial](https://colab.research.google.com/drive/13D5U-S-U2DhR9OKXdsGuGE2gR1fO2Y4T#scrollTo=ISt5vlDKlJ1R)**
+**[Colab Tutorial](https://colab.research.google.com/drive/1N_s_egnDQ67nXDHq1jF33Z7DzgUW6FsR)**
 
 **EpiLearn** is a Python machine learning toolkit for epidemic data modeling and analysis. We provide numerous features including:
 
