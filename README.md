@@ -66,11 +66,11 @@ pip install epilearn
 #### Installing Dependencies (CPU)
 ```bash
 pip install torch==2.5
-pip install torch_geometric
-pip install torch_scatter -f https://data.pyg.org/whl/torch-2.5.0+cpu.html
+# pip install torch_geometric
+# pip install torch_scatter -f https://data.pyg.org/whl/torch-2.5.0+cpu.html
 ```
-
-EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For the GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html).
+For the GPU version, please refer to [Pytorch](https://pytorch.org/).
+<!-- EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. For cpu version, we simply use *pip install torch*, *pip install torch_geometric* and *pip install torch_scatter*. For the GPU version, please refer to [Pytorch](https://pytorch.org/), [PyG](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html) and [torch_scatter](https://pytorch-geometric.com/whl/torch-1.5.0.html). -->
 
 
 

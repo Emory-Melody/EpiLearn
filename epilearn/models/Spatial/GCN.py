@@ -51,15 +51,12 @@ class GraphConvolution(Module):
 
 
 class GCNConv(GraphConvolution):
-    """GCNConv layer compatible with torch_geometric style usage, based on GraphConvolution"""
     
     def __init__(self, in_channels, out_channels, bias=True):
         super(GCNConv, self).__init__(in_channels, out_channels, with_bias=bias)
         
     def forward(self, x, edge_index, edge_weight=None):
         """
-        Forward pass compatible with torch_geometric style
-        
         Args:
             x: Input node features
             edge_index: Edge indices (will be converted to adjacency matrix)

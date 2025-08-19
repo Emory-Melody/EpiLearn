@@ -34,15 +34,13 @@ To install the project from PyPI, use the following command:
 2 Install Mandatory Packages
 -------------------------------------
 
-EpiLearn also requires pytorch>=1.20, torch_geometric and torch_scatter. 
+EpiLearn also requires pytorch>=1.20. 
 
 For CPU version, Please follow:
 
 .. code-block:: bash
 
    pip install torch
-   pip install torch_geometric 
-   pip install torch_scatter
 
 
 For GPU version, please install correct versions that match the cuda version on your machine.

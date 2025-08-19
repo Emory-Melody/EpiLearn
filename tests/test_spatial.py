@@ -13,7 +13,6 @@ from epilearn.models.SpatialTemporal.GraphWaveNet import GraphWaveNet
 from epilearn.data import UniversalDataset
 from epilearn.utils import utils, metrics, transforms
 
-import torch_geometric
 
 
 # initial settings
@@ -110,7 +109,7 @@ model = GCN(num_features=train_input.shape[3],
 '''model = SAGE(num_features=train_input.shape[2]*train_input.shape[3],
         hidden_dim=16,
         num_classes=horizon,
-        nlayers=1, with_bn=True, aggr=torch_geometric.nn.GRUAggregation,
+        nlayers=1, with_bn=True, aggr="mean",
         dropout=0.3, device=device)'''
 
 '''model = GIN(num_features=train_input.shape[2]*train_input.shape[3],
