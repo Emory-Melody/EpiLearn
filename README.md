@@ -27,23 +27,6 @@
 For more machine models in epidemic modeling, feel free to check out our curated paper list [Awesome-Epidemic-Modeling-Papers](https://github.com/Emory-Melody/awesome-epidemic-modeling-papers).
 
 
-Announcement
-==============
-**EpiLearn 0.1.0 is here.** The PyPI upload is pending, so for now install it from
-source (see [Installation](#installation)); `pip install epilearn` still gives 0.0.19.
-Highlights:
-
-- 65 models, up from 26 (foundation models, modern deep time-series, scikit-learn and statistical baselines)
-- Two new tasks: **nowcasting** (reporting-delay correction) and **scenario modeling**
-- Rolling-window evaluation with conformal prediction intervals, and per-fold Optuna tuning
-- A config-driven [benchmark](https://github.com/Emory-Melody/EpiLearn/blob/main/benchmark.md): `python -m epilearn.benchmark --config x.yaml`
-
-Upgrading from 0.0.x? Two APIs changed — `UniversalDataset` is now `Dataset` (the old name still
-works), and `train_model` now takes explicit splits. See [MIGRATION.md](https://github.com/Emory-Melody/EpiLearn/blob/main/MIGRATION.md) and the
-full [CHANGELOG.md](https://github.com/Emory-Melody/EpiLearn/blob/main/CHANGELOG.md).
-
-If you have any suggestions, please feel free to click the feedback button on top and join our slack channel!
-
 Encounter Any Issues?
 ====
 If you experience any issues, please don’t hesitate to open a **[GitHub Issue](https://github.com/Emory-Melody/EpiLearn/issues)**. We will do our best to address it within **three business days**. You are also warmly invited to join our **[User Slack Channel](https://join.slack.com/t/epilearn/shared_invite/zt-2uq9tdbe8-thaXoYN~8UIWjwDqKm8vgg)** for more efficient communication. Alternatively, reaching out to us via email is also perfectly fine!
@@ -72,6 +55,11 @@ pip install epilearn
 > **Note:** PyPI currently serves **0.0.19**. The snippets below use the 0.1.0 API, so
 > until the 0.1.0 upload lands please install from source, or straight from git:
 > `pip install git+https://github.com/Emory-Melody/EpiLearn.git`
+
+Upgrading from 0.0.x? `UniversalDataset` is now `Dataset` (the old name still works) and
+`train_model` now takes explicit splits — see
+[MIGRATION.md](https://github.com/Emory-Melody/EpiLearn/blob/main/MIGRATION.md) and
+[CHANGELOG.md](https://github.com/Emory-Melody/EpiLearn/blob/main/CHANGELOG.md).
 
 For a CUDA build of PyTorch, install it first following [pytorch.org](https://pytorch.org/),
 then `pip install .` — pip will keep the build you already have.
