@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 from ..visualize import plot_series
 from ..utils import utils, metrics  
@@ -17,300 +18,527 @@ class Forecast(BaseTask):
         self.feat_std = 1
         self.device = device
 
-    def train_model(self,
-                    dataset=None,
-                    config=None,
-                    permute_dataset=False,
-                    train_rate=0.6,
-                    val_rate=0.2,
-                    loss='mse', 
-                    epochs=1000, 
-                    batch_size=10,
-                    lr=1e-3, 
-                    weight_decay=0,
-                    region_idx=None,
-                    initialize=True, 
-                    verbose=False, 
-                    patience=100, 
-                    device = None,
-                    pretrained = None,
-                    model_args={},
-                    ):
-        """
-        Trains the forecast model using the provided dataset and configuration settings. It handles data splitting, model 
-        initialization, and the training process, and also evaluates the model on the test set, reporting metrics such as 
-        MAE and RMSE.
-        """
-        if device is not None:
-            self.device = device
-        # import ipdb; ipdb.set_trace()
-        if config is not None:
-            permute_dataset = config.permute
-            train_rate = config.train_rate
-            val_rate = config.val_rate
-            loss = config.loss
-            epochs=config.epochs
-            batch_size=config.batch_size
-            lr=config.lr
-            initialize=config.initialize
-            patience=config.patience
-
-        if dataset is None:
-            try:
-                dataset = self.dataset
-            except:
-                raise RuntimeError("dataset not exists, please input dataset or use load_dataset() first!")
-        else:
-            self.dataset = dataset
-        
-        if not hasattr(self, "model"):
-            raise RuntimeError("model not exists, please use load_model() to load model first!")
-        
-        self.region_index = region_idx
-        self.train_split, self.val_split, self.test_split, self.adj = self.get_splits(self.dataset, train_rate, val_rate, region_idx, permute_dataset)
-        if self.test_split['features'].numel() == 0:
-            self.test_split = self.val_split
-
-        try:
-            self.target_mean, self.target_std = self.dataset.transforms.target_mean, dataset.transforms.target_std
-        except:
-            self.target_mean, self.target_std = 0, 1
-
-       
-        if pretrained is not None:
-            # import ipdb; ipdb.set_trace()
-            self.model = pretrained
-        else:
-            if len(model_args) != 0:
-                self.model = self.prototype(**model_args)
-            else:
-                try:
-                # initialize model
-                    self.model = self.prototype(
-                        num_nodes=self.adj.shape[0],
-                        num_features=self.train_split['features'].shape[3],
-                        num_timesteps_input=self.lookback,
-                        num_timesteps_output=self.horizon,
-                        device=self.device,
-                        ).to(self.device)
-                    print("spatial-temporal model loaded!")
-                except:
-                    self.model = self.prototype(
-                                            num_features=self.train_split['features'].shape[2],
-                                            num_timesteps_input=self.lookback,
-                                            num_timesteps_output=self.horizon,
-                                            device=self.device,
-                                            ).to(self.device)
-                    print("temporal model loaded!")
-        self.model = self.model.to(self.device)
-        # import ipdb; ipdb.set_trace()
-        # train
-        try:
-            self.model.fit(
-                    train_input=self.train_split['features'], 
-                    train_target=self.train_split['targets'], 
-                    train_states = self.train_split['states'],
-                    train_graph=self.adj, 
-                    train_dynamic_graph=self.train_split['dynamic_graph'],
-                    val_input=self.val_split['features'], 
-                    val_target=self.val_split['targets'], 
-                    val_states=self.val_split['states'],
-                    val_graph=self.adj,
-                    val_dynamic_graph=self.val_split['dynamic_graph'],
-                    verbose=verbose,
-                    batch_size=batch_size,
-                    lr=lr,
-                    weight_decay=weight_decay,
-                    epochs=epochs,
-                    loss=loss,
-                    initialize=initialize,
-                    patience=patience)
-
-            # import ipdb; ipdb.set_trace()
-            # evaluate
-            self.test_graph = self.adj
-            self.test_feature = self.test_split['features']
-            self.test_target = self.test_split['targets']
-            self.test_states = self.test_split['states']
-            self.test_dynamic_graph = self.test_split['dynamic_graph']
-            out = self.model.predict(feature=self.test_feature, 
-                                    graph=self.test_graph, 
-                                    states=self.test_states, 
-                                    dynamic_graph=self.test_dynamic_graph
-                                    ).reshape(self.test_target.shape)
-            if type(out) is tuple:
-                out = out[0]
-            self.preds = out.detach().cpu()#*self.target_std+self.target_mean
-            self.targets = self.test_target.detach().cpu()#*self.target_std+self.target_mean
-            # metrics
-            mse = metrics.get_MSE(self.preds, self.targets)
-            mae = metrics.get_MAE(self.preds, self.targets)
-            rmse = metrics.get_RMSE(self.preds, self.targets)
-            print(f"Test MSE: {mse.item()}")
-            print(f"Test MAE: {mae.item()}")
-            print(f"Test RMSE: {rmse.item()}")
-            
-            return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions": self.preds, "targets": self.targets}
-        except Exception as e:
-            print("Training failed!")
-            print("Error message:", str(e))
-            import traceback
-            traceback.print_exc()
-            # import ipdb; ipdb.set_trace()
-
-
-
     def evaluate_model(self,
                     model=None,
-                    config=None,
-                    features=None,
-                    graph=None,
-                    dynamic_graph=None,
-                    norm=None,
-                    states=None,
-                    targets=None,
+                    dataset=None,
+                    process_history=None,
+                    use_conformal=True,
+                    conformal_quantile=None,
+                    inverse_normalize=False,
+                    residue_func=None
                     ):
         """
-        Evaluates the trained model on a new dataset or using preloaded features and graphs. It outputs prediction accuracy 
-        metrics such as MAE and RMSE for the forecasted values.
+        Evaluate the trained model and compute metrics with adaptive conformal prediction intervals.
+        
+        Args:
+            model: Model to evaluate (uses self.model if None)
+            dataset: Dataset dictionary with 'features', 'targets', 'graph', etc.
+            process_history: Dict with 'target_mean', 'target_std' for inverse normalization
+            use_conformal: Whether to compute conformal prediction intervals
+            conformal_quantile: Conformal quantile (uses self.conformal_quantile if None)
+            inverse_normalize: Whether to inverse normalize predictions/targets
+            residue_func: Custom residual function for misaligned predictions
+            
+        Returns:
+            Dictionary containing:
+            - Point metrics: mse, mae, rmse, mape, r2
+            - Residual statistics: residual_mean, residual_std
+            - Raw outputs: predictions, targets, residuals
+            - Conformal results: adaptive_lower, adaptive_upper, coverage stats (if use_conformal=True)
         """
         if model is None:
             if not hasattr(self, "model"):
-                raise RuntimeError("model not exists, please use load_model() to load model first!")
+                raise RuntimeError("model not exists, please load model first!")
             model = self.model
-        # import ipdb; ipdb.set_trace()
-        features = self.test_feature if features is None else features
-        graph = self.test_graph if graph is None else graph
-        states = self.test_states if states is None else states
-        dynamic_graph = self.test_dynamic_graph if dynamic_graph is None else dynamic_graph
-        targets = self.test_target if targets is None else targets
 
-        # evaluate
-        # import ipdb; ipdb.set_trace()
+        targets = dataset['targets'].to(self.device)
+        features = dataset['features'].to(self.device)
+        graph = dataset['graph'].to(self.device) if dataset['graph'] is not None else None
+        dynamic_graph = dataset['dynamic_graph'].to(self.device) if dataset['dynamic_graph'] is not None else None
+        states = dataset['states'].to(self.device) if dataset['states'] is not None else None
         with torch.no_grad():
             out = model.predict(feature=features, 
                                     graph=graph, 
                                     states=states, 
                                     dynamic_graph=dynamic_graph
-                                    ).reshape(targets.shape)
+                                    )
+            
         if type(out) is tuple:
             out = out[0]
-        # import ipdb; ipdb.set_trace()
 
-        self.preds = self.inverse_norm(out.detach().cpu(), norm)
-        self.targets = self.inverse_norm(targets.detach().cpu(), norm)
-        
-        # metrics
-        mse = metrics.get_MSE(self.preds, self.targets)
-        mae = metrics.get_MAE(self.preds, self.targets)
-        rmse = metrics.get_RMSE(self.preds, self.targets)
-        print(f"Test MSE: {mse.item()}")
-        print(f"Test MAE: {mae.item()}")
-        print(f"Test RMSE: {rmse.item()}")
-        
-        return {"mse": mse.item(), "mae":mae.item(), "rmse":rmse.item(), "predictions":self.preds, "targets":self.targets}
-    
-    def inverse_norm(self, data, norm):
-        mean = self.target_mean if norm is None else norm['mean']
-        std = self.target_std if norm is None else norm['std']
+        preds = out.detach().cpu()
+        targets = targets.detach().cpu()
 
-        if type(std) is int:
-            return data*std+mean
+        pre_preds = preds
+        pre_targets = targets
+        
+        # Calculate absolute residuals for conformal prediction
+        # Use residue_func first when provided (handles misaligned preds/targets)
+        if residue_func is not None:
+            pre_abs_residuals = residue_func(preds, targets)
         else:
-            return data*std.unsqueeze(-1)+mean.unsqueeze(-1)
-    
-
-    def get_splits(self, dataset=None, train_rate=0.6, val_rate=0.2, region_idx=None, permute=False):
-        """
-        Splits the provided dataset into training, validation, and testing sets based on specified rates. It also handles 
-        preprocessing to normalize the data and prepare it for the model.
-        """
-        if dataset is None:
             try:
-                dataset = self.dataset
-            except:
-                raise RuntimeError("dataset not exists, please use load_dataset() to load dataset first!")
+                pre_abs_residuals = torch.abs(pre_preds - pre_targets)
+            except Exception as e:
+                print(f"Error computing residuals: {e}; Consider using custom residue_func.")
+                pre_abs_residuals = None
+
+        if inverse_normalize:
+            # Get node indices if available (for flattened temporal data)
+            node_indices = dataset.get('node_indices')
+            # Apply inverse normalization at the end for final outputs
+            preds = self.inverse_norm(preds, process_history['target_mean'], process_history['target_std'], node_indices)
+            targets = self.inverse_norm(targets, process_history['target_mean'], process_history['target_std'], node_indices)
             
-        # preprocessing
-        self.train_dataset, self.val_dataset, self.test_dataset = dataset.ganerate_splits(train_rate=train_rate, val_rate=val_rate)
-
-        adj = self.train_dataset['graph']
+        # Calculate residuals for metrics
+        # Use residue_func if provided (for potentially misaligned data)
+        if residue_func is not None:
+            # If inverse_normalize was applied, use residue_func on normalized data
+            if inverse_normalize:
+                abs_residuals = residue_func(preds, targets)
+            else:
+                # Reuse pre_abs_residuals if no normalization change
+                abs_residuals = pre_abs_residuals
+            residuals = abs_residuals  # For residue_func, residuals are absolute by nature
+            squared_residuals = abs_residuals ** 2
+        else:
+            # Standard calculation when data is aligned
+            try:
+                residuals = preds - targets
+                abs_residuals = torch.abs(residuals)
+                squared_residuals = residuals ** 2
+            except Exception as e:
+                print(f"Error computing residuals for metrics: {e}; Consider using custom residue_func.")
+                raise
         
-        train_input, train_target, train_states, train_adj = dataset.generate_dataset(
-                                                                                        X=self.train_dataset['features'], 
-                                                                                        Y=self.train_dataset['target'], 
-                                                                                        states=self.train_dataset['states'],
-                                                                                        dynamic_adj = self.train_dataset['dynamic_graph'],
-                                                                                        lookback_window_size=self.lookback,
-                                                                                        horizon_size=self.horizon, 
-                                                                                        ahead=self.ahead,
-                                                                                        permute=permute)
-        val_input, val_target, val_states, val_adj = dataset.generate_dataset(
-                                                                                X=self.val_dataset['features'], 
-                                                                                Y=self.val_dataset['target'], 
-                                                                                states=self.val_dataset['states'],
-                                                                                dynamic_adj = self.val_dataset['dynamic_graph'],
-                                                                                lookback_window_size=self.lookback, 
-                                                                                horizon_size=self.horizon, 
-                                                                                ahead=self.ahead,
-                                                                                permute=permute)
-        test_input, test_target, test_states, test_adj = dataset.generate_dataset(
-                                                                                    X=self.test_dataset['features'], 
-                                                                                    Y=self.test_dataset['target'], 
-                                                                                    states=self.test_dataset['states'],
-                                                                                    dynamic_adj = self.test_dataset['dynamic_graph'],
-                                                                                    lookback_window_size=self.lookback, 
-                                                                                    horizon_size=self.horizon, 
-                                                                                    ahead=self.ahead,
-                                                                                    permute=permute)
-        if region_idx is not None:
-            train_input = train_input[:,:,region_idx,:]
-            val_input = val_input[:,:,region_idx,:]
-            test_input = test_input[:,:,region_idx,:]
+        # Basic metrics
+        mse = torch.mean(squared_residuals)
+        mae = torch.mean(abs_residuals)
+        rmse = torch.sqrt(mse)
+        
+        # MAPE calculation (skip if using residue_func as data may be misaligned)
+        if residue_func is not None:
+            mape = torch.tensor(float('nan'))  # MAPE not meaningful for misaligned data
+        else:
+            mape = torch.mean(torch.abs((targets - preds) / (targets + 1e-8))) * 100
+        
+        # R-squared
+        ss_res = torch.sum(squared_residuals)
+        ss_tot = torch.sum((targets - torch.mean(targets)) ** 2)
+        r2 = 1 - (ss_res / (ss_tot + 1e-8))
+        
+        # Additional metrics
+        median_ae = torch.median(abs_residuals)
+        max_error = torch.max(abs_residuals)
+        residual_mean = torch.mean(residuals)
+        residual_std = torch.std(residuals)
+        residual_median = torch.median(residuals)
+        
+        # Conformal prediction and uncertainty quantification
+        conformal_results = {}
+        if use_conformal and conformal_quantile is not None:
+            raise NotImplementedError(
+                "Passing an explicit conformal_quantile to evaluate_model is not "
+                "supported in this release. Use rolling_train(), which calibrates a "
+                "conformal quantile per fold and returns it in "
+                "result['fold_results'][i]['conformal_quantile'], or call the "
+                "strategies in epilearn.utils.uncertainty (static_conformal, "
+                "compute_aci, locally_weighted_conformal) directly on saved "
+                "residuals. Leave conformal_quantile=None to evaluate without it."
+            )
+            # For time series forecasting, use dimension names for better interpretability
+            dimension_names = ['samples', 'time_steps']
+            conformal_results = self._compute_conformal_intervals(
+                pre_preds, 
+                pre_targets, 
+                pre_abs_residuals, 
+                conformal_quantile=conformal_quantile,
+                dimension_names=dimension_names
+            )
 
-            train_target = train_target[:,:,region_idx]
-            val_target = val_target[:,:,region_idx]
-            test_target = test_target[:,:,region_idx]
+            if inverse_normalize and conformal_results and 'adaptive_lower' in conformal_results:
+                conformal_results['adaptive_lower'] = self.inverse_norm(
+                    conformal_results['adaptive_lower'], 
+                    process_history['target_mean'], 
+                    process_history['target_std']
+                )
+                conformal_results['adaptive_upper'] = self.inverse_norm(
+                    conformal_results['adaptive_upper'], 
+                    process_history['target_mean'], 
+                    process_history['target_std']
+                )
 
-            train_states = train_states[:,:,region_idx]
-            val_states = val_states[:,:,region_idx]
-            test_states = test_states[:,:,region_idx]
-
-        return  {'features': train_input, 'targets': train_target, 'states': train_states, 'dynamic_graph': train_adj}, \
-                {'features': val_input, 'targets': val_target, 'states': val_states, 'dynamic_graph': val_adj}, \
-                {'features': test_input, 'targets': test_target, 'states': test_states, 'dynamic_graph': test_adj}, \
-                adj
-                
+        # Print evaluation summary
+        print(f"\n{'='*60}")
+        print(f"MODEL EVALUATION")
+        print(f"{'='*60}")
+        print(f"\n--- Point Metrics ---")
+        print(f"MSE:              {mse.item():.6f}")
+        print(f"MAE:              {mae.item():.6f}")
+        print(f"RMSE:             {rmse.item():.6f}")
+        if not torch.isnan(mape):
+            print(f"MAPE:             {mape.item():.2f}%")
+        print(f"R²:               {r2.item():.6f}")
+        print(f"Median AE:        {median_ae.item():.6f}")
+        print(f"Max Error:        {max_error.item():.6f}")
+        print(f"\n--- Residual Statistics ---")
+        print(f"Mean:             {residual_mean.item():.6f}")
+        print(f"Std Dev:          {residual_std.item():.6f}")
+        
+        if use_conformal and conformal_results:
+            print(f"\n--- Conformal Prediction ---")
+            if 'coverage' in conformal_results:
+                print(f"Coverage:         {conformal_results['coverage']*100:.1f}%")
+            if 'adaptive_quantiles' in conformal_results:
+                aq = conformal_results['adaptive_quantiles']
+                print(f"Adaptive Quantile: mean={aq.mean().item():.4f}, min={aq.min().item():.4f}, max={aq.max().item():.4f}")
+        print(f"{'='*60}")
+        
+        # Compile results
+        results = {
+            'mse': mse.item(),
+            'mae': mae.item(),
+            'rmse': rmse.item(),
+            'mape': mape.item() if not torch.isnan(mape) else None,
+            'r2': r2.item(),
+            'median_ae': median_ae.item(),
+            'max_error': max_error.item(),
+            'residual_mean': residual_mean.item(),
+            'residual_std': residual_std.item(),
+            'predictions': preds,
+            'targets': targets,
+            'residuals': residuals,
+        }
+        
+        # Add conformal results
+        if conformal_results:
+            results.update(conformal_results)
+        
+        return results
     
-    def plot_forecasts(self, dataset, index_range=None, fig_size=None):
-        data = dataset['features']
-        target = dataset['target']
-        if data.shape[-1] >1:
-            raise ValueError("Multi channel is not supported. Please use single channel data.")
-        if self.region_index is not None:
-            data = data[:, self.region_index,:]
 
-        # save groundtruth and predictions
-        predictions = torch.FloatTensor()
-        groundtruth = torch.FloatTensor()
+    def inverse_norm(self, data, mean, std, node_indices=None):
+        """
+        Apply inverse normalization to data.
         
-        with torch.no_grad():
+        Handles multiple cases:
+        - Global normalization (scalar mean/std)
+        - Per-node normalization with data that still has node dimension
+        - Per-node normalization with flattened data and node_indices
+        - Per-node normalization with flattened data without node_indices (uses global average)
+        
+        Args:
+            data: Tensor to denormalize
+            mean: Either scalar or array of means (one per node)
+            std: Either scalar or array of stds (one per node)
+            node_indices: Optional tensor of node indices for flattened data
+        
+        Returns:
+            Denormalized tensor
+        """
+        if isinstance(std, (int, float)):
+            return data * std + mean
+
+        # Convert to tensor if needed
+        if not isinstance(std, torch.Tensor):
+            std = torch.FloatTensor(std)
+        if not isinstance(mean, torch.Tensor):
+            mean = torch.FloatTensor(mean)
+
+        # Check if using scalar (global) or array (per-node) normalization
+        if mean.numel() == 1:
+            # Scalar normalization - broadcast automatically
+            return data * std.item() + mean.item()
+        else:
+            # Array normalization (per-node) - legacy behavior
+            n_nodes = len(mean)
+
+            if len(data.shape) > 2:
+                # Original shape preserved: (samples, nodes, horizon) or (samples, lookback, nodes, features)
+                std = std.unsqueeze(-1)
+                mean = mean.unsqueeze(-1)
+                return data * std + mean
+            elif len(data.shape) == 2 and data.shape[-1] == n_nodes:
+                # Shape is (samples, nodes) - can apply per-node
+                return data * std + mean
+            elif node_indices is not None:
+                # Flattened data with node indices: (samples*nodes, horizon) or (samples*nodes,)
+                # Use per-node statistics indexed by node_indices
+                node_mean = mean[node_indices]  # Shape: (samples*nodes,)
+                node_std = std[node_indices]    # Shape: (samples*nodes,)
+
+                # Expand to match data shape if needed
+                if len(data.shape) == 2:
+                    node_mean = node_mean.unsqueeze(-1)  # (samples*nodes, 1)
+                    node_std = node_std.unsqueeze(-1)    # (samples*nodes, 1)
+
+                return data * node_std + node_mean
+            else:
+                # Flattened data without node indices: (samples*nodes, horizon) or (samples, horizon)
+                # Per-node normalization cannot be correctly applied because we don't know
+                # which samples correspond to which nodes.
+                # Use the global average of per-node statistics as approximation.
+                global_mean = mean.mean().item()
+                global_std = std.mean().item()
+                return data * global_std + global_mean
+    
+    def plot_preds(self, eval_results, n_show=None, figsize=(15, 7), 
+                   save_path=None, backend='matplotlib', 
+                   region_idx=0, horizon_idx=-1, interactive=False):
+        """
+        Plot predictions with adaptive uncertainty intervals in a clean white style.
+        
+        Args:
+            eval_results: Dictionary returned from evaluate_model containing predictions, targets, and uncertainty estimates
+            n_show: Number of time samples to display (None plots all samples, default: None)
+            figsize: Figure size as (width, height) tuple for matplotlib (default: (15, 7))
+            save_path: Optional path to save the figure (e.g., 'plot.png' or 'plot.html')
+            backend: Plotting backend - 'matplotlib' or 'plotly' (default: 'matplotlib')
+            region_idx: Index of region to plot (default: 0)
+            horizon_idx: Index of horizon step to plot (default: -1, last step)
+            interactive: Whether to make plotly plots interactive (default: False)
             
-            for i in range(0, len(data)-self.horizon-self.lookback, self.horizon):
-                history = torch.FloatTensor(data[i:i+self.lookback])
-                label = target[i+self.lookback:i+self.lookback+self.horizon]
-
-                output = self.model(history.unsqueeze(0).to(self.device))
-                output = output.detach().cpu()
-                preds = (output*self.target_std + self.target_mean).squeeze(0)
-                label = (label*self.target_std + self.target_mean).squeeze(-1)
-
-                groundtruth = torch.cat([groundtruth, label])
-                predictions = torch.cat([predictions, preds])
-        result = torch.stack([predictions, groundtruth], dim=1)
-        result = result[index_range[0]:index_range[1]]
-        plot_series(result, columns = ['prediction', 'groundtruth'], fig_size=fig_size)
-
-        return predictions, groundtruth
-
+        Returns:
+            For matplotlib: fig, ax
+            For plotly: fig
+        """
+        if backend == 'plotly':
+            return self._plot_with_plotly(eval_results, n_show, save_path, region_idx, horizon_idx, interactive)
+        else:
+            return self._plot_with_matplotlib(eval_results, n_show, figsize, save_path, region_idx, horizon_idx)
+    
+    def _plot_with_matplotlib(self, eval_results, n_show, figsize, save_path, region_idx, horizon_idx):
+        """Internal method for matplotlib plotting."""
+        import matplotlib.pyplot as plt
         
+        # Extract predictions and targets from evaluation results
+        # Shape: (time, regions, horizon)
+        preds = eval_results['predictions'].numpy()
+        targets = eval_results['targets'].numpy()
+        
+        print(f"Data shape: {preds.shape} (time, regions, horizon)")
+        print(f"Plotting region {region_idx}, horizon step {horizon_idx}")
+        
+        # Extract specific region and horizon
+        if len(preds.shape) == 2:
+            preds = np.expand_dims(preds, axis=1)
+            targets = targets.reshape(preds.shape)
+        preds_plot = preds[:, region_idx, horizon_idx]
+        targets_plot = targets[:, region_idx, horizon_idx]
+        
+        # Determine number of samples to show (all by default)
+        if n_show is None:
+            n_show = len(preds_plot)
+        else:
+            n_show = min(n_show, len(preds_plot))
+        
+        x = np.arange(n_show)
+        
+        print(f"Plotting {n_show} time samples")
+        
+        # Set white background style
+        plt.style.use('default')
+        fig, ax = plt.subplots(figsize=figsize, facecolor='white')
+        ax.set_facecolor('white')
+        
+        # Extract adaptive uncertainty intervals
+        if 'adaptive_lower' in eval_results:
+            adaptive_lower = eval_results['adaptive_lower'].numpy()
+            adaptive_upper = eval_results['adaptive_upper'].numpy()
+            
+            # Extract for specific region and horizon
+            if len(adaptive_lower.shape) == 2:
+                adaptive_lower = np.expand_dims(adaptive_lower, axis=1)
+                adaptive_upper = np.expand_dims(adaptive_upper, axis=1)
+            adaptive_lower_plot = adaptive_lower[:, region_idx, horizon_idx]
+            adaptive_upper_plot = adaptive_upper[:, region_idx, horizon_idx]
+            
+            # Plot adaptive interval
+            ax.fill_between(x, adaptive_lower_plot[:n_show], adaptive_upper_plot[:n_show], 
+                             alpha=0.25, color='#3498db', label='Adaptive Prediction Interval', zorder=1)
+        
+        # Plot true values and predictions on top
+        ax.plot(x, targets_plot[:n_show], 'o-', label='True Values', color='#2c3e50', 
+                 alpha=0.9, markersize=7, linewidth=2.5, zorder=3)
+        ax.plot(x, preds_plot[:n_show], 's-', label='Predictions', color='#e74c3c', 
+                 alpha=0.8, markersize=6, linewidth=2, zorder=2)
+        
+        ax.set_xlabel('Time Index', fontsize=13, fontweight='bold', color='#2c3e50')
+        ax.set_ylabel('Value', fontsize=13, fontweight='bold', color='#2c3e50')
+        
+        title = f'Predictions with Adaptive Uncertainty (Region {region_idx}, Horizon {horizon_idx})'
+        ax.set_title(title, fontsize=15, fontweight='bold', color='#2c3e50', pad=20)
+        
+        # Customize legend
+        ax.legend(fontsize=11, frameon=True, fancybox=True, shadow=True, 
+                  loc='best', edgecolor='#bdc3c7', facecolor='white')
+        
+        # Customize grid
+        ax.grid(True, alpha=0.25, linestyle='--', linewidth=0.8, color='#95a5a6')
+        
+        # Customize spines
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#bdc3c7')
+            spine.set_linewidth(1.2)
+        
+        # Customize ticks
+        ax.tick_params(colors='#2c3e50', labelsize=10)
+        
+        plt.tight_layout()
+        
+        # Save figure if path provided
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
+            print(f"\nFigure saved to: {save_path}")
+        
+        # Calculate and print coverage statistics
+        if 'adaptive_lower' in eval_results:
+            within_adaptive = np.sum((targets_plot[:n_show] >= adaptive_lower_plot[:n_show]) & 
+                                    (targets_plot[:n_show] <= adaptive_upper_plot[:n_show]))
+            coverage_pct = within_adaptive / n_show * 100
+            print(f"\n{'='*60}")
+            print(f"Coverage Statistics")
+            print(f"{'='*60}")
+            print(f"Adaptive Coverage: {within_adaptive}/{n_show} = {coverage_pct:.2f}%")
+            print(f"{'='*60}")
+        
+        return fig, ax
+    
+    def _plot_with_plotly(self, eval_results, n_show, save_path, region_idx, horizon_idx, interactive):
+        """Internal method for plotly plotting."""
+        try:
+            import plotly.graph_objects as go
+        except ImportError:
+            raise ImportError("Plotly is required for interactive plotting. Install with: pip install plotly")
+        
+        # Extract predictions and targets from evaluation results
+        # Shape: (time, regions, horizon)
+        preds = eval_results['predictions'].numpy()
+        targets = eval_results['targets'].numpy()
+        
+        print(f"Data shape: {preds.shape} (time, regions, horizon)")
+        print(f"Plotting region {region_idx}, horizon step {horizon_idx}")
+        
+        # Extract specific region and horizon
+        preds_plot = preds[:, region_idx, horizon_idx]
+        targets_plot = targets[:, region_idx, horizon_idx]
+        
+        # Determine number of samples to show (all by default)
+        if n_show is None:
+            n_show = len(preds_plot)
+        else:
+            n_show = min(n_show, len(preds_plot))
+        
+        x = np.arange(n_show)
+        
+        print(f"Plotting {n_show} time samples")
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Extract adaptive uncertainty intervals
+        if 'adaptive_lower' in eval_results:
+            adaptive_lower = eval_results['adaptive_lower'].numpy()
+            adaptive_upper = eval_results['adaptive_upper'].numpy()
+            
+            # Extract for specific region and horizon
+            adaptive_lower_plot = adaptive_lower[:, region_idx, horizon_idx]
+            adaptive_upper_plot = adaptive_upper[:, region_idx, horizon_idx]
+            
+            # Add adaptive interval
+            fig.add_trace(go.Scatter(
+                x=np.concatenate([x, x[::-1]]),
+                y=np.concatenate([adaptive_upper_plot[:n_show], adaptive_lower_plot[:n_show][::-1]]),
+                fill='toself',
+                fillcolor='rgba(52, 152, 219, 0.25)',
+                line=dict(color='rgba(52, 152, 219, 0)'),
+                name='Adaptive Prediction Interval',
+                hoverinfo='skip',
+                showlegend=True
+            ))
+        
+        # Add true values
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=targets_plot[:n_show],
+            mode='lines+markers',
+            name='True Values',
+            line=dict(color='#2c3e50', width=2.5),
+            marker=dict(size=7, symbol='circle'),
+            hovertemplate='<b>True Value</b><br>Time: %{x}<br>Value: %{y:.4f}<extra></extra>'
+        ))
+        
+        # Add predictions
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=preds_plot[:n_show],
+            mode='lines+markers',
+            name='Predictions',
+            line=dict(color='#e74c3c', width=2),
+            marker=dict(size=6, symbol='square'),
+            hovertemplate='<b>Prediction</b><br>Time: %{x}<br>Value: %{y:.4f}<extra></extra>'
+        ))
+        
+        # Update layout
+        title = f'Predictions with Adaptive Uncertainty (Region {region_idx}, Horizon {horizon_idx})'
+        
+        fig.update_layout(
+            title=dict(
+                text=title,
+                font=dict(size=18, color='#2c3e50', family='Arial, sans-serif'),
+                x=0.5,
+                xanchor='center'
+            ),
+            xaxis=dict(
+                title='Time Index',
+                titlefont=dict(size=14, color='#2c3e50'),
+                gridcolor='rgba(149, 165, 166, 0.25)',
+                showgrid=True,
+                zeroline=False
+            ),
+            yaxis=dict(
+                title='Value',
+                titlefont=dict(size=14, color='#2c3e50'),
+                gridcolor='rgba(149, 165, 166, 0.25)',
+                showgrid=True,
+                zeroline=False
+            ),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            hovermode='x unified' if interactive else 'closest',
+            legend=dict(
+                bgcolor='rgba(255, 255, 255, 0.9)',
+                bordercolor='#bdc3c7',
+                borderwidth=1,
+                font=dict(size=11)
+            ),
+            width=1200,
+            height=600
+        )
+        
+        # Save figure if path provided
+        if save_path:
+            if save_path.endswith('.html'):
+                fig.write_html(save_path)
+                print(f"\nInteractive figure saved to: {save_path}")
+            else:
+                fig.write_image(save_path, width=1200, height=600)
+                print(f"\nFigure saved to: {save_path}")
+        
+        if interactive:
+            fig.show()
+        
+        # Calculate and print coverage statistics
+        if 'adaptive_lower' in eval_results:
+            within_adaptive = np.sum((targets_plot[:n_show] >= adaptive_lower_plot[:n_show]) & 
+                                    (targets_plot[:n_show] <= adaptive_upper_plot[:n_show]))
+            coverage_pct = within_adaptive / n_show * 100
+            print(f"\n{'='*60}")
+            print(f"Coverage Statistics")
+            print(f"{'='*60}")
+            print(f"Adaptive Coverage: {within_adaptive}/{n_show} = {coverage_pct:.2f}%")
+            print(f"{'='*60}")
+        
+        return fig
+
+

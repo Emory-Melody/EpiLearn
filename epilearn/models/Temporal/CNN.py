@@ -6,7 +6,7 @@ from .base import BaseModel
 
 class CNNModel(BaseModel):
     """
-        Single-layer Gated Recurrent Unit (GRU) Network
+        Convolutional Neural Network for Time Series Forecasting
 
         Parameters
         ----------
@@ -16,12 +16,16 @@ class CNNModel(BaseModel):
             Number of input timesteps.
         num_timesteps_output : int
             Number of output timesteps to predict.
-        nhid : int, optional
-            Number of hidden units in the GRU layer. Default: 256.
+        conv1_hid : int, optional
+            Number of filters in first convolutional layer. Default: 16.
+        conv2_hid : int, optional
+            Number of filters in second convolutional layer. Default: 32.
+        kernel_size : int, optional
+            Kernel size for convolutional layers. Default: 3.
+        linear_hid : int, optional
+            Number of hidden units in the linear layer. Default: 128.
         dropout : float, optional
-            Dropout rate for the GRU layer. Default: 0.5.
-        use_norm : bool, optional
-            Whether to use Layer Normalization after the GRU layer. Default: False.
+            Dropout rate. Default: 0.5.
 
         Returns
         -------
@@ -34,38 +38,42 @@ class CNNModel(BaseModel):
                  num_features, 
                  num_timesteps_input, 
                  num_timesteps_output, 
+                 conv1_hid=16,
+                 conv2_hid=32,
+                 kernel_size=3,
+                 linear_hid=128,
                  dropout=0.5, 
-                 conv1_config={'hid': 16, 'kernel': 3, 'stride': 1, 'padding': 1}, 
-                 conv2_config={'hid': 32, 'kernel': 3, 'stride': 1, 'padding': 1},
-                 maxpool_config={'kernel': 2, 'stride': 2, 'padding': 0}, 
-                 linear_hid=128, 
-                 device='cpu'):
+                 device='cpu',
+                 **kwargs):
         super(CNNModel, self).__init__(device=device)
         self.num_features = num_features
         self.num_timesteps_input = num_timesteps_input
         self.num_timesteps_output = num_timesteps_output
-        self.dropout = dropout
+        self.dropout_rate = dropout
+        
+        # Calculate padding to maintain sequence length after convolution
+        padding = kernel_size // 2
 
         self.conv1 = nn.Conv1d(in_channels=self.num_features,
-                               out_channels=conv1_config['hid'],
-                               kernel_size=conv1_config['kernel'],
-                               stride=conv1_config['stride'],
-                               padding=conv1_config['padding']) # first convolutional layer
-        self.conv2 = nn.Conv1d(in_channels=conv1_config['hid'],
-                               out_channels=conv2_config['hid'],
-                               kernel_size=conv2_config['kernel'],
-                               stride=conv2_config['stride'],
-                               padding=conv2_config['padding']) # second convolutional layer
-        self.pool = nn.MaxPool1d(kernel_size=maxpool_config['kernel'],
-                                 stride=maxpool_config['stride'],
-                                 padding=maxpool_config['padding']) # Max Pooling
-        self.fc1 = nn.Linear(conv2_config['hid'] * (num_timesteps_input // 4), linear_hid) # first linear layer
+                               out_channels=conv1_hid,
+                               kernel_size=kernel_size,
+                               stride=1,
+                               padding=padding) # first convolutional layer
+        self.conv2 = nn.Conv1d(in_channels=conv1_hid,
+                               out_channels=conv2_hid,
+                               kernel_size=kernel_size,
+                               stride=1,
+                               padding=padding) # second convolutional layer
+        self.pool = nn.MaxPool1d(kernel_size=2,
+                                 stride=2,
+                                 padding=0) # Max Pooling
+        self.fc1 = nn.Linear(conv2_hid * (num_timesteps_input // 4), linear_hid) # first linear layer
         self.fc2 = nn.Linear(linear_hid, num_timesteps_output) # second linear layer
 
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
 
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """
         Parameters
         ----------

@@ -105,13 +105,15 @@ class EpiColaGNN(BaseModel):
         self.act = F.elu 
         self.Wb = Parameter(torch.Tensor(self.m,self.m))
         self.wb = Parameter(torch.Tensor(self.h))
-        self.conv = nn.Conv1d(self.x_h, self.h, self.w)
-        long_kernal = self.w//2
-        self.conv_long = nn.Conv1d(self.x_h, self.h, long_kernal, dilation=2)
-        long_out = self.w-2*(long_kernal-1)
-        self.n_spatial = 10  
+        short_kernel = min(3, self.w)
+        self.conv = nn.Conv1d(self.x_h, self.h, short_kernel, padding=short_kernel // 2)
+        long_kernel = min(5, self.w)
+        self.conv_long = nn.Conv1d(self.x_h, self.h, long_kernel, dilation=2, padding=2 * (long_kernel // 2))
+        # With padding, both convolutions preserve the temporal dimension (≈ self.w)
+        long_out = self.w
+        self.n_spatial = 10
 
-        self.conv1 = GraphConvLayer((1+long_out), self.n_hidden) # self.h
+        self.conv1 = GraphConvLayer((self.w + long_out), self.n_hidden)
         self.conv2 = GraphConvLayer(self.n_hidden, self.n_spatial)
         self.conv_out = nn.Linear(self.h*self.n_spatial, self.n_spatial)
 
@@ -246,15 +248,15 @@ class EpiColaGNN(BaseModel):
         RoutFinalStep = ROut[:,-1,:]
         Gamma = self.PredGamma(RoutFinalStep).view(b, self.h, self.m)
 
-        BetaDiag = torch.Tensor(b, self.h, self.m, self.m)
-        GammaDiag = torch.Tensor(b, self.h, self.m, self.m)
+        BetaDiag = torch.zeros(b, self.h, self.m, self.m, device=orig_x.device)
+        GammaDiag = torch.zeros(b, self.h, self.m, self.m, device=orig_x.device)
 
         for batch in range(0,b):
             for h in range(self.h):
                 BetaDiag[batch, h] = torch.diag(Beta[batch, h])
                 GammaDiag[batch, h] = torch.diag(Gamma[batch, h])
 
-        A = torch.Tensor(b, self.h, self.m, self.m)
+        A = torch.zeros(b, self.h, self.m, self.m, device=orig_x.device)
         for batch in range(0, b):
             for h in range(self.h):
                 Sparse_adj_diagValue = torch.diag(torch.diagonal(Adj_Epi[batch, h]))
@@ -286,7 +288,8 @@ class EpiColaGNN(BaseModel):
         out_spatial = self.conv_out(out_spatial.transpose(1,2).contiguous().view(b*self.m, -1)).view(b, self.m, -1)
         out = torch.cat((out_spatial, out_temporal),dim=-1)
         out = self.out(out)
-        out = out.transpose(2,1)
+        # out shape after self.out: (batch, nodes, horizon)
+        # No need to transpose - already in correct shape
 
         if (self.residual_window > 0):
             z = orig_x[:, -self.residual_window:, :]; #Step backward # [batch, res_window, m]
@@ -295,7 +298,8 @@ class EpiColaGNN(BaseModel):
             z = z.view(-1,self.m); #[batch, m]
             out = out * self.ratio + z; #[batch, m]
 
-        return out, y_vector_t #, Beta, Gamma, outputNGMT
+        # Return only prediction, shape: (batch, nodes, horizon)
+        return out #, y_vector_t #, Beta, Gamma, outputNGMT
     
 
     def initialize(self):

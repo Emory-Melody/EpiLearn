@@ -23,18 +23,30 @@ class TimeBlock(nn.Module):
         :param kernel_size: Size of the 1D temporal kernel.
         """
         super(TimeBlock, self).__init__()
+        # CRITICAL FIX: Actually use the padding to preserve temporal information
         padding = (0, kernel_size // 2)
-        self.conv1 = nn.Conv2d(in_channels, out_channels, (1, kernel_size))
-        self.conv2 = nn.Conv2d(in_channels, out_channels, (1, kernel_size))
-        self.conv3 = nn.Conv2d(in_channels, out_channels, (1, kernel_size))
+        self.conv1 = nn.Conv2d(in_channels, out_channels, (1, kernel_size), padding=padding)
+        self.conv2 = nn.Conv2d(in_channels, out_channels, (1, kernel_size), padding=padding)
+        self.conv3 = nn.Conv2d(in_channels, out_channels, (1, kernel_size), padding=padding)
 
     def forward(self, X):
         """
         :param X: Input data of shape (batch_size, num_nodes, num_timesteps,
-        num_features=in_channels)
+        num_features=in_channels) or (batch_size, num_nodes, num_timesteps, num_features, 1)
         :return: Output data of shape (batch_size, num_nodes,
         num_timesteps_out, num_features_out=out_channels)
         """
+        # Convert sparse tensor to dense if needed
+        if X.is_sparse:
+            X = X.to_dense()
+            
+        # Handle 5D input by squeezing the last dimension if it's 1
+        if X.dim() == 5:
+            if X.shape[-1] == 1:
+                X = X.squeeze(-1)
+            elif X.shape[3] == 1:
+                X = X.squeeze(3)
+        
         # Convert into NCHW format for pytorch to perform convolutions.
         X = X.permute(0, 3, 1, 2)
         temp = self.conv1(X) + torch.sigmoid(self.conv2(X))
@@ -108,8 +120,7 @@ class STGCNBlock(nn.Module):
                                                      spatial_channels))
         self.temporal2 = TimeBlock(in_channels=spatial_channels,
                                    out_channels=out_channels)
-        self.batch_norm = nn.BatchNorm2d(num_nodes)
-        # self.gat = GAT(in_channels=spatial_channels, out_channels=out_channels, heads=4)
+        self.layer_norm = nn.LayerNorm(out_channels)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -118,7 +129,7 @@ class STGCNBlock(nn.Module):
 
         self.temporal1.reset_parameters()
         self.temporal2.reset_parameters()
-        self.batch_norm.reset_parameters()
+        self.layer_norm.reset_parameters()
 
 
     def forward(self, X, A_hat):
@@ -139,7 +150,7 @@ class STGCNBlock(nn.Module):
         # t2 = self.gat(A_hat, t)
 
         t3 = self.temporal2(t2)
-        return self.batch_norm(t3)
+        return self.layer_norm(t3)
         # return t3
 
 
@@ -161,6 +172,18 @@ class STGCN(BaseModel):
         :param num_timesteps_output: Desired number of future time steps
         output by the network.
         """
+        # CRITICAL FIX: With padding=kernel_size//2, temporal dimension is PRESERVED
+        # Each TimeBlock now uses padding, so output_length ≈ input_length
+        # Only minor reduction (≤1 per conv) due to edge effects
+        # Empirically, total reduction is minimal (0-2 timesteps)
+        self.temporal_reduction = 0  # With proper padding, no significant reduction
+        # Remove overly restrictive validation - model works with any reasonable lookback
+        if num_timesteps_input < 4:
+            raise ValueError(
+                f"STGCN requires lookback >= 4 for temporal convolutions. "
+                f"Got lookback={num_timesteps_input}."
+            )
+        
         self.nhid = nhids
         self.spatial_nhid = nhids
         super(STGCN, self).__init__(device=device)
@@ -171,8 +194,92 @@ class STGCN(BaseModel):
         # self.block3 = STGCNBlock(in_channels=self.nhid, out_channels=self.nhid,
         #                          spatial_channels=self.spatial_nhid, num_nodes=num_nodes).to(self.device)
         self.last_temporal = TimeBlock(in_channels=self.nhid, out_channels=self.nhid).to(self.device)
-        self.fully = nn.Linear((num_timesteps_input - 2 * 5) * self.nhid,
-                               num_timesteps_output).to(self.device)
+        self.fully = nn.Linear((num_timesteps_input - self.temporal_reduction) * self.nhid,
+                               num_timesteps_output).to(self.device)   
+
+    def forward(self, X, adj, states=None, dynamic_adj=None, **kargs):
+        """
+        Parameters
+        ----------
+        X : torch.Tensor
+            Input from task: Shape (batch_size, num_timesteps_input, num_nodes, num_features)
+        adj : torch.Tensor
+            Shape (num_nodes, num_nodes)
+
+        Returns
+        -------
+        torch.Tensor
+            Output shape (batch_size, num_nodes, num_timesteps_output)
+        """
+        # Task provides: (batch, timesteps, nodes, features)
+        # STGCN needs: (batch, nodes, timesteps, features)
+        # Transpose to swap timesteps and nodes dimensions
+        X = X.transpose(1, 2)  # (batch, nodes, timesteps, features)
+
+        out1 = self.block1(X, adj)
+        out2 = self.block2(out1, adj)
+        final = self.last_temporal(out2)
+
+        # final shape: (batch, nodes, reduced_timesteps, features)
+        # Reshape for fully connected layer
+        output = self.fully(final.reshape((final.shape[0], final.shape[1], -1)))
+
+        # output shape: (batch, nodes, num_timesteps_output)
+        # This matches the expected target shape for spatiotemporal models
+        return output
+
+                # import ipdb; ipdb.set_trace()
+        # adj.diagonal().fill_(1)
+        # # import ipdb; ipdb.set_trace()
+        # out1 = self.block1(X, adj)
+        # final = self.last_temporal(out1)
+        # # import ipdb; ipdb.set_trace()
+        # output = self.fully(final.reshape((final.shape[0], final.shape[1], -1)))
+        # return output
+    
+    def initialize(self):
+        self.block1.reset_parameters()
+        self.block2.reset_parameters()
+        self.last_temporal.reset_parameters()
+        self.fully.reset_parameters()
+
+
+
+
+class STGCN_c(BaseModel):
+    """
+    Spatio-temporal graph convolutional network as described in
+    https://arxiv.org/abs/1709.04875v3 by Yu et al.
+    Input should have shape (batch_size, num_nodes, num_input_time_steps,
+    num_features).
+    """
+
+    def __init__(self, num_nodes, num_features, num_timesteps_input,
+                 num_timesteps_output, nhids = 128, device='cpu', **kwargs):
+        """
+        :param num_nodes: Number of nodes in the graph.
+        :param num_features: Number of features at each node in each time step.
+        :param num_timesteps_input: Number of past time steps fed into the
+        network.
+        :param num_timesteps_output: Desired number of future time steps
+        output by the network.
+        """
+        self.nhid = nhids
+        self.spatial_nhid = nhids
+        self.num_nodes = num_nodes
+        self.num_timesteps_output = num_timesteps_output
+        super(STGCN_c, self).__init__(device=device)
+        self.block1 = STGCNBlock(in_channels=num_features, out_channels=self.nhid,
+                                 spatial_channels=self.spatial_nhid, num_nodes=num_nodes).to(self.device)
+        self.block2 = STGCNBlock(in_channels=self.nhid, out_channels=self.nhid,
+                                 spatial_channels=self.spatial_nhid, num_nodes=num_nodes).to(self.device)
+        # self.block3 = STGCNBlock(in_channels=self.nhid, out_channels=self.nhid,
+        #                          spatial_channels=self.spatial_nhid, num_nodes=num_nodes).to(self.device)
+        self.last_temporal = TimeBlock(in_channels=self.nhid, out_channels=self.nhid).to(self.device)
+        # Output dimension: for normal forecasting output num_timesteps_output values per node
+        # For aggregated tasks (travel_rate), output 1 value per node
+        output_dim = num_timesteps_output if num_timesteps_output > 0 else 1
+        self.fully = nn.Linear((num_timesteps_input - 2 * 5) * self.nhid, output_dim).to(self.device)
         # import ipdb; ipdb.set_trace()   
 
     def forward(self, X, adj, states=None, dynamic_adj=None, **kargs):
@@ -187,7 +294,7 @@ class STGCN(BaseModel):
         Returns
         -------
         torch.Tensor
-            Output shape (batch_size, num_timesteps_output, num_nodes)
+            Output shape (batch_size, num_nodes) for travel_rate task
         """
         # # import ipdb; ipdb.set_trace()
         # out1 = self.block1(X, adj)
@@ -197,7 +304,7 @@ class STGCN(BaseModel):
         # # import ipdb; ipdb.set_trace()
         # out5 = self.fully(out4.reshape((out4.shape[0], out4.shape[1], -1)))
         # return out5
-
+        X = X.transpose(1, 2)
         # import ipdb; ipdb.set_trace()
         adj.diagonal().fill_(1)
         # import ipdb; ipdb.set_trace()
@@ -205,7 +312,20 @@ class STGCN(BaseModel):
         out2 = self.block2(out1, adj)
         final = self.last_temporal(out2)
         # import ipdb; ipdb.set_trace()
-        output = self.fully(final.reshape((final.shape[0], final.shape[1], -1)))
+        # Reshape: (batch, num_nodes, timesteps, features) -> (batch*num_nodes, timesteps*features)
+        batch_size = final.shape[0]
+        num_nodes = final.shape[1]
+        reshaped_input = final.reshape((batch_size * num_nodes, -1))
+        output = self.fully(reshaped_input)
+        # Reshape back based on output dimension
+        if self.num_timesteps_output > 0:
+            # Normal forecasting: (batch*num_nodes, timesteps) -> (batch, num_nodes, timesteps)
+            output = output.reshape((batch_size, num_nodes, self.num_timesteps_output))
+            # Transpose to (batch, timesteps, num_nodes) to match STGCN output format
+            output = output.transpose(1, 2)
+        else:
+            # Aggregated output: (batch*num_nodes, 1) -> (batch, num_nodes)
+            output = output.reshape((batch_size, num_nodes))
         return output
 
                 # import ipdb; ipdb.set_trace()

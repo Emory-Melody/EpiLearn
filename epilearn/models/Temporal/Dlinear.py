@@ -50,6 +50,11 @@ class DlinearModel(BaseModel):
         Number of timesteps considered for each input sample.
     num_timesteps_output : int
         Number of output timesteps to predict.
+    moving_avg_window : int, optional
+        Kernel size for the moving average decomposition. Default: 25.
+    nhid : int, optional
+        Hidden dimension for intermediate transformation. If None, uses direct transformation.
+        Default: None.
 
     Attributes
     ----------
@@ -65,16 +70,34 @@ class DlinearModel(BaseModel):
         Each element corresponds to a predicted value for a specific future timestep. The output is averaged across the feature dimension to reduce it to a single predictive value per timestep.
 
     """
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, device='cpu'):
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, 
+                 moving_avg_window=25, nhid=None, device='cpu', **kwargs):
         super(DlinearModel, self).__init__(device=device)
         self.num_features = num_features
         self.num_timesteps_input = num_timesteps_input
         self.num_timesteps_output = num_timesteps_output
-        self.decomposition = series_decomp(kernel_size=3) 
-        # Single Linear layer to handle all features
-        self.Linear_Transform = nn.Linear(num_timesteps_input * num_features, num_timesteps_output * num_features)
+        self.nhid = nhid
+        
+        # Use configurable kernel size for decomposition
+        self.decomposition = series_decomp(kernel_size=moving_avg_window) 
+        
+        # Linear layer with optional hidden dimension
+        if nhid is not None:
+            self.Linear_Seasonal = nn.Sequential(
+                nn.Linear(num_timesteps_input * num_features, nhid),
+                nn.ReLU(),
+                nn.Linear(nhid, num_timesteps_output * num_features)
+            )
+            self.Linear_Trend = nn.Sequential(
+                nn.Linear(num_timesteps_input * num_features, nhid),
+                nn.ReLU(),
+                nn.Linear(nhid, num_timesteps_output * num_features)
+            )
+        else:
+            # Single Linear layer to handle all features
+            self.Linear_Transform = nn.Linear(num_timesteps_input * num_features, num_timesteps_output * num_features)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """
         Parameters
         ----------
@@ -93,13 +116,21 @@ class DlinearModel(BaseModel):
         seasonal_init, trend_init = self.decomposition(x)
         batch_size = x.shape[0]
         
+        # Make tensors contiguous before flatten (decomposition output may be non-contiguous)
+        seasonal_init = seasonal_init.contiguous()
+        trend_init = trend_init.contiguous()
+        
         # Flatten the input for linear transformation
         seasonal_flat = seasonal_init.view(batch_size, -1)
         trend_flat = trend_init.view(batch_size, -1)
         
         # Apply linear transformations
-        seasonal_output_flat = self.Linear_Transform(seasonal_flat)
-        trend_output_flat = self.Linear_Transform(trend_flat)
+        if self.nhid is not None:
+            seasonal_output_flat = self.Linear_Seasonal(seasonal_flat)
+            trend_output_flat = self.Linear_Trend(trend_flat)
+        else:
+            seasonal_output_flat = self.Linear_Transform(seasonal_flat)
+            trend_output_flat = self.Linear_Transform(trend_flat)
         
         # Reshape back and combine outputs
         seasonal_output = seasonal_output_flat.view(batch_size, self.num_timesteps_output, self.num_features)
@@ -113,7 +144,15 @@ class DlinearModel(BaseModel):
 
     def reset_parameters(self):
         # Here you reset parameters for each layer explicitly
-        self.Linear_Transform.reset_parameters()
+        if self.nhid is not None:
+            for layer in self.Linear_Seasonal:
+                if hasattr(layer, 'reset_parameters'):
+                    layer.reset_parameters()
+            for layer in self.Linear_Trend:
+                if hasattr(layer, 'reset_parameters'):
+                    layer.reset_parameters()
+        else:
+            self.Linear_Transform.reset_parameters()
         # Add any other layers that need resetting
         # Note: Add here if decomposition or its components have resettable parameters
 

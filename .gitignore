@@ -1,13 +1,44 @@
-/raw_datasets
-test.ipynb
-.DS_Store
+# Python
 **/__pycache__
+*.py[cod]
+*.so
+
+# Packaging / build artifacts
+/build
+/dist
+*.egg-info/
+docs/_build/
+
+# Benchmark and test outputs
+/benchmark_results
+tests/model_fit_tests/outputs/
+
+# Datasets downloaded on demand
+/raw_datasets
+/tmp
+
+# Download caches recreated by the notebooks on demand. The top-level
+# test_downloads/ and tmp_data/ are tracked from earlier releases and left
+# alone; these are the copies the examples write when run from examples/.
+examples/test_downloads/
+examples/tmp_data/
+examples/datasets/
+
+# Editors / OS
 **/.vscode
 .idea
-/build
-/epilearn.egg-info
-/tmp
+.DS_Store
+
+# Generated plots. Figures we deliberately ship (logo, docs, example outputs)
+# are re-included below -- without these negations a new doc image would be
+# invisible to git.
+*.png
+!asset/**/*.png
+!docs/**/*.png
+!examples/st_loss.png
+
+# Local scratch
+test.ipynb
 update.txt
 login/
-*.png
 course_work_example.py

@@ -92,10 +92,9 @@ class GraphWaveNet(BaseModel):
         Each slice along the second dimension corresponds to a timestep, with each column representing a node.
     """
     def __init__(self, device="cpu", dropout=0.3, gcn_bool=True, addaptadj=True, aptinit=None, num_timesteps_input=2,num_timesteps_output=12,
-                 residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,nlayers=2, adj_m=None):
+                 residual_channels=32,dilation_channels=32,skip_channels=256,end_channels=512,kernel_size=2,blocks=4,nlayers=2, adj_m=None, num_nodes=None, num_features=1, **kwargs):
         super(GraphWaveNet, self).__init__()
 
-        num_nodes = adj_m.shape[0]
         self.device = device
         self.dropout = dropout
         self.blocks = blocks
@@ -110,7 +109,7 @@ class GraphWaveNet(BaseModel):
         self.bn = nn.ModuleList()
         self.gconv = nn.ModuleList()
 
-        self.start_conv = nn.Conv2d(in_channels=num_timesteps_input,
+        self.start_conv = nn.Conv2d(in_channels=num_features,
                                     out_channels=residual_channels,
                                     kernel_size=(1,1))
         if adj_m is not None:
@@ -211,8 +210,8 @@ class GraphWaveNet(BaseModel):
             representing the predicted values for each node over the specified output timesteps.
         """
         #print(input)
-        input = torch.permute(X_batch, (0, 2, 1, 3))
-        input = input.transpose(1, 3)
+        # Transform from (batch, lookback, nodes, features) to (batch, features, nodes, lookback)
+        input = torch.permute(X_batch, (0, 3, 2, 1))
 
         in_len = input.size(3)
         if in_len<self.receptive_field:
@@ -279,7 +278,11 @@ class GraphWaveNet(BaseModel):
         x = F.relu(self.end_conv_1(x))
         x = self.end_conv_2(x)
         
-        x = torch.permute(x, (0, 2, 1, 3)).squeeze()
+        # x shape: (batch, num_timesteps_output, nodes, temporal_dim)
+        # Take the last temporal position and reshape to (batch, num_timesteps_output, nodes)
+        x = x[:, :, :, -1]  # Take last temporal position
+        # x shape: (batch, num_timesteps_output, nodes)
+        x = torch.permute(x, (0, 2, 1))  # Reshape to (batch, nodes, num_timesteps_output)
         return x
 
 

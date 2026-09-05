@@ -1,0 +1,57 @@
+# Quick pipeline test config - subset of models to validate benchmark works
+# Tests one model from each category: temporal NN, sklearn, statsmodels, spatiotemporal
+
+task: forecast
+
+dataset:
+  feature_path: "./datasets/toy_features.csv"
+  graph_path: "./datasets/toy_edges.csv"
+  timestamp_col: "time"
+  region_col: "node"
+  feature_cols: ["f1", "f2", "f3", "y"]
+  target_cols: ["y"]
+  transforms:
+    normalize_features: true
+    normalize_target: true
+    normalize_graph: true
+
+evaluation:
+  lookback: 16
+  horizon: 4
+  train_size: 100
+  val_size: 30
+  test_size: 30
+  step_size: 100
+  max_folds: 1
+  use_optuna: true
+  n_trials: 2
+  patience: 10
+  conformal_alpha: 0.1
+  verbose: false
+
+parallel:
+  enable: false
+
+output:
+  save_path: "./benchmark_results/quick_test/"
+
+models:
+  # RidgeModel needs no optional dependency, so this config always runs at
+  # least one model -- keep it enabled so the smoke test cannot silently
+  # succeed with zero models.
+  - name: RidgeModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.01, 0.1, 1.0, 10.0]
+      lookback: [8, 16]
+    optimizer_params: {}
+
+  # Skipped automatically unless `pip install epilearn[foundation]`.
+  - name: ChronosModel
+    requires_graph: false
+    model_args:
+      model_name: "amazon/chronos-t5-small"
+      num_samples: 10
+    optuna_model_args: {}
+    optimizer_params: {}
+

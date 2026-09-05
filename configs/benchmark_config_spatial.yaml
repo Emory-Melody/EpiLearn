@@ -1,0 +1,146 @@
+# =============================================================================
+# EpiLearn Forecasting Benchmark Configuration
+# =============================================================================
+# Usage: python -m epilearn.benchmark --config configs/benchmark_config.yaml
+#
+# NOTE on Optuna parameter sampling:
+#   - 1 value  → fixed (no tuning)
+#   - 2 values → treated as [min, max] RANGE (suggest_int or suggest_float)
+#   - 3+ values → treated as CATEGORICAL choices
+#   Use 3+ values when you want specific discrete choices (e.g., n_heads).
+
+task: forecast
+
+# -----------------------------------------------------------------------------
+# Dataset Configuration
+# -----------------------------------------------------------------------------
+dataset:
+  feature_path: "./datasets/toy_features.csv"
+  graph_path: "./datasets/toy_edges.csv"
+  timestamp_col: "time"
+  region_col: "node"
+  feature_cols: ["f1", "f2", "f3", "y"]  # f0 removed: was identical to target y
+  target_cols: ["y"]
+
+  transforms:
+    normalize_features: false
+    normalize_target: false
+    normalize_graph: true
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings (Rolling Train)
+# -----------------------------------------------------------------------------
+evaluation:
+  lookback: 53           # Max lookback (individual models may tune smaller values)
+  horizon: 4             # 4-week forecast horizon
+  train_size: 104        # 2 years — captures full annual seasonality
+  val_size: 52           # 1 year — full seasonal cycle for HP tuning / conformal calibration
+  test_size: 104         # 2 years — evaluation across diverse epidemic phases
+  step_size: 52          # 1-year advancement — yields 7 folds, covers full time series
+  max_folds: null
+
+  # Optuna hyperparameter tuning
+  use_optuna: true
+  n_trials: 15
+
+  # Training
+  patience: 15
+  conformal_alpha: 0.1
+  verbose: false
+  seed: 42               # Global random seed for reproducibility
+
+# -----------------------------------------------------------------------------
+# Parallel Execution
+# -----------------------------------------------------------------------------
+parallel:
+  enable: true
+  gpu_ids: null           # null = auto-detect, or [0, 1, 2, 3] for specific GPUs
+  workers_per_gpu: 2      # Conservative to prevent OOM with foundation models
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  save_path: "./benchmark_results/forecast_spatial/"
+
+# -----------------------------------------------------------------------------
+# Models to Benchmark
+# -----------------------------------------------------------------------------
+
+models:
+  # =========================================================================
+  # SPATIOTEMPORAL MODELS (Graph-based)
+  # =========================================================================
+
+  - name: STGCN
+    requires_graph: true
+    optuna_model_args:
+      nhids: [32, 48, 64]         # Moderate capacity (too small causes underfitting)
+      lookback: [12, 16, 32, 48]  # STGCN requires lookback > 10 (temporal convolutions)
+    optimizer_params:
+      lr: [0.00003, 0.0001]       # Moderate LR (50x lower than original) to balance stability and learning
+      batch_size: [32]
+      weight_decay: [0.05, 0.1]   # Moderate regularization (was 0-0.01) - not too aggressive
+      epochs: [150]
+
+
+  - name: GraphWaveNet
+    requires_graph: true
+    optuna_model_args:
+      residual_channels: [16, 32, 64]   # 3 values → categorical
+      dilation_channels: [16, 32, 64]   # 3 values → categorical
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: EpiGNN
+    requires_graph: true
+    optuna_model_args:
+      hidR: [16, 32, 64]
+      hidA: [16, 32, 64]
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: ColaGNN
+    requires_graph: true
+    optuna_model_args:
+      nhid: [32, 48, 64]         # Moderate capacity (too small causes underfitting)
+      n_channels: [2, 3, 4]      # Moderate channels (was [1, 4, 8])
+      dropout: [0.3, 0.5]        # Higher dropout for regularization (was [0.1, 0.3, 0.5])
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.0003]       # Moderate LR (10x lower than original, not 100x) to balance stability and learning
+      batch_size: [32]
+      weight_decay: [0.05, 0.1]  # Moderate regularization (was 0-0.01) - not too aggressive
+      epochs: [150]
+
+  - name: ATMGNN
+    requires_graph: true
+    optuna_model_args:
+      nhid: [32, 64, 128]        # 3 values → categorical (was 2 → unintended range)
+      dropout: [0.1, 0.3, 0.5]   # Added dropout tuning
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: MepoGNN
+    requires_graph: true
+    optuna_model_args:
+      residual_channels: [16, 32, 64]
+      dilation_channels: [16, 32, 64]
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]

@@ -1,456 +1,225 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Getting your own data into EpiLearn (0.1.0).
 
-# In[1]:
+Covers the four shapes of input EpiLearn understands:
 
+  * spatiotemporal tensors (timesteps, nodes, channels) + a graph
+  * a plain univariate series (timesteps, channels)
+  * per-node labels, for the detection task
+  * a long-format CSV, via ``Dataset.from_csv``
 
+``Dataset.from_csv`` renamed its keywords in 0.1.0:
+``feature_csv``->``file_path``, ``node_id_col``->``region_col``,
+``time_col``->``timestamp_col``, ``edge_csv``->``graph_file``.
+
+Run it with::
+
+    python examples/dataset_customization.py
+"""
+
+import datetime
 import os
 import sys
-# import ipdb; ipdb.set_trace()
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(parent_dir)
-from epilearn.models.SpatialTemporal import STGCN, ColaGNN
-from epilearn.data import UniversalDataset
+import tempfile
+
+EXAMPLE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(EXAMPLE_DIR)
+sys.path.append(os.path.dirname(EXAMPLE_DIR))
+os.chdir(REPO_ROOT)          # so "./datasets" resolves (load_toy_dataset reads it from cwd)
+
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+
+from epilearn.data import Dataset
 from epilearn.utils import transforms
 from epilearn.tasks.forecast import Forecast
-import torch
-import matplotlib.pyplot as plt
-import numpy as np
+from epilearn.tasks.detection import Detection
+from epilearn.models.SpatialTemporal import STGCN, ColaGNN
+from epilearn.models.Temporal import LSTMModel, DlinearModel, GRUModel
+from epilearn.models.Spatial.GCN import GCN
 
 
-# ## What your data looks like:
-
-# In[2]:
-
-
-data = torch.load("example.pt")
-data.keys()
+torch.manual_seed(7)
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-# In[3]:
+# ## 1. What your data looks like
 
-
-print(f"Node Features[time steps, nodes, channels]: {data['features'].shape}")
-print(f"Static Graph[nodes, nodes]: {data['graph'].shape}")
-print(f"Dynamic Graph[time steps, nodes, nodes]: {data['dynamic_graph'].shape}")
-print(f"Prediction Target[time steps, nodes]: {data['targets'].shape}")
-print(f"Nodes States[time steps, nodes]: {data['states'].shape}")
-
-
-# In[4]:
-
+data = torch.load("examples/example.pt", weights_only=False)
+print("keys:", list(data.keys()))
+print(f"Node Features [timesteps, nodes, channels]: {tuple(data['features'].shape)}")
+print(f"Static Graph  [nodes, nodes]              : {tuple(data['graph'].shape)}")
+print(f"Dynamic Graph [timesteps, nodes, nodes]   : {tuple(data['dynamic_graph'].shape)}")
+print(f"Target        [timesteps, nodes]          : {tuple(data['targets'].shape)}")
+print(f"Node States   [timesteps, nodes]          : {tuple(data['states'].shape)}")
 
 node_features = data['features']
 static_graph = torch.Tensor(data['graph'])
 dynamic_graph = data['dynamic_graph']
 targets = data['targets']
-node_status = data['states']
+
+# in this dataset the target series is also channel 0 of the features
+print("target == channel 0:", bool((node_features[:, :, 0] == targets).all()))
+
+plt.figure(figsize=(12, 3))
+plt.plot(np.array(targets[:, 0]), label='node 0 target')
+plt.plot(np.array(node_features[:, 0, 1]), label='node 0, channel 1')
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 
-# In this example, we also use the target time series as one of the channels.
+# ## 2. Spatiotemporal forecasting
+# Minimum ingredients: node features, a target per node, and a graph.
 
-# In[5]:
+lookback = 36
+horizon = 3
 
+# Optional extras: states=data['states'] for SIR-style node states, and
+# dynamic_graph=dynamic_graph for models that consume a per-timestep graph.
+dataset = Dataset(x=node_features,
+                  y=targets,
+                  graph=static_graph)
+print("\nspatiotemporal dataset:", dataset)
 
-(node_features[:,:, 0] != targets).sum()
+dataset.set_transforms(transforms.Compose({
+    "features": [transforms.normalize_feat()],
+    "target": [transforms.normalize_target()],
+    "graph": [transforms.normalize_adj()],
+}))
 
-
-# In[6]:
-
-
-# first feature
-plt.plot(np.array(node_features[:,0,0]))
-
-
-# In[7]:
-
-
-# second feature
-plt.plot(np.array(node_features[:,0,1]))
-
-
-# In[8]:
-
-
-# prediction target
-plt.plot(np.array(targets[:,0]))
-
-
-# ## Loading your data into Epilearn dataset
-
-# Take spatial-temporal task as an example, we need ad least 1. node features; 2. target time series of every node; 3. graph (static or dynamic, depending on the model used)
-
-# In[9]:
-
-
-dataset = UniversalDataset(x=node_features, 
-                        #    states=node_status, # e.g. additional information of each node, e.g. SIR states
-                           y=targets, # prediction target
-                           graph=static_graph, # adjacency matrix, we also support edge index: edge_index = ...
-                        #    dynamic_graph=dynamic_graph # # adjacency matrix
-                           )
-
-
-# In[10]:
-
-
-node_features.shape
-
-
-# In[11]:
-
-
-targets.shape
-
-
-# In[12]:
-
-
-# initialize settings
-lookback = 36 # inputs size
-horizon = 3 # predicts size
-
-# Adding Transformations
-transformation = transforms.Compose({
-                "features": [transforms.normalize_feat()],
-                "target": [transforms.normalize_target()],
-                "graph": [transforms.normalize_adj()]})
-dataset.transforms = transformation
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-
-# Initialize Task
 task = Forecast(prototype=STGCN,
                 dataset=None,
                 lookback=lookback,
                 horizon=horizon,
                 device=device)
 
-model_args = {"num_nodes": dataset.x.shape[1], "num_features": 4, "num_timesteps_input": lookback, "num_timesteps_output":horizon, "nhids": 16, "device": device}
-# Training
-# import ipdb; ipdb.set_trace() 
-result = task.train_model(dataset=dataset,
-                          loss='mse',
-                          epochs=2,
-                          batch_size=5,
-                          train_rate=0.6,
-                          val_rate=0.2,
-                          lr=1e-3,
-                          permute_dataset=True,
-                          model_args=model_args,
-                          verbose=True,
-                          device=device
-                          )
+result = task.rolling_train(dataset=dataset,
+                            train_size=350,
+                            val_size=60,
+                            test_size=60,
+                            train_loss='mse',
+                            epochs=5,
+                            batch_size=16,
+                            lr=1e-3,
+                            max_folds=2)
+print("aggregate:", {k: round(float(v), 4) for k, v in result['aggregate_metrics'].items()})
 
-# In[13]:
-
-
-# Evaluation
-train_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.train_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.train_split['dynamic_graph'], 
-                                 states=task.train_split['states'], 
-                                 targets=task.train_split['targets'])
+# Re-score any fold: evaluate_model takes the fold's split dict, and
+# inverse_normalize=True reports the numbers in original units.
+for fold in result['fold_results']:
+    evaluation = task.evaluate_model(dataset=fold['test_split'],
+                                     process_history=fold['process_history'],
+                                     inverse_normalize=True)
+    print(f"fold {fold['fold']}: predictions {tuple(evaluation['predictions'].shape)}, "
+          f"targets {tuple(evaluation['targets'].shape)}")
 
 
-# In[14]:
+# ## 3. Temporal forecasting
+# A univariate series is (timesteps, channels); use the same tensor as x and y.
 
+inputs = targets[:, 0].unsqueeze(-1)
+print(f"\nunivariate series: {tuple(inputs.shape)} (timesteps, channels)")
 
-print(train_evaluation.keys())
+dataset = Dataset(x=inputs, y=inputs)
+dataset.set_transforms(transforms.Compose({
+    "features": [transforms.normalize_feat()],
+    "target": [transforms.normalize_target()],
+}))
 
-
-# In[15]:
-
-
-print(train_evaluation['predictions'].shape)
-print(train_evaluation['targets'].shape)
-
-
-# In[16]:
-
-
-# when val_rate > 0
-val_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.val_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.val_split['dynamic_graph'], 
-                                 states=task.val_split['states'], 
-                                 targets=task.val_split['targets'])
-
-
-# In[17]:
-
-
-test_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.test_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.test_split['dynamic_graph'], 
-                                 states=task.test_split['states'], 
-                                 targets=task.test_split['targets'])
-
-
-# ### Temporal Task
-
-# As an example of temporal forecasting, we use a univariate time series as both feature and the target.
-
-# In[18]:
-
-
-inputs = targets[:,0].unsqueeze(-1)
-inputs.shape # length, channels
-
-
-# In[19]:
-
-
-dataset = UniversalDataset(x=inputs, y=inputs)
-
-
-# In[20]:
-
-
-from epilearn.models.Temporal import LSTMModel, DlinearModel, GRUModel
-# initialize settings
-lookback = 36 # inputs size
-horizon = 3 # predicts size
-
-# Adding Transformations
-transformation = transforms.Compose({
-                "features": [transforms.normalize_feat()],
-                "target": [transforms.normalize_feat()]
-                })
-dataset.transforms = transformation
-
-# Initialize Task
 task = Forecast(prototype=DlinearModel,
                 dataset=None,
                 lookback=lookback,
                 horizon=horizon,
                 device='cpu')
 
-# Training
-result = task.train_model(dataset=dataset,
-                          loss='mse',
-                          epochs=40,
-                          batch_size=8,
-                          train_rate=0.6,
-                          val_rate=0.1,
-                          lr=1e-3,
-                          permute_dataset=False)
-
-
-# In[21]:
-
-
-# for your customized model with unique parameters to initialize, please pass the parameters usinga a dict:
-from epilearn.models.Temporal import LSTMModel, DlinearModel, GRUModel
-# initialize settings
-lookback = 36 # inputs size
-horizon = 3 # predicts size
-
-# Adding Transformations
-transformation = transforms.Compose({
-                "features": [transforms.normalize_feat()],
-                "target": [transforms.normalize_feat()]
-                })
-dataset.transforms = transformation
-
-# Initialize Task
-task = Forecast(prototype=DlinearModel,
-                dataset=None,
-                lookback=lookback,
-                horizon=horizon,
-                device='cpu')
-
-
-# hyperparameters of your model
-model_args = {"num_features": 1, "num_timesteps_input": lookback, "num_timesteps_output":horizon}
-
-# Training
-result = task.train_model(dataset=dataset,
-                          loss='mse',
-                          epochs=40,
-                          batch_size=8,
-                          train_rate=0.6,
-                          val_rate=0.1,
-                          lr=1e-3,
-                          permute_dataset=False,
-                          model_args=model_args) # pass the hyperparameters of your model
-
-
-# In[22]:
-
-
-# Evaluation
-train_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.train_split['features'],
-                                 targets=task.train_split['targets'])
-print(train_evaluation.keys())
-train_results = task.plot_forecasts(dataset=task.train_dataset, index_range=[0,-1])
-
-
-# In[23]:
-
-
-# Evaluation
-evaluation = task.evaluate_model(model=task.model,
-                                 features=task.test_split['features'],
-                                 targets=task.test_split['targets'])
-val_results = task.plot_forecasts(dataset=task.test_dataset, index_range=[0,-1])     
-
-
-# ## Spatial Task
-
-# As an example of Spatial detection, we need 1. static graph; 2. node features 3. target of each node
-
-# ### Spatial-Temporal data as input
-
-# In[24]:
-
-
-graph = static_graph # nodes, nodes
-features = torch.round(torch.rand((10,47,16,4))) # batch, nodes, time steps, channels
-node_target = torch.round(torch.rand((10,47))) # batch, nodes
-print(f"graph: {graph.shape}")
-print(f"features: {features.shape}")
-print(f"node_target: {node_target.shape}")
-
-
-# Assuming we have binary class labels, and we want to do binary classification on each node
-
-# In[25]:
-
-
-node_target
-
-
-# In[26]:
-
-
-print(f"node_target: {node_target.shape}")
-
-
-# In[27]:
-
-
-dataset = UniversalDataset(x=features,y=node_target,graph=graph)
-
-
-# In[28]:
-
-
-from epilearn.tasks.detection import Detection
-from epilearn.models.SpatialTemporal import STGCN
-
-lookback = 16 # inputs size
-horizon = 2 # predicts size; also seen as number of classes, here we have two classes: 0, 1
-
-dataset.transforms = None
-task = Detection(prototype=STGCN, dataset=dataset, lookback=lookback, horizon=horizon, device='cpu')
-
-result = task.train_model(dataset=dataset, 
-                          loss='ce', 
-                          epochs=25,
-                          train_rate=0.6,
-                          val_rate=0.1,
-                          permute_dataset=True,
-                          )
-
-
-# In[29]:
-
-
-# Train Evaluation
-train_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.train_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.train_split['dynamic_graph'], 
-                                 states=task.train_split['states'], 
-                                 targets=task.train_split['targets'])
-
-train_evaluation.keys()
-
-
-# In[30]:
-
-
-# Val Evaluation
-val_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.val_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.val_split['dynamic_graph'], 
-                                 states=task.val_split['states'], 
-                                 targets=task.val_split['targets'])
-
-
-# In[31]:
-
-
-# Val Evaluation
-test_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.test_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.test_split['dynamic_graph'], 
-                                 states=task.test_split['states'], 
-                                 targets=task.test_split['targets'])
-
-
-# ### Spatial data as input
-
-# In[32]:
-
-
-graph = static_graph # nodes, nodes
-features = torch.round(torch.rand((10,47,1,4))) # batch, nodes, time steps=1, channels
-node_target = torch.round(torch.rand((10,47))) # batch, nodes
-print(f"graph: {graph.shape}")
-print(f"features: {features.shape}")
-print(f"node_target: {node_target.shape}")
-
-
-# In[33]:
-
-
-dataset = UniversalDataset(x=features,y=node_target,graph=graph)
-
-
-# In[34]:
-
-
-from epilearn.tasks.detection import Detection
-from epilearn.models.Spatial.GCN import GCN
-
-lookback = 1 # inputs size
-horizon = 2 # predicts size; also seen as number of classes
-
-dataset.transforms = None
-task = Detection(prototype=GCN, dataset=dataset, lookback=lookback, horizon=horizon, device='cpu')
-
-# model_args={"num_features": 4, "hidden_dim": 16, "num_classes": 2, "nlayers": 2, "dropout": 0.5,
-#             "with_bn": False, "with_bias": True, "device": 'cpu'}
-
-result = task.train_model(dataset=dataset, 
-                          loss='ce', 
-                          epochs=25,
-                          train_rate=0.6,
-                          val_rate=0.1,
-                          permute_dataset=False,
-                        #   model_args=model_args
-                          )
-
-
-# In[35]:
-
-
-# Train Evaluation
-train_evaluation = task.evaluate_model(model=task.model,
-                                 features=task.train_split['features'],
-                                 graph=task.adj, 
-                                 dynamic_graph= task.train_split['dynamic_graph'], 
-                                 states=task.train_split['states'], 
-                                 targets=task.train_split['targets'])
-
-train_evaluation.keys()
-
+# model_args passes the hyperparameters your model needs on top of the ones the
+# task infers (num_features / num_timesteps_input / num_timesteps_output / device).
+result = task.rolling_train(dataset=dataset,
+                            train_size=350,
+                            val_size=60,
+                            test_size=60,
+                            train_loss='mse',
+                            epochs=40,
+                            batch_size=8,
+                            lr=1e-3,
+                            model_args={'moving_avg_window': 25})
+print("aggregate:", {k: round(float(v), 4) for k, v in result['aggregate_metrics'].items()})
+
+last_fold = result['fold_results'][-1]
+evaluation = task.evaluate_model(dataset=last_fold['test_split'],
+                                 process_history=last_fold['process_history'],
+                                 inverse_normalize=True)
+# plot_forecasts was renamed to plot_preds in 0.1.0
+task.plot_preds(evaluation, region_idx=0, horizon_idx=-1)
+
+
+# ## 4. Per-node labels: the detection task
+# Detection classifies every node, so it uses explicit splits from
+# generate_dataset rather than rolling_train.
+
+labels = (targets > targets.median()).long()        # (timesteps, nodes), 2 classes
+
+detect_ds = Dataset(x=node_features, graph=static_graph)
+detect_ds.y = labels                                 # assign after construction to keep it integer
+
+
+def make_split(lookback_size, start, end):
+    return detect_ds.generate_dataset(X=detect_ds.x[start:end],
+                                      Y=detect_ds.y[start:end],
+                                      adj=detect_ds.graph,
+                                      lookback_window_size=lookback_size,
+                                      horizon_size=1)
+
+
+# 4a. spatiotemporal input: a whole window of node features
+task = Detection(prototype=STGCN, dataset=detect_ds, lookback=16, horizon=2, device='cpu')
+task.train_model(train_split=make_split(16, 0, 350),
+                 val_split=make_split(16, 350, 420),
+                 test_split=make_split(16, 420, 539),
+                 train_loss='ce', val_loss='ce', epochs=5, batch_size=16)
+evaluation = task.evaluate_model(dataset=make_split(16, 420, 539), compute_bootstrap_ci=False)
+print(f"\nSTGCN detection accuracy: {evaluation['accuracy']:.4f}")
+
+# 4b. spatial input: a single timestep per sample (lookback=1)
+task = Detection(prototype=GCN, dataset=detect_ds, lookback=1, horizon=2, device='cpu')
+task.train_model(train_split=make_split(1, 0, 350),
+                 val_split=make_split(1, 350, 420),
+                 test_split=make_split(1, 420, 539),
+                 train_loss='ce', val_loss='ce', epochs=5, batch_size=16)
+evaluation = task.evaluate_model(dataset=make_split(1, 420, 539), compute_bootstrap_ci=False)
+print(f"GCN detection accuracy  : {evaluation['accuracy']:.4f}")
+
+
+# ## 5. Loading from CSV
+# Long format: one row per (timestamp, region). from_csv builds the tensors for you.
+
+csv_dataset = Dataset.from_csv(file_path='./datasets/toy_features.csv',
+                               timestamp_col='time',
+                               region_col='node',
+                               feature_cols=['f0', 'f1', 'f2', 'f3'],
+                               target_cols=['y'],
+                               graph_file='./datasets/toy_edges.csv')
+print("\nfrom_csv (spatiotemporal):", csv_dataset)
+print("  feature_names:", csv_dataset.feature_names, "target_names:", csv_dataset.target_names)
+print("  timestamps   :", csv_dataset.timestamps[:5], "...")
+
+# Without region_col you get a temporal dataset, one row per timestamp.
+tmp_dir = tempfile.mkdtemp(prefix='epilearn_example_')
+tmp_csv = os.path.join(tmp_dir, 'series.csv')
+with open(tmp_csv, 'w') as handle:
+    handle.write("date,cases,tests\n")
+    for day in range(120):
+        date = datetime.date(2021, 1, 1) + datetime.timedelta(days=day)
+        handle.write(f"{date.isoformat()},{100 + day},{500 + 2 * day}\n")
+
+temporal_csv = Dataset.from_csv(file_path=tmp_csv,
+                                timestamp_col='date',
+                                feature_cols=['cases', 'tests'],
+                                target_cols=['cases'])
+print("from_csv (temporal)      :", temporal_csv)
+os.remove(tmp_csv)
+os.rmdir(tmp_dir)

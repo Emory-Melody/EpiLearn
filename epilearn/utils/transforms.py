@@ -36,8 +36,7 @@ class Compose:
     def __init__(self, transforms, device="cpu"):
         self.transforms = transforms
         self.device = device
-        self.feat_mean = 0
-        self.feat_std = 1
+        self.process_history={}
 
     def __call__(self, data):
         for key, d in data.items():
@@ -49,10 +48,12 @@ class Compose:
                 t = t.to(self.device)
                 data[dt] = t(data[dt], device=self.device)
                 if type(t).__name__ == 'normalize_feat':
-                    self.feat_mean, self.feat_std = t.means, t.stds
+                    self.process_history['feat_mean'] = t.means.cpu().numpy()
+                    self.process_history['feat_std'] = t.stds.cpu().numpy()
                 if type(t).__name__ == 'normalize_target':
-                    self.target_mean, self.target_std = t.means, t.stds
-        return data
+                    self.process_history['target_mean'] = t.means.cpu().numpy()
+                    self.process_history['target_std'] = t.stds.cpu().numpy()
+        return data, self.process_history
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
@@ -82,36 +83,34 @@ class normalize_feat(nn.Module):
         """
         Forward pass of the normalization module that normalizes a given input tensor X.
 
+        Uses GLOBAL normalization (single mean/std across all dimensions) to properly
+        handle time series data where temporal trends cause different distributions
+        across train/val/test splits.
+
         Parameters
         ----------
         X : torch.Tensor
-            The input tensor to be normalized. Can be either a 3D or 4D tensor.
+            The input tensor to be normalized. Can be 2D, 3D, or 4D tensor.
         device : str, optional
             The device to which the normalized tensor is transferred. Default: 'cpu'.
 
         Returns
         -------
         torch.Tensor
-            The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
+            The normalized tensor, adjusted to have zero mean and unit variance globally,
             and transferred to the specified device.
         """
-        if len(X.shape) == 2:
-            means = torch.mean(X, axis=0)
-            X = X - means
-            stds = torch.std(X, axis=0)
-            X = X / stds
+        # Use GLOBAL normalization for all tensor shapes
+        # This ensures train/val/test splits can be properly normalized
+        # even when they have different distributions (e.g., epidemic progression)
+        means = torch.mean(X)  # Scalar mean across ALL elements
+        X = X - means
+        stds = torch.std(X)  # Scalar std across ALL elements
+        stds = torch.where(stds == 0, torch.ones_like(stds), stds)  # Avoid division by zero
+        X = X / stds
 
-        if len(X.shape) == 3:
-            means = torch.mean(X, axis=(0, 1))
-            X = X - means.unsqueeze(0).unsqueeze(0)
-            stds = torch.std(X, axis=(0, 1))
-            X = X / stds.unsqueeze(0).unsqueeze(0)
-        elif len(X.shape) == 4:
-            means = torch.mean(X, dim=(0, 1, 2))
-            X = X - means.unsqueeze(0).unsqueeze(0).unsqueeze(0)
-            stds = torch.std(X, dim=(0, 1, 2))
-            X = X / stds.unsqueeze(0).unsqueeze(0).unsqueeze(0)
         X[torch.where(torch.isnan(X))]=0
+        X[torch.where(torch.isinf(X))]=0  # Also handle any remaining inf values
         self.means = means
         self.stds = stds
 
@@ -144,36 +143,34 @@ class normalize_target(nn.Module):
         """
         Forward pass of the normalization module that normalizes a given input tensor X.
 
+        Uses GLOBAL normalization (single mean/std across all dimensions) to properly
+        handle time series data where temporal trends cause different distributions
+        across train/val/test splits.
+
         Parameters
         ----------
         X : torch.Tensor
-            The input tensor to be normalized. Can be either a 3D or 4D tensor.
+            The input tensor to be normalized. Can be 2D, 3D, or 4D tensor.
         device : str, optional
             The device to which the normalized tensor is transferred. Default: 'cpu'.
 
         Returns
         -------
         torch.Tensor
-            The normalized tensor, adjusted to have zero mean and unit variance along the specified dimensions,
+            The normalized tensor, adjusted to have zero mean and unit variance globally,
             and transferred to the specified device.
         """
-        if len(X.shape) == 2:
-            means = torch.mean(X, axis=0)
-            X = X - means
-            stds = torch.std(X, axis=0)
-            X = X / stds
+        # Use GLOBAL normalization for all tensor shapes
+        # This ensures train/val/test splits can be properly normalized
+        # even when they have different distributions (e.g., epidemic progression)
+        means = torch.mean(X)  # Scalar mean across ALL elements
+        X = X - means
+        stds = torch.std(X)  # Scalar std across ALL elements
+        stds = torch.where(stds == 0, torch.ones_like(stds), stds)  # Avoid division by zero
+        X = X / stds
 
-        if len(X.shape) == 3:
-            means = torch.mean(X, axis=(0, 1))
-            X = X - means.unsqueeze(0).unsqueeze(0)
-            stds = torch.std(X, axis=(0, 1))
-            X = X / stds.unsqueeze(0).unsqueeze(0)
-        elif len(X.shape) == 4:
-            means = torch.mean(X, dim=(0, 1, 2))
-            X = X - means.unsqueeze(0).unsqueeze(0).unsqueeze(0)
-            stds = torch.std(X, dim=(0, 1, 2))
-            X = X / stds.unsqueeze(0).unsqueeze(0).unsqueeze(0)
         X[torch.where(torch.isnan(X))]=0
+        X[torch.where(torch.isinf(X))]=0  # Also handle any remaining inf values
         self.means = means
         self.stds = stds
 
@@ -228,17 +225,34 @@ class normalize_adj(nn.Module):
         except:
             pass
 
-        if len(Adj.shape) > 2:
+        if len(Adj.shape) == 4: # batch_size, num_graph, num_node, num_node
+            A = Adj.copy()
+            # Add self-loops: add identity matrix to last two dimensions
+            num_nodes = A.shape[-1]
+            A = A + np.eye(num_nodes, dtype=np.float32)
+            # Compute degree matrix: sum over last axis
+            D = np.sum(A, axis=-1)  # shape: (batch_size, num_graph, num_node)
+            D[D <= 10e-5] = 10e-5  # Prevent infs
+            # Compute D^(-1/2)
+            D_inv_sqrt = np.reciprocal(np.sqrt(D))  # shape: (batch_size, num_graph, num_node)
+            # Normalize: D^(-1/2) @ A @ D^(-1/2)
+            # Expand dimensions for broadcasting
+            D_inv_sqrt_expanded = D_inv_sqrt[..., :, np.newaxis]  # shape: (batch_size, num_graph, num_node, 1)
+            D_inv_sqrt_expanded_T = D_inv_sqrt[..., np.newaxis, :]  # shape: (batch_size, num_graph, 1, num_node)
+            A_wave = D_inv_sqrt_expanded * A * D_inv_sqrt_expanded_T
+            
+        elif len(Adj.shape) == 3: # num_graph, num_node, num_node
             A_wave = Adj
             for i in range(Adj.shape[0]):
-                A = Adj[i].reshape(Adj.shape[1], Adj.shape[1])
+                A = Adj[i]
                 A = A + np.diag(np.ones(A.shape[0], dtype=np.float32))
                 D = np.array(np.sum(A, axis=1)).reshape((-1,))
                 D[D <= 10e-5] = 10e-5    # Prevent infs
                 diag = np.reciprocal(np.sqrt(D))
                 A_wave[i] = np.multiply(np.multiply(diag.reshape((-1, 1)), A),
-                                    diag.reshape((1, -1))).reshape(Adj[i].shape)
-        else:
+                                    diag.reshape((1, -1)))
+                
+        elif len(Adj.shape) == 2: # num_node, num_node
             A = Adj
             A = A + np.diag(np.ones(A.shape[0], dtype=np.float32))
             D = np.array(np.sum(A, axis=1)).reshape((-1,))
@@ -246,6 +260,8 @@ class normalize_adj(nn.Module):
             diag = np.reciprocal(np.sqrt(D))
             A_wave = np.multiply(np.multiply(diag.reshape((-1, 1)), A),
                                 diag.reshape((1, -1)))
+        else:
+            raise ValueError("Input adjacency matrix must be 2D, 3D, or 4D.")
             
         return torch.FloatTensor(A_wave).to(device)
 
@@ -528,7 +544,7 @@ class calculate_dtw_matrix(nn.Module):
         else:
             data_mean = data.reshape(all_time,num_nodes,1)
             dtw_matrix = np.zeros((num_nodes, num_nodes))
-            for i in tqdm(range(num_nodes)):
+            for i in tqdm(range(num_nodes), disable=True):  # disable=True to prevent multiprocessing deadlock
                 for j in range(i, num_nodes):
                     dtw_distance, _ = fastdtw(data_mean[:, i, :], data_mean[:, j, :], radius=6)
                     dtw_matrix[i][j] = dtw_distance

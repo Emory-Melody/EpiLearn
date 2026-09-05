@@ -184,10 +184,10 @@ class GIN(BaseModel):
         # move modules to device
         self.to(self.device)
 
-    def forward(self, x, edge_index, edge_weight=None):
+    def forward(self, X, edge_index, edge_weight=None):
         """
         Parameters:
-        x : torch.Tensor
+        X : torch.Tensor
             Node feature matrix with shape (batch_size, num_nodes, num_features) or (num_nodes, num_features).
         edge_index : torch.Tensor
             Edge index in COO format with shape (2, num_edges).
@@ -198,6 +198,7 @@ class GIN(BaseModel):
         """
         # If input feature dim doesn't match initialized mlps, rebuild
         actual_in = x.shape[-1]
+        x=X
         if hasattr(self, '_init_num_features') and self._init_num_features != actual_in:
             self._build_mlps(actual_in)
 

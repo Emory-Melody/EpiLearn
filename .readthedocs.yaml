@@ -7,12 +7,23 @@ version: 2
 build:
   os: ubuntu-22.04
   tools:
+    # 3.9 is the minimum EpiLearn supports (`requires-python = ">=3.9"` in
+    # pyproject.toml), so the docs build doubles as a check that the package
+    # still imports on the oldest supported interpreter.
     python: "3.9"
 
 sphinx:
   configuration: docs/conf.py
+  # fail_on_warning is intentionally left off: several docstrings inside
+  # epilearn/ still contain malformed reStructuredText (indentation under
+  # "Parameters" blocks), which would abort every build. The import guard in
+  # docs/conf.py covers the failure mode that actually matters -- a missing
+  # dependency publishing an empty API reference.
 
 python:
   install:
+    # Order matters: install torch first so nothing else resolves a different
+    # build of it, then the Sphinx toolchain plus every dependency that
+    # `import epilearn` needs (autodoc imports the package).
     - requirements: docs/requirements_torch.txt
     - requirements: docs/requirements.txt

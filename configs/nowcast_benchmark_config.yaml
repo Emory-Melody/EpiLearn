@@ -1,0 +1,435 @@
+# =============================================================================
+# EpiLearn Nowcasting Benchmark Configuration
+# =============================================================================
+# Usage: python -m epilearn.benchmark --config configs/nowcast_benchmark_config.yaml
+#
+# This benchmark evaluates models on the nowcasting task:
+# - Input: Reporting triangle (n_days, n_delays) with incomplete recent data
+# - Output: Final counts for the incomplete window (horizon days)
+#
+# Data characteristics:
+#   - 1817 days, 28 delay columns (delay 3–30), ~49% unobserved (-1 sentinels)
+#   - Target: final reported count per day (unnormalized, range ~0–14)
+#   - With lookback=62: 1748 samples; lookback=30: 1780 samples
+#
+# NOTE on Optuna parameter sampling:
+#   - 1 value  → fixed (no tuning)
+#   - 2 values → treated as [min, max] RANGE (suggest_int or suggest_float)
+#   - 3+ values → treated as CATEGORICAL choices
+#   Use 3+ values when you want specific discrete choices (e.g., n_heads).
+
+# -----------------------------------------------------------------------------
+# REQUIRES DATA THAT IS NOT SHIPPED WITH THE PACKAGE
+# -----------------------------------------------------------------------------
+# This config reads ./epilearn/data/nowcast_ready_data.npz, a COVID-19 reporting
+# triangle from the CMU Delphi Epidata API. EpiLearn does not redistribute it.
+# Regenerate it from the original source with:
+#
+#   python datasets/build_nowcast_triangle.py -o epilearn/data/nowcast_ready_data.npz
+#
+# (source: hospital-admissions / smoothed_adj_covid19_from_claims; see that
+# script's docstring for the API, licensing and citation details.)
+# For a runnable nowcasting example needing no data at all, see tests/nowcast.py.
+# -----------------------------------------------------------------------------
+task: nowcast
+
+# -----------------------------------------------------------------------------
+# Dataset Configuration (Nowcast-specific)
+# -----------------------------------------------------------------------------
+dataset:
+  # Path to the .npz file containing reporting triangle data
+  # Expected keys: 'triangle', 'final_counts', 'delays', 'time_values'
+  triangle_path: "./epilearn/data/nowcast_ready_data.npz"
+
+  # Delay parameters for feature extraction
+  min_delay: 3         # Minimum reporting delay (first delay column to use)
+  max_delay: 30        # Maximum reporting delay (None = use all delays)
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings (Rolling Train)
+# -----------------------------------------------------------------------------
+evaluation:
+  lookback: 62         # L: max days of history (individual models tune smaller)
+  horizon: 7           # W: days to nowcast (incomplete window)
+  train_size: 180      # 6 months — captures first COVID surge-decline cycle
+  val_size: 90         # 1 quarter — sufficient for HPO & conformal calibration
+  test_size: 90        # 1 quarter — standard public health assessment period
+  step_size: 90        # Quarterly advancement → 17 folds spanning Apr 2021–Nov 2025
+  max_folds: null
+
+  # Optuna hyperparameter tuning
+  use_optuna: true
+  n_trials: 15         # Default trials (models may override with per-model n_trials)
+
+  # Training
+  patience: 15         # Early stopping patience (epochs without val improvement)
+  conformal_alpha: 0.1 # Conformal prediction coverage level (90%)
+  seed: 42             # Global random seed for reproducibility
+  verbose: false
+
+# -----------------------------------------------------------------------------
+# Parallel Execution
+# -----------------------------------------------------------------------------
+parallel:
+  enable: true
+  gpu_ids: null           # null = auto-detect, or [0, 1, 2, 3] for specific GPUs
+  workers_per_gpu: 2      # Conservative to prevent OOM with foundation models
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  save_path: "./benchmark_results/nowcast/"
+
+# -----------------------------------------------------------------------------
+# Models to Benchmark
+# -----------------------------------------------------------------------------
+# Nowcasting supports temporal models from epilearn/models/Temporal.
+# Spatiotemporal models are NOT supported (single-region nowcasting).
+# Models receive features of shape (batch, lookback, n_delays=28) with -1
+# sentinel values for unobserved entries in the reporting triangle.
+
+models:
+  # =========================================================================
+  # TEMPORAL MODELS (Neural Networks)
+  # =========================================================================
+  # These models use all 28 delay columns as features. They learn to handle
+  # the -1 sentinel values and the staircase observability pattern directly.
+
+  - name: GRUModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      nhids: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: LSTMModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      nhid: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: CNNModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      conv1_hid: [8, 16, 32]
+      conv2_hid: [16, 32, 64]
+      linear_hid: [64, 128, 256]   # 3 values → categorical (avoid int range)
+      dropout: [0.3, 0.5]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: MLPModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      nhids: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: DlinearModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      moving_avg_window: [7, 15, 25]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: PatchTSTModel
+    requires_graph: false
+    extract_univariate: true
+    optuna_model_args:
+      d_model: [32, 48, 64]        # All divisible by 2, 4, and 8
+      n_heads: [2, 4, 8]           # 3 values → categorical (avoid divisibility issues)
+      n_layers: [1, 2, 3]          # 3 values → categorical
+      patch_len: [4, 8, 16]        # 3 values → categorical
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  # =========================================================================
+  # SKLEARN MODELS (Traditional ML)
+  # =========================================================================
+  # Sklearn models flatten (lookback × n_delays) into a single feature vector.
+  # They handle the -1 sentinels as numeric features implicitly.
+
+  # - name: LinearRegressionModel
+  #   requires_graph: false
+  #   optuna_model_args:
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  # - name: RidgeModel
+  #   requires_graph: false
+  #   optuna_model_args:
+  #     alpha: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: LassoModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.001, 0.01, 0.1, 1.0, 10.0]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  - name: ElasticNetModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.001, 0.01, 0.1, 1.0, 10.0]
+      l1_ratio: [0.2, 0.5, 0.8]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  - name: RandomForestModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100, 200]
+      max_depth: [5, 10, 20]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  - name: GradientBoostingModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100, 200]
+      max_depth: [3, 5, 7]
+      learning_rate: [0.01, 0.05, 0.1]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: SVRModel
+  #   requires_graph: false
+  #   optuna_model_args:
+  #     C: [0.1, 1.0, 10.0]
+  #     kernel: ['rbf', 'linear']
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: KNNModel
+    requires_graph: false
+    optuna_model_args:
+      n_neighbors: [3, 5, 10]
+      weights: ['uniform', 'distance']
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  - name: DecisionTreeModel
+    requires_graph: false
+    optuna_model_args:
+      max_depth: [5, 10, 20]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # =========================================================================
+  # CHANNEL-DEPENDENT MODELS (Multivariate)
+  # =========================================================================
+  # These models treat each delay column as a separate channel and learn
+  # cross-channel correlations.  Input: (batch, lookback, 28 delay columns).
+  # The -1 sentinel values for unobserved entries are kept as-is; the model
+  # learns to interpret them.  Output: prediction of the last channel.
+
+  - name: iTransformerModel
+    requires_graph: false
+    optuna_model_args:
+      d_model: [32, 64, 128]
+      n_heads: [2, 4, 8]
+      e_layers: [1, 2, 3]
+      dropout: [0.1, 0.3]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: TSMixerModel
+    requires_graph: false
+    optuna_model_args:
+      d_model: [32, 64, 128]
+      e_layers: [1, 2, 3]
+      dropout: [0.1, 0.3]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  - name: FreTSModel
+    requires_graph: false
+    optuna_model_args:
+      embed_size: [64, 128, 256]
+      hidden_size: [128, 256, 512]
+      lookback: [30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [100]
+
+  # =========================================================================
+  # STATISTICAL MODELS
+  # =========================================================================
+  # ARIMA extracts a univariate series from the reporting triangle by taking
+  # the most mature (last valid, non -1) observation per timestep.
+  # Two variants: raw (last valid value) and RKI-corrected (divide by CDF).
+
+  - name: ARIMAModel
+    requires_graph: false
+    n_trials: 5
+    optuna_model_args:
+      p: [1, 2, 3, 4]
+      d: [0, 1]
+      q: [0, 1, 2]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: ARIMA_RKI
+  #   class_name: ARIMAModel
+  #   requires_graph: false
+  #   n_trials: 5
+  #   model_args:
+  #     rki_correct: true
+  #   optuna_model_args:
+  #     p: [1, 2, 3, 4]
+  #     d: [0, 1]
+  #     q: [0, 1, 2]
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  # =========================================================================
+  # NOWCAST-SPECIFIC MODELS
+  # =========================================================================
+
+  - name: RKINowcastModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  - name: NobBSModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      smoothing: [0.2, 0.3, 0.5]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # =========================================================================
+  # FOUNDATION MODELS (Zero-Shot)
+  # =========================================================================
+  # Two variants per model: raw (last valid value) and RKI-corrected.
+
+  - name: ChronosModel
+    requires_graph: false
+    n_trials: 3
+    optuna_model_args:
+      model_name: ['amazon/chronos-t5-small']
+      num_samples: [20]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: Chronos_RKI
+  #   class_name: ChronosModel
+  #   requires_graph: false
+  #   n_trials: 3
+  #   model_args:
+  #     rki_correct: true
+  #   optuna_model_args:
+  #     model_name: ['amazon/chronos-t5-small']
+  #     num_samples: [20]
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: MoiraiModel
+    requires_graph: false
+    n_trials: 3
+    optuna_model_args:
+      model_name: ['Salesforce/moirai-1.0-R-small']
+      num_samples: [100]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: Moirai_RKI
+  #   class_name: MoiraiModel
+  #   requires_graph: false
+  #   n_trials: 3
+  #   model_args:
+  #     rki_correct: true
+  #   optuna_model_args:
+  #     model_name: ['Salesforce/moirai-1.0-R-small']
+  #     num_samples: [100]
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: MomentModel
+    requires_graph: false
+    n_trials: 3
+    optuna_model_args:
+      model_name: ['AutonLab/MOMENT-1-large']
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: Moment_RKI
+  #   class_name: MomentModel
+  #   requires_graph: false
+  #   n_trials: 3
+  #   model_args:
+  #     rki_correct: true
+  #   optuna_model_args:
+  #     model_name: ['AutonLab/MOMENT-1-large']
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: TimesFMModel
+    requires_graph: false
+    n_trials: 3
+    optuna_model_args:
+      model_name: ['google/timesfm-2.0-500m-pytorch']
+      freq: [0]
+      lookback: [30, 45, 62]
+    optimizer_params: {}
+
+  # - name: TimesFM_RKI
+  #   class_name: TimesFMModel
+  #   requires_graph: false
+  #   n_trials: 3
+  #   model_args:
+  #     rki_correct: true
+  #   optuna_model_args:
+  #     model_name: ['google/timesfm-2.0-500m-pytorch']
+  #     freq: [0]
+  #     lookback: [30, 45, 62]
+  #   optimizer_params: {}

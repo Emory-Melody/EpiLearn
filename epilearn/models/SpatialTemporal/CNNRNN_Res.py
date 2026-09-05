@@ -110,7 +110,8 @@ class CNNRNN_Res(BaseModel):
 
         res = F.sigmoid(self.out(res.unsqueeze(-1))).float()
 
-        return res.transpose(2,1)
+        # Return shape: (batch, nodes, horizon) to match target shape
+        return res
     
     def initialize(self):
         for layer in self.children():

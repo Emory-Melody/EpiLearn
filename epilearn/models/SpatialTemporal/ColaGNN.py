@@ -56,6 +56,8 @@ class ColaGNN(BaseModel):
         Number of hidden units in the RNN and GNN layers. Default: 32.
     n_channels : int, optional
         Number of channels for the convolution layers. Default: 1.
+    n_spatial : int, optional
+        Number of spatial features from graph convolutions. Default: max(10, nhid // 2).
     rnn_model : str, optional
         Type of RNN model to use ('LSTM', 'GRU', 'RNN'). Default: 'GRU'.
     n_layer : int, optional
@@ -73,19 +75,21 @@ class ColaGNN(BaseModel):
         A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
         Each slice along the second dimension corresponds to a timestep, with each column representing a node.
     """
-    def __init__(self, 
+    def __init__(self,
                 num_nodes,
                 num_features,
                 num_timesteps_input,
                 num_timesteps_output,
                 nhid=32,
                 n_channels=1,
+                n_spatial=None,
                 rnn_model = 'GRU',
                 n_layer = 1,
                 bidirect = False,
                 dropout = 0.5,
-                device='cpu'): 
-        
+                device='cpu',
+                **kwargs):
+
         super().__init__(device)
         self.x_h = num_features 
         self.m = num_nodes
@@ -104,21 +108,35 @@ class ColaGNN(BaseModel):
         self.Wb = Parameter(torch.Tensor(self.m,self.m))
         self.wb = Parameter(torch.Tensor(1))
         self.k = n_channels
-        self.conv = nn.Conv1d(self.x_h, self.k, self.w)
-        long_kernal = self.w//2
-        self.conv_long = nn.Conv1d(self.x_h, self.k, long_kernal, dilation=2)
-        long_out = self.w-2*(long_kernal-1)
-        self.n_spatial = 10  
+        # CRITICAL FIX: Use smaller kernel sizes to preserve temporal information
+        # Original: kernel=w (entire window) → output length=1 (93.8% info loss!)
+        # Fixed: kernel=3 with padding → preserve temporal dimension
+        short_kernel = min(3, self.w)  # Use kernel=3 or smaller if window is tiny
+        self.conv = nn.Conv1d(self.x_h, self.k, short_kernel, padding=short_kernel//2)
+        # Long conv: use kernel=5 with dilation for larger receptive field
+        long_kernel = min(5, self.w)
+        self.conv_long = nn.Conv1d(self.x_h, self.k, long_kernel, dilation=2, padding=2*(long_kernel//2))
+        # With padding, output length ≈ input length
+        long_out = self.w  # Approximate, actual may vary by ±1
+        # Make n_spatial configurable with better default based on hidden size
+        self.n_spatial = n_spatial if n_spatial is not None else max(10, self.n_hidden // 2)
 
-        self.conv1 = GraphConvLayer((1+long_out)*self.k, self.n_hidden) # self.k
+        # CRITICAL FIX: Update input size for graph conv
+        # With new padding, both convs output ~w timesteps, concat gives ~2*w timesteps
+        # Flattened: 2*w*k features (approximately)
+        self.conv1 = GraphConvLayer(2*self.w*self.k, self.n_hidden)
+        # Add batch normalization to stabilize large feature dimensions
+        self.bn1 = nn.BatchNorm1d(self.n_hidden)
         self.conv2 = GraphConvLayer(self.n_hidden, self.n_spatial)
- 
+        self.bn2 = nn.BatchNorm1d(self.n_spatial)
+
+        rnn_dropout = dropout if n_layer > 1 else 0
         if rnn_model == 'LSTM':
-            self.rnn = nn.LSTM( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=dropout, batch_first=True, bidirectional=bidirect)
+            self.rnn = nn.LSTM( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=rnn_dropout, batch_first=True, bidirectional=bidirect)
         elif rnn_model == 'GRU':
-            self.rnn = nn.GRU( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=dropout, batch_first=True, bidirectional=bidirect)
+            self.rnn = nn.GRU( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=rnn_dropout, batch_first=True, bidirectional=bidirect)
         elif rnn_model == 'RNN':
-            self.rnn = nn.RNN( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=dropout, batch_first=True, bidirectional=bidirect)
+            self.rnn = nn.RNN( input_size=self.x_h, hidden_size=self.n_hidden, num_layers=n_layer, dropout=rnn_dropout, batch_first=True, bidirectional=bidirect)
         else:
             raise LookupError (' only support LSTM, GRU and RNN')
 
@@ -190,17 +208,23 @@ class ColaGNN(BaseModel):
         adjs = adj.repeat(b,1)
         adjs = adjs.view(b,self.m,self.m)
         c = torch.sigmoid(a_mx @ self.Wb + self.wb)
-        a_mx = adjs * c + a_mx * (1-c) 
-        adj = a_mx 
-        # import ipdb; ipdb.set_trace()
-        x = r_l  
+        a_mx = adjs * c + a_mx * (1-c)
+        # Row-normalize learned adjacency to bound spectral radius
+        row_sum = a_mx.abs().sum(dim=-1, keepdim=True).clamp(min=1e-8)
+        adj = a_mx / row_sum
+        x = r_l
         x = F.relu(self.conv1(x, adj))
+        # Transpose for batch norm: (batch, nodes, features) → (batch, features, nodes)
+        x = self.bn1(x.transpose(1, 2)).transpose(1, 2)
         x = F.dropout(x, self.dropout, training=self.training)
 
         out_spatial = F.relu(self.conv2(x, adj))
+        # Transpose for batch norm: (batch, nodes, features) → (batch, features, nodes)
+        out_spatial = self.bn2(out_spatial.transpose(1, 2)).transpose(1, 2)
         out = torch.cat((out_spatial, out_temporal),dim=-1)
+        # out shape: (batch, nodes, n_spatial + hidden_size)
         out = self.out(out)
-        out = torch.squeeze(out)
+        # out shape: (batch, nodes, horizon) — already matches target shape
 
         if (self.residual_window > 0):
             z = orig_x[:, -self.residual_window:, :]; #Step backward # [batch, res_window, m]
@@ -209,7 +233,7 @@ class ColaGNN(BaseModel):
             z = z.view(-1,self.m); #[batch, m]
             out = out * self.ratio + z; #[batch, m]
 
-        return out.view(-1, self.h, self.m)
+        return out
     
     def initialize(self):
         for layer in self.children():

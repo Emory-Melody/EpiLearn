@@ -169,7 +169,6 @@ def Static(n, t, A, rho_IT, rho_CT1, rho_CT2):
     :param rho_CT2: the trainable paramter of the historical states of neighbors
     :return: a space-time dependency structure matrix
     """
-    import ipdb; ipdb.set_trace()
     I_S = torch.diag_embed(torch.ones(n)).to(A.device)
     I_T = torch.diag_embed(torch.ones(t)).to(A.device)
 
@@ -232,8 +231,6 @@ class Coarse_module(nn.Module):
         self.Gate_CT = STNB_layer(self.tot_nodes, num_timestamps, input_size)
 
     def forward(self, his_raw_features, interven, adj):
-        import ipdb; ipdb.set_trace()
-
         features = his_raw_features.contiguous().view(-1, self.input_size)
         A_IT = Static(self.tot_nodes, self.num_timestamps, adj, rho_IT=1, rho_CT1=0, rho_CT2=0)     # current states of neighbors
         A_CS = Static(self.tot_nodes, self.num_timestamps, adj, rho_IT=0, rho_CT1=1, rho_CT2=0)     # historical states of self
@@ -402,7 +399,6 @@ class DASTGN(BaseModel):
 
                 coarse_matrix = self.Coarse_module(features, intervention, adj)            # NT * NT
                 fine_matrix = self.Fine_module(features, adj)                                 # NT * NT
-                import ipdb; ipdb.set_trace()
                 A_temporal = coarse_matrix * fine_matrix                                        # final ST weighted matrix
                 D_temporal = Degree_Matrix(A_temporal)
 

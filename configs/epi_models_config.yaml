@@ -1,0 +1,117 @@
+# =============================================================================
+# EpiLearn Benchmark: Epidemiologically-Informed Models
+# =============================================================================
+# Dedicated config for EINN, EpiDeep, and CALI-Net.
+# All settings match benchmark_config.yaml for comparability.
+#
+# Usage: python run_benchmark.py --config configs/epi_models_config.yaml
+
+task: forecast
+
+# -----------------------------------------------------------------------------
+# Dataset Configuration (same as benchmark_config.yaml)
+# -----------------------------------------------------------------------------
+dataset:
+  feature_path: "./datasets/toy_features.csv"
+  graph_path: "./datasets/toy_edges.csv"
+  timestamp_col: "time"
+  region_col: "node"
+  feature_cols: ["f1", "f2", "f3", "y"]
+  target_cols: ["y"]
+
+  transforms:
+    normalize_features: false
+    normalize_target: false
+    normalize_graph: true
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings (same as benchmark_config.yaml)
+# -----------------------------------------------------------------------------
+evaluation:
+  lookback: 53
+  horizon: 4
+  train_size: 104
+  val_size: 52
+  test_size: 104
+  step_size: 52
+  max_folds: null
+
+  use_optuna: true
+  n_trials: 15
+
+  patience: 15
+  conformal_alpha: 0.1
+  verbose: false
+  seed: 42
+
+# -----------------------------------------------------------------------------
+# Parallel Execution
+# -----------------------------------------------------------------------------
+parallel:
+  enable: true
+  gpu_ids: null
+  workers_per_gpu: 2
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  save_path: "./benchmark_results/forecast_epi_models/"
+
+# -----------------------------------------------------------------------------
+# Epidemiologically-Informed Models
+# -----------------------------------------------------------------------------
+
+models:
+
+  # -------------------------------------------------------------------------
+  # EINN: Epidemiologically-Informed Neural Networks (Rodriguez et al. 2023)
+  # Physics-informed: GRU+attention encoder + SEIR soft ODE regularizer
+  # -------------------------------------------------------------------------
+  - name: EINNModel
+    requires_graph: false
+    optuna_model_args:
+      hidden_dim: [20, 40, 64]
+      ode_lambda: [0.001, 0.01, 0.1, 1.0]
+      n_layers: [1, 2]
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  # -------------------------------------------------------------------------
+  # EpiDeep: Deep Learning with Clustering (Adhikari et al. 2019)
+  # Dual autoencoder + KMeans clustering + LSTM with attention
+  # -------------------------------------------------------------------------
+  - name: EpiDeepModel
+    requires_graph: false
+    optuna_model_args:
+      hidden_dim: [10, 20, 40]
+      n_clusters: [3, 4, 5, 6]
+      seq_len: [3, 5, 8]
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  # -------------------------------------------------------------------------
+  # CALI-Net: Calibration-Aware Learning (Kamarthi et al. 2022)
+  # EpiDeep + domain adaptation via knowledge distillation
+  # -------------------------------------------------------------------------
+  - name: CALINetModel
+    requires_graph: false
+    optuna_model_args:
+      hidden_dim: [10, 20, 40]
+      n_clusters: [3, 4, 5]
+      calib_dim: [8, 16, 32]
+      alpha_kd: [0.01, 0.05, 0.1]
+      lookback: [8, 16, 32, 48]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]

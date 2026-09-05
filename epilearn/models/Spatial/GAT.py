@@ -193,11 +193,11 @@ class GAT(BaseModel):
         self.dropout = dropout
         self.with_bn = with_bn
 
-    def forward(self, x, edge_index, edge_weight):
+    def forward(self, X, edge_index, edge_weight=None):
         """
         Parameters
         ----------
-        x : torch.Tensor
+        X : torch.Tensor
             Input features tensor with shape (num_nodes, num_features).
         edge_index : torch.Tensor
             Tensor defining the edges of the graph with shape (2, num_edges), where each column represents an edge as a pair of node indices.
@@ -210,7 +210,7 @@ class GAT(BaseModel):
             Output tensor of shape (num_nodes, num_classes), representing the predicted values for each node.
         """
         #x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
-        x = torch.reshape(x, (x.shape[0], -1))
+        x = torch.reshape(X, (X.shape[0], -1))
 
         for i, layer in enumerate(self.layers):
             if edge_weight is not None:

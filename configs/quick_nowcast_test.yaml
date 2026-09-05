@@ -1,0 +1,130 @@
+# Quick nowcast pipeline test — verifies multivariate + RKI variants
+# -----------------------------------------------------------------------------
+# REQUIRES DATA THAT IS NOT SHIPPED WITH THE PACKAGE
+# -----------------------------------------------------------------------------
+# This config reads ./epilearn/data/nowcast_ready_data.npz, a COVID-19 reporting
+# triangle from the CMU Delphi Epidata API. EpiLearn does not redistribute it.
+# Regenerate it from the original source with:
+#
+#   python datasets/build_nowcast_triangle.py -o epilearn/data/nowcast_ready_data.npz
+#
+# (source: hospital-admissions / smoothed_adj_covid19_from_claims; see that
+# script's docstring for the API, licensing and citation details.)
+# For a runnable nowcasting example needing no data at all, see tests/nowcast.py.
+# -----------------------------------------------------------------------------
+task: nowcast
+
+dataset:
+  triangle_path: "./epilearn/data/nowcast_ready_data.npz"
+  min_delay: 3
+  max_delay: 30
+
+evaluation:
+  lookback: 62
+  horizon: 7
+  train_size: 400
+  val_size: 50
+  test_size: 50
+  step_size: 400
+  max_folds: 1
+  use_optuna: true
+  n_trials: 2
+  patience: 10
+  conformal_alpha: 0.1
+  verbose: false
+
+parallel:
+  enable: false
+
+output:
+  save_path: "./benchmark_results/nowcast_quick_test/"
+
+models:
+  # --- Nowcast-specific ---
+  - name: RKINowcastModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      lookback: [62]
+    optimizer_params: {}
+
+  - name: NobBSModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      smoothing: [0.3]
+      lookback: [62]
+    optimizer_params: {}
+
+  # --- Channel-dependent (multivariate) ---
+  - name: iTransformerModel
+    requires_graph: false
+    optuna_model_args:
+      d_model: [64]
+      n_heads: [4]
+      e_layers: [2]
+      dropout: [0.1]
+      lookback: [62]
+    optimizer_params:
+      lr: [0.001]
+      batch_size: [32]
+      weight_decay: [0.01]
+      epochs: [15]
+
+  - name: TSMixerModel
+    requires_graph: false
+    optuna_model_args:
+      d_model: [64]
+      e_layers: [2]
+      dropout: [0.1]
+      lookback: [62]
+    optimizer_params:
+      lr: [0.001]
+      batch_size: [32]
+      weight_decay: [0.01]
+      epochs: [15]
+
+  - name: FreTSModel
+    requires_graph: false
+    optuna_model_args:
+      embed_size: [128]
+      hidden_size: [256]
+      lookback: [62]
+    optimizer_params:
+      lr: [0.001]
+      batch_size: [32]
+      weight_decay: [0.01]
+      epochs: [15]
+
+  # --- ARIMA: raw vs RKI ---
+  - name: ARIMAModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      p: [2]
+      d: [0]
+      q: [1]
+      lookback: [62]
+    optimizer_params: {}
+
+  - name: ARIMA_RKI
+    class_name: ARIMAModel
+    requires_graph: false
+    n_trials: 1
+    model_args:
+      rki_correct: true
+    optuna_model_args:
+      p: [2]
+      d: [0]
+      q: [1]
+      lookback: [62]
+    optimizer_params: {}
+
+  # --- Ridge baseline ---
+  - name: RidgeModel
+    requires_graph: false
+    n_trials: 1
+    optuna_model_args:
+      alpha: [1.0]
+      lookback: [62]
+    optimizer_params: {}

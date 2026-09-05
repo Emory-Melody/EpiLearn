@@ -10,7 +10,7 @@ from ...utils.utils import *
 from ...utils.metrics import get_loss
 
 class BaseModel(nn.Module):
-    def __init__(self, device = 'cpu'):
+    def __init__(self, device = 'cpu', **kwargs):
         super(BaseModel, self).__init__()
         self.device = device
 
@@ -36,7 +36,7 @@ class BaseModel(nn.Module):
             **kwargs):
         if initialize:
             self.initialize()
-        
+
         optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay)
         loss_fn = get_loss(loss)
 
@@ -44,7 +44,8 @@ class BaseModel(nn.Module):
         validation_losses = []
         early_stopping = patience
         best_val = float('inf')
-        for epoch in tqdm(range(epochs)):
+        best_weights = deepcopy(self.state_dict())  # Initialize with current weights
+        for epoch in tqdm(range(epochs), disable=True):  # disable=True to prevent multiprocessing deadlock
             
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, feature = train_input,  target = train_target, batch_size = batch_size, device = self.device)
             training_losses.append(loss)
@@ -79,11 +80,12 @@ class BaseModel(nn.Module):
         print("\n")
         print("Final Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
+        # Plotting disabled to prevent deadlock in multiprocessing
         # plt.figure()
         # plt.plot(training_losses, label="train")
         # plt.plot(validation_losses, label="val")
         # plt.legend()
-        # plt.savefig("loss.png")
+        # plt.savefig("t_loss.png")
         # plt.show()
 
         self.load_state_dict(best_weights)
@@ -99,6 +101,7 @@ class BaseModel(nn.Module):
         :param batch_size: Batch size to use during training.
         :return: Average loss for this epoch.
         """
+        # import ipdb; ipdb.set_trace()
         permutation = torch.randperm(feature.shape[0])
         epoch_training_losses = []
         for i in range(0, feature.shape[0], batch_size):
@@ -111,7 +114,7 @@ class BaseModel(nn.Module):
             y_batch = y_batch.to(device=device)
             
             out = self.forward(X_batch)
-            loss = loss_fn(out.reshape(y_batch.shape), y_batch)
+            loss = loss_fn(out.reshape(y_batch.shape) if type(out) is not dict else out, y_batch)
             loss.backward()
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
@@ -124,7 +127,7 @@ class BaseModel(nn.Module):
             target = target.to(device=device)
 
             out = self.forward(feature)
-            val_loss = loss_fn(out.reshape(target.shape), target)
+            val_loss = loss_fn(out.reshape(target.shape) if type(out) is not dict else out, target)
             val_loss = val_loss.detach().cpu().numpy().item()
             
             return val_loss, out
@@ -133,9 +136,22 @@ class BaseModel(nn.Module):
         """
         Returns
         -------
-        torch.FloatTensor
+        torch.FloatTensor or dict
+            If the model returns a tensor, returns the tensor.
+            If the model returns a dictionary (e.g., with uncertainty estimates),
+            returns the dictionary with all tensors moved to CPU.
         """
         self.eval()
-        result = self.forward(feature.to(self.device))
-
-        return result.detach().cpu()
+        with torch.no_grad():
+            result = self.forward(feature.to(self.device))
+            
+            if isinstance(result, dict):
+                # Handle dictionary output (e.g., with uncertainty)
+                return {key: value.detach().cpu() for key, value in result.items()}
+            elif isinstance(result, tuple):
+                # Handle tuple output (e.g., (output, uncertainty_dict))
+                output, uncertainty_dict = result
+                return output.detach().cpu(), {key: value.detach().cpu() for key, value in uncertainty_dict.items()}
+            else:
+                # Handle simple tensor output
+                return result.detach().cpu() 

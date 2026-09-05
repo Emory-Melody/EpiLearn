@@ -85,6 +85,6 @@ def plot_graph(states: np.array, graph : np.array, classes=None, layout=None):
 
 
     plt.legend(handles=patches)
-    plt.show()
+    # plt.show()  # Disabled - use plt.savefig() instead for headless environments
 
     return pos

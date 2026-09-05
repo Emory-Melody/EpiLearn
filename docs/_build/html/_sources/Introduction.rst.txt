@@ -1,4 +1,0 @@
-Introduction
-============
-
-Introduction for Epilearn

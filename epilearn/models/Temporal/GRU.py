@@ -29,29 +29,29 @@ class GRUModel(BaseModel):
             Each element corresponds to a predicted value for a future timestep.
             
         """
-    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhid=256, dropout=0.5, use_norm=False, device='cpu'):
+    def __init__(self, num_features, num_timesteps_input, num_timesteps_output, nhids=256, dropout=0.5, use_norm=False, device='cpu', **kwargs):
         super(GRUModel, self).__init__(device=device)
         self.num_features = num_features
         self.num_timesteps_input = num_timesteps_input
         self.num_timesteps_output = num_timesteps_output
-        self.nhid = nhid
+        self.nhids = nhids
         self.dropout = dropout
         self.use_norm = use_norm
 
         # GRU layer
-        self.gru = nn.GRU(num_features, nhid, batch_first=True)
+        self.gru = nn.GRU(num_features, nhids, batch_first=True)
 
         # Optional normalization
         if self.use_norm:
-            self.norm = nn.LayerNorm(nhid)
+            self.norm = nn.LayerNorm(nhids)
 
         # Dropout layer
         self.dropout_layer = nn.Dropout(dropout)
 
         # Output layer
-        self.out = nn.Linear(nhid, num_timesteps_output)
+        self.out = nn.Linear(nhids, num_timesteps_output)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """
         Parameters
         ----------
@@ -71,6 +71,8 @@ class GRUModel(BaseModel):
             for a future timestep.
         """
 
+        if x.dim() == 2:
+            x = x.unsqueeze(0)  # (timesteps, features) -> (1, timesteps, features)
         gru_out, _ = self.gru(x)
 
         if self.use_norm:

@@ -1,225 +1,197 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Temporal models without a Task (EpiLearn 0.1.0).
 
-# In[1]:
+The Forecast / Detection / Nowcast tasks wrap a lot of bookkeeping. This example
+does the same work by hand, which is what you want when you are debugging a model
+or plugging EpiLearn's model zoo into your own training loop:
 
+    set_transforms(..., apply_now=True) -> get_process_history()
+        -> generate_dataset() -> model.fit() -> model.predict() -> denormalize
+
+Note that ``Dataset.get_transformed()`` and ``Compose.feat_mean`` / ``.feat_std``
+were removed in 0.1.0; the replacements are ``apply_transforms()`` and the
+``get_process_history()`` dict.
+
+Run it with::
+
+    python examples/temporal.py
+"""
+
+import os
+import sys
+
+EXAMPLE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(EXAMPLE_DIR)
+sys.path.append(os.path.dirname(EXAMPLE_DIR))
+# load_toy_dataset() resolves './datasets' relative to the working directory.
+os.chdir(REPO_ROOT)          # so "./datasets" resolves (load_toy_dataset reads it from cwd)
 
 import torch
-import os
 import matplotlib.pyplot as plt
-os.chdir("..")
-
 
 from epilearn.models.Temporal.LSTM import LSTMModel
 from epilearn.models.Temporal.GRU import GRUModel
 from epilearn.models.Temporal.Dlinear import DlinearModel
-from epilearn.models.Temporal.XGB import XGBModel
-from epilearn.models.Temporal.ARIMA import VARMAXModel
+# 0.0.x path epilearn.models.Temporal.ARIMA is now Temporal.StatsModel
+from epilearn.models.Temporal.StatsModel import VARMAXModel, ARIMAModel, SeasonalNaiveModel
 
-from epilearn.data import UniversalDataset
-from epilearn.utils import utils, transforms
+from epilearn.data import Dataset
+from epilearn.utils import metrics, transforms
 
-# initial settings
+
+# ### Configs
+
 device = torch.device('cpu')
 torch.manual_seed(7)
 
-lookback = 12 # inputs size
-horizon = 3 # predicts size
+lookback = 12   # input size
+horizon = 3     # prediction size
+
+epochs = 20
+batch_size = 50
+
+region = 0      # temporal models see one region at a time
 
 
-permute = False
+# ### Load and transform the dataset
 
-epochs = 50 # training epochs
-batch_size = 50 # training batch size
-
-
-# In[2]:
-
-
-# load toy dataset
-dataset = UniversalDataset()
+dataset = Dataset()              # 0.0.x called this UniversalDataset
 dataset.load_toy_dataset()
 
-# initialize transforms
 transformation = transforms.Compose({
-                                    'features': [
-                                                    transforms.normalize_feat(),
+    'features': [transforms.normalize_feat()],
+    'target': [transforms.normalize_target()],
+    'graph': [transforms.normalize_adj()],
+    'states': [],
+})
 
-                                                ],
-                                    "target": [transforms.normalize_feat()],
-                                    'graph': [
-                                                transforms.normalize_adj(),
-                                                    
-                                            ],
-                                    'dynamic_graph': [
-                                                        transforms.normalize_adj(),
-                                                    
-                                                    ],
-                                    'states': []
-                                    })
+# apply_now=True normalizes dataset.x / .y / .graph / .dynamic_graph in place.
+dataset.set_transforms(transformation, apply_now=True)
 
-# preprocessing dataset
-dataset.transforms = transformation
+# The normalization statistics live in the process-history dict (0.0.x read them
+# off transformation.feat_mean / .feat_std, which no longer exist).
+stats = dataset.get_process_history()
+print("process history keys:", sorted(stats.keys()))
+target_mean = float(stats['target_mean'])
+target_std = float(stats['target_std'])
 
-features, target, adj_norm, adj_dynamic_norm, states = dataset.get_transformed().values()
-mean, std = dataset.transforms.feat_mean, dataset.transforms.feat_std
+features = dataset.x.to(device)
+target = dataset.y.to(device)
+states = dataset.states.to(device)
 
-features = features.to(device)
-adj_norm = adj_norm.to(device)
-adj_dynamic_norm = adj_dynamic_norm.to(device)
 
-# split data
-train_rate = 0.6 
+# ### Split the data by time
+
+train_rate = 0.6
 val_rate = 0.2
-
-target_feat_idx = None
-target_idx = None
 
 split_line1 = int(features.shape[0] * train_rate)
 split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
 
-train_original_input = features[:split_line1, :, :]
-val_original_input = features[split_line1:split_line2, :, :]
-test_original_input = features[split_line2:, :, :]
+def make_split(start, end):
+    # generate_dataset returns a DICT: features / targets / states / dynamic_graph / graph
+    # (0.0.x unpacked a 4-tuple here). A temporal model ignores the graphs, so we
+    # do not bother passing dynamic_adj.
+    return dataset.generate_dataset(X=features[start:end],
+                                    Y=target[start:end],
+                                    states=states[start:end],
+                                    adj=dataset.graph,
+                                    lookback_window_size=lookback,
+                                    horizon_size=horizon)
 
-train_original_target = target[:split_line1, :]
-val_original_target = target[split_line1:split_line2, :]
-test_original_target = target[split_line2:, :]
 
-train_original_states = dataset.states[:split_line1, :, :]
-val_original_states = dataset.states[split_line1:split_line2, :, :]
-test_original_states = dataset.states[split_line2:, :, :]
+train_split = make_split(0, split_line1)
+val_split = make_split(split_line1, split_line2)
+test_split = make_split(split_line2, features.shape[0])
+print({k: tuple(v.shape) for k, v in train_split.items() if v is not None})
+
+# Keep a single region: features (samples, lookback, channels), target (samples, horizon)
+train_input = train_split['features'][:, :, region, :]
+train_target = train_split['targets'][:, region, :]
+
+val_input = val_split['features'][:, :, region, :]
+val_target = val_split['targets'][:, region, :]
+
+test_input = test_split['features'][:, :, region, :]
+test_target = test_split['targets'][:, region, :]
+
+print(f"train_input {tuple(train_input.shape)} (samples, timesteps, features)")
 
 
-train_input, train_target, train_states, train_adj = dataset.generate_dataset(X = train_original_input, Y = train_original_target, states = train_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-val_input, val_target, val_states, val_adj = dataset.generate_dataset(X = val_original_input, Y = val_original_target, states = val_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-test_input, test_target, test_states, test_adj = dataset.generate_dataset(X = test_original_input, Y = test_original_target, states = test_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
+# ### Prepare the model
+# Any Temporal model works here; XGBModel was dropped in 0.1.0, and the modern
+# alternatives are the scikit-learn wrappers in epilearn.models.Temporal.ScikitModel.
 
-# Selecting the first region for both input and target
-train_input = train_input[:, :, 0, :]  # Selecting the first region across all timesteps and features
-train_target = train_target[:, :, 0]  # Selecting the first region for the target
+model = GRUModel(num_features=train_input.shape[2],
+                 num_timesteps_input=lookback,
+                 num_timesteps_output=horizon,
+                 nhid=32).to(device)
 
-val_input = val_input[:, :, 0, :]
-val_target = val_target[:, :, 0]
+# model = LSTMModel(num_features=train_input.shape[2],
+#                   num_timesteps_input=lookback,
+#                   num_timesteps_output=horizon).to(device)
 
-test_input = test_input[:, :, 0, :]
-test_target = test_target[:, :, 0]
-
-# shape of train_input: (num_samples, num_timesteps, num_features)
-
-# prepare model
-
-# model = GRUModel(
-#             num_features=train_input.shape[2],
-#             num_timesteps_input=lookback,
-#             num_timesteps_output=horizon
-#             ).to(device=device)
-
-model = XGBModel(num_features=train_input.shape[2],
-            num_timesteps_input=lookback,
-            num_timesteps_output=horizon)
-
-model = XGBModel(
-    num_features=train_input.shape[2],
-    num_timesteps_input=lookback,
-    num_timesteps_output=horizon,
-    n_estimators=40,        
-    learning_rate=0.1,        
-    max_depth=5,               
-    reg_lambda=1.0,
-    reg_alpha=0.1              
-)
+# model = DlinearModel(num_features=train_input.shape[2],
+#                      num_timesteps_input=lookback,
+#                      num_timesteps_output=horizon).to(device)
 
 # model = VARMAXModel(num_features=train_input.shape[2],
-#             num_timesteps_input=lookback,
-#             num_timesteps_output=horizon)
-
-# model = LSTMModel(
-#             num_features = train_input.shape[2],
-#             num_timesteps_input = lookback,
-#             num_timesteps_output = horizon
-#             ).to(device = device)
+#                     num_timesteps_input=lookback,
+#                     num_timesteps_output=horizon)
 
 
-# model = DlinearModel(
-#             num_features=train_input.shape[2],
-#             num_timesteps_input=lookback,
-#             num_timesteps_output=horizon
-#             ).to(device=device)
+# ### Train
+
+model.fit(train_input=train_input,
+          train_target=train_target,
+          val_input=val_input,
+          val_target=val_target,
+          verbose=True,
+          batch_size=batch_size,
+          epochs=epochs)
 
 
+# ### Evaluate
+# Metrics are NOT auto-denormalized in 0.1.0, so undo normalize_target() by hand.
+
+out = model.predict(feature=test_input)
+preds = out.detach().cpu() * target_std + target_mean
+targets = test_target.detach().cpu() * target_std + target_mean
+print(f"GRU MAE: {metrics.get_MAE(preds, targets).item():.4f}")
+
+# A statistical baseline for reference: fit() is a no-op, predict() fits per window.
+baseline = SeasonalNaiveModel(num_features=test_input.shape[2],
+                              num_timesteps_input=lookback,
+                              num_timesteps_output=horizon,
+                              season_length=lookback)
+baseline_out = baseline.predict(feature=test_input)
+baseline_preds = baseline_out.detach().cpu() * target_std + target_mean
+print(f"SeasonalNaive MAE: {metrics.get_MAE(baseline_preds, targets).item():.4f}")
 
 
-
-# In[3]:
-
-
-train_input.shape
-
-
-# In[4]:
-
-
-# training
-model.fit(
-        train_input = train_input, 
-        train_target = train_target, 
-        # graph = adj_norm, 
-        val_input = val_input, 
-        val_target = val_target, 
-        verbose = True,
-        batch_size = batch_size,
-        epochs = epochs)
-
-
-# In[5]:
-
-
-def get_MAE(pred, target):
-    return torch.mean(torch.absolute(pred - target))
-
-# evaluate
-out = model.predict(feature = test_input)
-preds = out.detach().cpu() * std[0] + mean[0]
-targets = test_target.detach().cpu() * std[0] + mean[0]
-# MAE
-mae = get_MAE(preds, targets)
-print(f"MAE: {mae.item()}")
-
-
-
-# In[6]:
-
-
-import matplotlib.pyplot as plt
-import torch
+# ### Visualize the fit on the training window
 
 out = model.predict(feature=train_input).detach().cpu()
 
-
-# In[7]:
-
-
-num_samples = 40  # Number of samples to display
-time_points = 3  # Each sample predicts the next 3 time points
+num_samples = 40    # number of samples to display
+time_points = horizon
 
 plt.figure(figsize=(15, 5))
 for t in range(time_points):
-    plt.subplot(1, 3, t + 1)
-    
-    # Gather all predictions and actual values for the t-th future time point across the first 40 samples
+    plt.subplot(1, time_points, t + 1)
+
     predictions = out[:num_samples, t]
     truths = train_target[:num_samples, t]
 
-    # Plotting the predictions and ground truth values
     plt.plot(range(num_samples), predictions.numpy(), 'r-', label='Prediction')
     plt.plot(range(num_samples), truths.numpy(), 'b--', label='Ground Truth')
     plt.title(f"Time Point {t + 1}")
     plt.xlabel("Sample Index")
-    plt.ylabel("Value")
+    plt.ylabel("Value (normalized)")
     plt.legend()
 
 plt.tight_layout()
 plt.show()
-

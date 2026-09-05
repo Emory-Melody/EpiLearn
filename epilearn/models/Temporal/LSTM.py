@@ -47,7 +47,7 @@ class LSTMModel(BaseModel):
 
         self.out = nn.Linear(nhid, num_timesteps_output)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """
         Parameters
         ----------

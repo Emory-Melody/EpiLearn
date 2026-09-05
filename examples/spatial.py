@@ -1,210 +1,187 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Spatial models without a Task (EpiLearn 0.1.0).
 
-# In[1]:
+Same manual pipeline as examples/temporal.py, but for the graph models in
+``epilearn.models.Spatial``: they consume one timestep of node features at a time,
+shaped (samples, nodes, channels), plus a static adjacency matrix.
+
+0.1.0 notes:
+  * ``Dataset.get_transformed()`` is gone -> ``set_transforms(..., apply_now=True)``
+  * ``Compose.feat_mean`` / ``.feat_std`` are gone -> ``get_process_history()``
+  * ``generate_dataset`` returns a DICT, and its ``permute`` flag flipped meaning:
+    the new default ``permute=False`` is the old ``permute=True``.
+
+Run it with::
+
+    python examples/spatial.py
+"""
+
+import os
+import sys
+
+EXAMPLE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(EXAMPLE_DIR)
+sys.path.append(os.path.dirname(EXAMPLE_DIR))
+# load_toy_dataset() resolves './datasets' relative to the working directory.
+os.chdir(REPO_ROOT)          # so "./datasets" resolves (load_toy_dataset reads it from cwd)
 
 import torch
-import os
 import matplotlib.pyplot as plt
-import sys
-import os
 
-# Get the current script directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Move to the parent directory
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
-# Change the working directory (optional, if needed)
-os.chdir(parent_dir)
-
-from epilearn.models.SpatialTemporal.STGCN import STGCN
 from epilearn.models.Spatial.GCN import GCN
 from epilearn.models.Spatial.GAT import GAT
 from epilearn.models.Spatial.SAGE import SAGE
 from epilearn.models.Spatial.GIN import GIN
 
+from epilearn.data import Dataset
+from epilearn.utils import metrics, transforms
 
 
-from epilearn.data import UniversalDataset
-from epilearn.utils import utils, metrics
-from epilearn.utils import transforms
+# ### Configs
 
-# initial settings
 device = torch.device('cpu')
 torch.manual_seed(7)
 
-lookback = 12 # inputs size
-horizon = 3 # predicts size
+lookback = 12   # input size
+horizon = 3     # prediction size
 
-# permutation is True when using STGCN
-permute = True
-
-epochs = 50 # training epochs
-batch_size = 50 # training batch size
-
-# In[2]:
+epochs = 10
+batch_size = 32
 
 
-# load toy dataset
-dataset = UniversalDataset()
+# ### Load and transform the dataset
+
+dataset = Dataset()              # 0.0.x called this UniversalDataset
 dataset.load_toy_dataset()
+dataset.dynamic_graph = None     # spatial models only use the static graph
 
-# initialize transforms
 transformation = transforms.Compose({
-                                        'features': [
-                                                    transforms.normalize_feat(),
+    'features': [transforms.normalize_feat()],
+    'target': [transforms.normalize_target()],
+    'graph': [transforms.normalize_adj()],
+    'states': [],
+})
+dataset.set_transforms(transformation, apply_now=True)
 
-                                                ],
-                                        "target": [transforms.normalize_feat()],
-                                        'graph': [
-                                                transforms.normalize_adj(),
-                                                    
-                                            ],
-                                        'dynamic_graph': [
-                                                        transforms.normalize_adj(),
-                                                    
-                                                    ],
-                                        'states': []
-                                    })
+stats = dataset.get_process_history()
+target_mean = float(stats['target_mean'])
+target_std = float(stats['target_std'])
+
+features = dataset.x.to(device)
+target = dataset.y.to(device)
+adj_norm = dataset.graph.to(device)
 
 
-# preprocessing dataset
-dataset.transforms = transformation
+# ### Split the data by time
 
-features, target, adj_norm, adj_dynamic_norm, states = dataset.get_transformed().values()
-mean, std = dataset.transforms.feat_mean, dataset.transforms.feat_std
-
-features = features.to(device)
-adj_norm = adj_norm.to(device)
-adj_dynamic_norm = adj_dynamic_norm.to(device)
-
-# split data
-train_rate = 0.6 
+train_rate = 0.6
 val_rate = 0.2
-
-target_feat_idx = None
-target_idx = None
 
 split_line1 = int(features.shape[0] * train_rate)
 split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
-train_original_input = features[:split_line1, :, :]
-val_original_input = features[split_line1:split_line2, :, :]
-test_original_input = features[split_line2:, :, :]
 
-train_original_target = target[:split_line1, :]
-val_original_target = target[split_line1:split_line2, :]
-test_original_target = target[split_line2:, :]
-
-train_original_states = dataset.states[:split_line1, :, :]
-val_original_states = dataset.states[split_line1:split_line2, :, :]
-test_original_states = dataset.states[split_line2:, :, :]
+def make_split(start, end):
+    return dataset.generate_dataset(X=features[start:end],
+                                    Y=target[start:end],
+                                    adj=adj_norm,
+                                    lookback_window_size=lookback,
+                                    horizon_size=horizon)
 
 
-train_input, train_target, train_states, train_adj = dataset.generate_dataset(X = train_original_input, Y = train_original_target, states = train_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-val_input, val_target, val_states, val_adj = dataset.generate_dataset(X = val_original_input, Y = val_original_target, states = val_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-test_input, test_target, test_states, test_adj = dataset.generate_dataset(X = test_original_input, Y = test_original_target, states = test_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
+train_split = make_split(0, split_line1)
+val_split = make_split(split_line1, split_line2)
+test_split = make_split(split_line2, features.shape[0])
+print({k: tuple(v.shape) for k, v in train_split.items() if v is not None})
 
-# prepare model
+# features: (samples, lookback, nodes, channels) -> take the first timestep of
+# each window, giving the (samples, nodes, channels) a spatial model expects.
+# targets: (samples, nodes, horizon)
+train_input, train_target = train_split['features'][:, 0], train_split['targets']
+val_input, val_target = val_split['features'][:, 0], val_split['targets']
+test_input, test_target = test_split['features'][:, 0], test_split['targets']
+print(f"train_input {tuple(train_input.shape)} (samples, nodes, channels)")
 
-model = GCN(num_features=train_input.shape[3],
-        hidden_dim=16,
-        num_classes=horizon,
-        nlayers=2, with_bn=True,
-        dropout=0.3, device=device)
 
-'''model = GAT(num_features=train_input.shape[3],
-        hidden_dim=16,
-        num_classes=horizon,
-        nlayers=2, with_bn=True, nheads=[2,4], concat=True,
-        dropout=0.3, device=device)'''
+# ### Prepare the model
 
-'''model = SAGE(num_features=train_input.shape[2]*train_input.shape[3],
-        hidden_dim=16,
-        num_classes=horizon,
-        nlayers=1, with_bn=True, aggr="mean",
-        dropout=0.3, device=device)'''
+model = GCN(num_features=train_input.shape[-1],
+            hidden_dim=16,
+            num_classes=horizon,
+            nlayers=2, with_bn=True,
+            dropout=0.3, device=device)
 
-'''model = GIN(num_features=train_input.shape[2]*train_input.shape[3],
-        hidden_dim=16,
-        num_classes=horizon,
-        nlayers=2, 
-        dropout=0.3, device=device)'''
+# model = GAT(num_features=train_input.shape[-1],
+#             hidden_dim=16,
+#             num_classes=horizon,
+#             nlayers=2, with_bn=True, nheads=[2, 4], concat=True,
+#             dropout=0.3, device=device)
 
+# model = SAGE(num_features=train_input.shape[-1],
+#              hidden_dim=16,
+#              num_classes=horizon,
+#              nlayers=1, with_bn=True, aggr="mean",
+#              dropout=0.3, device=device)
+
+# model = GIN(num_features=train_input.shape[-1],
+#             hidden_dim=16,
+#             num_classes=horizon,
+#             nlayers=2,
+#             dropout=0.3, device=device)
 
 model = model.to(device)
 
 
-# In[3]:
+# ### Train
+
+model.fit(train_input=train_input,
+          train_target=train_target,
+          train_states=None,
+          train_graph=adj_norm,
+          train_dynamic_graph=None,
+          val_input=val_input,
+          val_target=val_target,
+          val_states=None,
+          val_graph=adj_norm,
+          val_dynamic_graph=None,
+          loss='mse',
+          epochs=epochs,
+          batch_size=batch_size,
+          lr=1e-3,
+          weight_decay=1e-3,
+          initialize=True,
+          verbose=True,
+          patience=10,
+          shuffle=False)
 
 
-# training
-model.fit(
-        train_input=train_input[..., 0,:], 
-        train_target=train_target, 
-        train_states=None, 
-        train_graph=adj_norm, 
-        train_dynamic_graph=None,
-        val_input=val_input[..., 0,:], 
-        val_target=val_target,
-        val_states=None, 
-        val_graph=adj_norm, 
-        val_dynamic_graph=None,
-        loss='mse', 
-        epochs=5, 
-        batch_size=10,
-        lr=1e-3, 
-        weight_decay=1e-3,
-        initialize=True, 
-        verbose=True, 
-        patience=10, 
-        shuffle=False,
-        )
+# ### Evaluate
+# Metrics are NOT auto-denormalized in 0.1.0: undo normalize_target() by hand.
 
-
-# In[4]:
-
-
-# evaluate
-out = model.predict(feature=test_input[..., 0,:], 
-                    graph=adj_norm, 
-                    states=None, 
-                    dynamic_graph=None, 
-                    batch_size=1, 
-                    device = device, 
+out = model.predict(feature=test_input,
+                    graph=adj_norm,
+                    states=None,
+                    dynamic_graph=None,
+                    batch_size=32,
+                    device=device,
                     shuffle=False)
 
-preds = out.detach().cpu()*std[0]+mean[0]
-targets = test_target.detach().cpu()*std[0]+mean[0]
-# MAE
-mae = metrics.get_MAE(preds, targets)
-print(f"MAE: {mae.item()}")
+preds = out.detach().cpu() * target_std + target_mean
+targets = test_target.detach().cpu() * target_std + target_mean
+print(f"MAE: {metrics.get_MAE(preds, targets).item():.4f}")
 
 
-# In[5]:
+# ### Visualize a few nodes at the last horizon step
 
-
-# # visualization
-# out = model.predict(feature=train_input, graph=adj_norm).detach().cpu()
-
-# sample = 28
-
-# plt.figure(figsize=(15 ,5))
-# for i in range(1, 4):
-#     sample_input=train_input[sample, i, :, 0]
-#     sample_output=out[sample, i, :]
-#     sample_target=train_target[sample, i, :]
-
-#     vis_data = torch.cat([sample_input, sample_target]).numpy()
-    
-#     plt.subplot(1, 3, i)
-#     rng = list(range(lookback+horizon))
-#     plt.plot(rng, vis_data, label="ground truth")
-#     plt.plot(rng[lookback:lookback+horizon], sample_output.numpy(), label="prediction")
-#     plt.legend()
-
-
-# plt.show()
-
+node_ids = range(min(20, preds.shape[1]))
+plt.figure(figsize=(12, 4))
+plt.plot([preds[0, n, -1].item() for n in node_ids], 'r-s', label='Prediction')
+plt.plot([targets[0, n, -1].item() for n in node_ids], 'b--o', label='Ground Truth')
+plt.xlabel("Node")
+plt.ylabel("Value")
+plt.title(f"First test window, horizon step {horizon}")
+plt.legend()
+plt.tight_layout()
+plt.show()

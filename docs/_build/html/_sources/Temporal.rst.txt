@@ -1,4 +1,0 @@
-Temporal 
-============
-
-Temporal for Epilearn

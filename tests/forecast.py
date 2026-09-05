@@ -1,72 +1,80 @@
+"""Forecast task demo: one rolling-window protocol, several models and datasets.
+
+Builds three Dataset objects from datasets/benchmark.pt (Brazil / Austria / China
+COVID counts on a region graph) and scores them with Forecast.rolling_train,
+which trains, evaluates and calibrates conformal prediction intervals per fold.
+
+Run from the repo root:
+
+    python tests/forecast.py
+"""
+
 import torch
-import os
-import matplotlib.pyplot as plt
 
 from epilearn.models.SpatialTemporal.STGCN import STGCN
-from epilearn.models.SpatialTemporal.MepoGNN import MepoGNN
 from epilearn.models.SpatialTemporal.EpiGNN import EpiGNN
-from epilearn.models.SpatialTemporal.DASTGN import DASTGN
-from epilearn.models.SpatialTemporal.ColaGNN import ColaGNN
-from epilearn.models.SpatialTemporal.EpiColaGNN import EpiColaGNN
 from epilearn.models.SpatialTemporal.CNNRNN_Res import CNNRNN_Res
-from epilearn.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
-
-from epilearn.models.Temporal.Dlinear import DlinearModel
-from epilearn.models.Temporal.LSTM import LSTMModel
-from epilearn.models.Temporal.GRU import GRUModel
-
-from epilearn.data import UniversalDataset
-from epilearn.utils import utils, transforms, metrics
+from epilearn.data import Dataset
+from epilearn.utils import transforms
 from epilearn.tasks.forecast import Forecast
 
-device = torch.device('cpu')
 torch.manual_seed(7)
 
-# initialize configs
-lookback = 16 # inputs size
-horizon = 1 # predicts size
-# permutation is True when using STGCN
-permute = True
-epochs = 50 # training epochs
-batch_size = 50 # training batch size
+# settings
+lookback = 12    # input window length
+horizon = 3      # steps predicted
+epochs = 15
+batch_size = 8
+window = 25      # size of the val and test window of every rolling fold
 
-task = Forecast(prototype=ATMGNN, dataset=None, lookback=lookback, horizon=horizon, device='cpu')
+# load the three benchmark countries into Dataset objects
+raw_data = torch.load("datasets/benchmark.pt", weights_only=False)
+datasets = {}
+for name in ['Austria', 'Brazil', 'China']:
+    country = raw_data[name]
+    feats = country['features'].float()    # (time, region, [infect, recover, death])
+    dataset = Dataset(x=feats,
+                      y=feats[:, :, 0],            # forecast the infection count
+                      graph=country['graph'].float(),
+                      feature_names=country['feature_names'])
+    # Transforms are fitted on each fold's training window only, then applied to
+    # val/test -- so the reported metrics are in normalized units.
+    dataset.set_transforms(transforms.Compose({
+        "features": [transforms.normalize_feat()],
+        "target": [transforms.normalize_target()],
+        "graph": [transforms.normalize_adj()]}))
+    datasets[name] = dataset
+    print(f"{name:8s} {dataset}")
 
-config = None
-# for epicolagnn, loss='epi_cola', else loss='mse
-# for STGCN, permute_dataset=True
 
-# load toy dataset
-datasets = []
-dataset0 = UniversalDataset()
-dataset0.load_toy_dataset()
+def run(prototype, dataset, model_args={}):
+    """Rolling-window train + evaluate. Same call for every model."""
+    task = Forecast(prototype=prototype,
+                    dataset=None,
+                    lookback=lookback,
+                    horizon=horizon,
+                    device='cpu')
+    return task.rolling_train(dataset=dataset,
+                              train_size=dataset.n_timesteps - 3 * window,
+                              val_size=window,
+                              test_size=window,
+                              train_loss='mse',
+                              epochs=epochs,
+                              batch_size=batch_size,
+                              model_args=model_args)
 
-raw_data = torch.load("datasets/benchmark.pt")
-for name in ['Brazil', 'Austria', 'China']:
-    data = raw_data[name]
-    dataset = UniversalDataset()
-    dataset.x = data['features']
-    dataset.y = data['features'][:,:,0]
-    dataset.graph = data['graph']
-    dataset.states = data['features']
-    dataset.dynamic_graph = None
-    datasets.append(dataset)
-datasets.append(dataset0)
-# for i, dataset in enumerate(datasets):
-#     print(f"dataset {i}")
-#     model = task.train_model(dataset=dataset, config=config, loss='mse', epochs=50, batch_size=50, permute_dataset=True) # instead of config, we can also dircetly input some parameters
 
-results = task.train_model(dataset=datasets[-1], config=config, loss='mse', epochs=50, batch_size=50, permute_dataset=False)
+rows = []
+# same model, three datasets
+for name, dataset in datasets.items():
+    rows.append(('STGCN', name, run(STGCN, dataset)))
+# same dataset, three models
+for prototype, model_args in [(EpiGNN, {}), (CNNRNN_Res, {'nhid': 16})]:
+    rows.append((prototype.__name__, 'Austria', run(prototype, datasets['Austria'], model_args)))
 
-# mae_list=[]
-# rmse_list=[]
-# for region in range(47):
-#     print("region", region)
-#     mae, rmse = task.train_model(dataset=datasets[-1], config=config, loss='mse', epochs=50, batch_size=50, region_idx=1, permute_dataset=False)
-#     mae_list.append(mae)
-#     rmse_list.append(rmse)
-
-# mae = torch.FloatTensor(mae_list)
-# rmse = torch.FloatTensor(rmse_list)
-# print(f"mae:{mae.mean()} {mae.std()}")
-# print(f"rmse:{rmse.mean()} {rmse.std()}")
+print(f"\n{'model':12s} {'dataset':8s} folds    RMSE     MAE     90% interval coverage")
+for model_name, data_name, result in rows:
+    m = result['aggregate_metrics']
+    print(f"{model_name:12s} {data_name:8s} {m['n_folds']:5d}   {m['rmse_mean']:.4f}  "
+          f"{m['mae_mean']:.4f}   {m['coverage_mean'] * 100:.1f}%")
+print("\n(metrics are in normalized units; coverage should sit near the 90% target)")

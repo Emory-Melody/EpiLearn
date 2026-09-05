@@ -96,11 +96,26 @@ class ConvBranch(nn.Module):
         super().__init__()
         self.m = m
         self.isPool = isPool
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size,1), dilation=(dilation_factor,1))
+        self.hidP = hidP
+        
+        # Calculate effective kernel size
+        effective_kernel = kernel_size + (kernel_size - 1) * (dilation_factor - 1)
+        
+        if isPool:
+            # For pooled branches: add padding to ensure at least 1 output, then pool to hidP
+            padding = (effective_kernel - 1) // 2
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size, 1), 
+                                  dilation=(dilation_factor, 1), padding=(padding, 0))
+        else:
+            # For global branch (no pooling): no padding, will use adaptive pool to collapse
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size, 1), 
+                                  dilation=(dilation_factor, 1), padding=0)
+            # Add adaptive pooling to collapse time dimension to 1
+            self.global_pool = nn.AdaptiveMaxPool2d((1, m))
+            
         self.batchnorm = nn.BatchNorm2d(out_channels)
         if self.isPool:
             self.pooling = nn.AdaptiveMaxPool2d((hidP, m))
-        #self.activate = nn.Tanh()
     
     def forward(self, x):
         batch_size = x.shape[0]
@@ -108,6 +123,9 @@ class ConvBranch(nn.Module):
         x = self.batchnorm(x)
         if self.isPool:
             x = self.pooling(x)
+        else:
+            # Global branch: collapse time to 1
+            x = self.global_pool(x)
         x = x.view(batch_size, -1, self.m)
         return x
 
@@ -128,7 +146,9 @@ class RegionAwareConv(nn.Module):
     
     def forward(self, x):
         # import ipdb; ipdb.set_trace()
-        x = x.contiguous().view(-1, self.nfeat, self.P, self.m)
+        # Properly rearrange from (batch, timesteps, nodes, features)
+        # to (batch, features, timesteps, nodes) for Conv2d
+        x = x.permute(0, 3, 1, 2).contiguous()
         batch_size = x.shape[0]
         # local pattern
         x_l1 = self.conv_l1(x)
@@ -178,8 +198,7 @@ class EpiGNN(BaseModel):
     Returns
     -------
     torch.Tensor
-        A tensor of shape (batch_size, num_timesteps_output, num_nodes), representing the predicted values for each node over future timesteps.
-        Each slice along the second dimension corresponds to a timestep, with each column representing a node.
+        A tensor of shape (batch_size, num_nodes, num_timesteps_output), representing the predicted values for each node over future timesteps.
     """
     def __init__(self, 
                 num_nodes, 
@@ -193,7 +212,8 @@ class EpiGNN(BaseModel):
                 n_layer = 2, 
                 dropout = 0, 
                 nhids=None,
-                device = 'cpu'):
+                device = 'cpu',
+                **kwargs):
         super().__init__(device)
         # arguments setting
         self.nfeat = num_features

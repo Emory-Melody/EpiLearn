@@ -52,7 +52,7 @@ class GraphConvolution(Module):
 
 class GCNConv(GraphConvolution):
     
-    def __init__(self, in_channels, out_channels, bias=True):
+    def __init__(self, in_channels, out_channels, bias=True, **kwargs):
         super(GCNConv, self).__init__(in_channels, out_channels, with_bias=bias)
         
     def forward(self, x, edge_index, edge_weight=None):
@@ -143,7 +143,7 @@ class GCN(BaseModel):
         A tensor of shape (batch_size, num_nodes, num_classes), representing the predicted outcomes for each node after passing through the GCN.
     """
     def __init__(self, num_features, hidden_dim=16, num_classes=2, nlayers=2, dropout=0.5,
-                with_bn=False, with_bias=True, device='cpu'):
+                with_bn=False, with_bias=True, device='cpu', **kwargs):
 
         super(GCN, self).__init__()
 
@@ -172,10 +172,10 @@ class GCN(BaseModel):
         self.dropout = dropout
         self.with_bn = with_bn
 
-    def forward(self, x, edge_index, edge_weight):
+    def forward(self, X, edge_index, edge_weight=None):
         """
         Parameters:
-        x : torch.Tensor
+        X : torch.Tensor
             The input features tensor with shape (batch_size, num_nodes, num_features).
         edge_index : torch.Tensor
             The edge indices in COO format with shape (2, num_edges).
@@ -186,7 +186,7 @@ class GCN(BaseModel):
         """
         #print(x.shape)
         #b, n, _= x.shape
-        x = torch.reshape(x, (x.shape[0], -1))
+        x = torch.reshape(X, (X.shape[0], -1))
         #print(x.shape)
     
         for i, layer in enumerate(self.layers):

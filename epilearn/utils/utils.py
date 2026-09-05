@@ -136,7 +136,6 @@ def Degree_Matrix(ST_matrix):
 
     ## degree matrix
     dim = len(ST_matrix)
-    import ipdb; ipdb.set_trace()
     D_matrix = torch.zeros(dim, dim).to(ST_matrix.device)
     for i in range(dim):
         D_matrix[i, i] = 1 / max(torch.sqrt(row_sum[i]), 1)
@@ -547,6 +546,198 @@ class series_decomp(nn.Module):
         moving_mean = self.moving_avg(x)
         res = x - moving_mean
         return res, moving_mean
+
+
+def significance_test(eval_results1, eval_results2, metric='mae', alpha=0.05):
+    """
+    Perform statistical significance testing between two models' evaluation results.
+    
+    This function uses bootstrap samples from the evaluation results to compute confidence
+    intervals and perform hypothesis testing to determine if there is a statistically
+    significant difference between two models' performance.
+    
+    Supports both regression metrics (mae, mse, rmse) and classification metrics 
+    (accuracy, precision, recall, f1).
+    
+    Parameters
+    ----------
+    eval_results1 : dict
+        Evaluation results from the first model, containing bootstrap samples.
+        For regression: Expected keys include 'bootstrap_mses', 'bootstrap_maes', 'bootstrap_rmses'
+        For classification: Expected keys include 'bootstrap_accuracys', 'bootstrap_precisions', etc.
+    eval_results2 : dict
+        Evaluation results from the second model, with the same structure as eval_results1.
+    metric : str, optional
+        The metric to compare. 
+        Regression: 'mae', 'mse', 'rmse' (lower is better)
+        Classification: 'accuracy', 'precision', 'recall', 'f1' (higher is better)
+        Default is 'mae'.
+    alpha : float, optional
+        Significance level for the test. Default is 0.05 (5%).
+    
+    Returns
+    -------
+    dict
+        A dictionary containing:
+        - 'metric': The metric used for comparison
+        - 'model1_mean': Mean performance of model 1
+        - 'model2_mean': Mean performance of model 2
+        - 'model1_ci': Confidence interval for model 1 (tuple)
+        - 'model2_ci': Confidence interval for model 2 (tuple)
+        - 'difference': Mean difference (model1 - model2)
+        - 'difference_ci': Confidence interval for the difference
+        - 'p_value': Approximate p-value
+        - 'is_significant': Boolean indicating if difference is significant
+        - 'better_model': Which model performs better ('Model 1', 'Model 2', or 'No significant difference')
+    
+    Examples
+    --------
+    >>> # For regression tasks
+    >>> results = significance_test(eval_results1, eval_results2, metric='mae')
+    >>> print(f"Model 1 MAE: {results['model1_mean']:.4f}")
+    >>> print(f"Model 2 MAE: {results['model2_mean']:.4f}")
+    >>> print(f"Better model: {results['better_model']}")
+    
+    >>> # For classification tasks
+    >>> results = significance_test(eval_results1, eval_results2, metric='accuracy')
+    >>> print(f"Model 1 Accuracy: {results['model1_mean']:.4f}")
+    >>> print(f"Model 2 Accuracy: {results['model2_mean']:.4f}")
+    >>> print(f"Better model: {results['better_model']}")
+    """
+    from scipy import stats
+    
+    # Validate metric and determine if higher or lower is better
+    regression_metrics = ['mae', 'mse', 'rmse']  # Lower is better
+    classification_metrics = ['accuracy', 'precision', 'recall', 'f1']  # Higher is better
+    valid_metrics = regression_metrics + classification_metrics
+    
+    if metric.lower() not in valid_metrics:
+        raise ValueError(f"metric must be one of {valid_metrics}, got '{metric}'")
+    
+    metric_lower = metric.lower()
+    higher_is_better = metric_lower in classification_metrics
+    
+    # Get bootstrap samples for the specified metric
+    bootstrap_key = f'bootstrap_{metric_lower}s'
+    
+    if bootstrap_key not in eval_results1 or bootstrap_key not in eval_results2:
+        raise KeyError(f"Bootstrap samples for '{metric}' not found in evaluation results. "
+                      f"Make sure compute_bootstrap_ci=True was used during evaluation. "
+                      f"Looking for key: '{bootstrap_key}'")
+    
+    samples1 = np.array(eval_results1[bootstrap_key])
+    samples2 = np.array(eval_results2[bootstrap_key])
+    
+    # Get point estimates
+    model1_mean = eval_results1.get(metric_lower, np.mean(samples1))
+    model2_mean = eval_results2.get(metric_lower, np.mean(samples2))
+    
+    # Handle nested dict structure (e.g., {'mean': value, 'ci_lower': value, 'ci_upper': value})
+    if isinstance(model1_mean, dict):
+        model1_mean = model1_mean.get('mean', np.mean(samples1))
+    if isinstance(model2_mean, dict):
+        model2_mean = model2_mean.get('mean', np.mean(samples2))
+    
+    # Compute confidence intervals
+    ci_level = 1 - alpha
+    lower_percentile = (1 - ci_level) / 2 * 100
+    upper_percentile = (1 + ci_level) / 2 * 100
+    
+    model1_ci = (np.percentile(samples1, lower_percentile), 
+                 np.percentile(samples1, upper_percentile))
+    model2_ci = (np.percentile(samples2, lower_percentile), 
+                 np.percentile(samples2, upper_percentile))
+    
+    # Compute difference in bootstrap samples
+    # For each bootstrap sample, we compute the difference
+    n_bootstrap = min(len(samples1), len(samples2))
+    differences = samples1[:n_bootstrap] - samples2[:n_bootstrap]
+    
+    mean_difference = np.mean(differences)
+    difference_ci = (np.percentile(differences, lower_percentile),
+                    np.percentile(differences, upper_percentile))
+    
+    # Perform paired t-test
+    t_stat, p_value = stats.ttest_rel(samples1[:n_bootstrap], samples2[:n_bootstrap])
+    
+    # Determine significance
+    is_significant = p_value < alpha
+    
+    # Determine which model is better
+    # For regression metrics (mae, mse, rmse): lower is better
+    # For classification metrics (accuracy, precision, recall, f1): higher is better
+    if is_significant:
+        if higher_is_better:
+            # Higher is better (classification metrics)
+            if mean_difference > 0:
+                better_model = 'Model 1'
+            else:
+                better_model = 'Model 2'
+        else:
+            # Lower is better (regression metrics)
+            if mean_difference < 0:
+                better_model = 'Model 1'
+            else:
+                better_model = 'Model 2'
+    else:
+        better_model = 'No significant difference'
+    
+    # Print results
+    print(f"\n{'='*60}")
+    print(f"Statistical Significance Test ({metric.upper()})")
+    print(f"{'='*60}")
+    print(f"\nModel 1 Performance:")
+    print(f"  Mean {metric.upper()}: {model1_mean:.6f}")
+    print(f"  {ci_level*100:.0f}% CI: [{model1_ci[0]:.6f}, {model1_ci[1]:.6f}]")
+    
+    print(f"\nModel 2 Performance:")
+    print(f"  Mean {metric.upper()}: {model2_mean:.6f}")
+    print(f"  {ci_level*100:.0f}% CI: [{model2_ci[0]:.6f}, {model2_ci[1]:.6f}]")
+    
+    print(f"\nDifference (Model 1 - Model 2):")
+    print(f"  Mean Difference: {mean_difference:.6f}")
+    print(f"  {ci_level*100:.0f}% CI: [{difference_ci[0]:.6f}, {difference_ci[1]:.6f}]")
+    
+    print(f"\nHypothesis Test:")
+    print(f"  t-statistic: {t_stat:.4f}")
+    print(f"  p-value: {p_value:.6f}")
+    print(f"  Significance level (α): {alpha}")
+    print(f"  Significant: {'Yes' if is_significant else 'No'}")
+    
+    print(f"\nConclusion:")
+    print(f"  {better_model} performs better")
+    if is_significant:
+        improvement = abs(mean_difference)
+        pct_improvement = abs(mean_difference / model2_mean * 100) if model2_mean != 0 else 0
+        print(f"  Absolute improvement: {improvement:.6f}")
+        print(f"  Relative improvement: {pct_improvement:.2f}%")
+        
+        # Additional context for interpretation
+        if higher_is_better:
+            print(f"  (Higher {metric.upper()} is better for classification)")
+        else:
+            print(f"  (Lower {metric.upper()} is better for regression)")
+    print(f"{'='*60}\n")
+    
+    return {
+        'metric': metric_lower,
+        'model1_mean': model1_mean,
+        'model2_mean': model2_mean,
+        'model1_ci': model1_ci,
+        'model2_ci': model2_ci,
+        'difference': mean_difference,
+        'difference_ci': difference_ci,
+        't_statistic': t_stat,
+        'p_value': p_value,
+        'alpha': alpha,
+        'is_significant': is_significant,
+        'better_model': better_model,
+        'n_bootstrap': n_bootstrap,
+    }
+
+
+
+
 
 
 

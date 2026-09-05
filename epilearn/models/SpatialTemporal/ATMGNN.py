@@ -26,18 +26,20 @@ class MPNN_Encoder(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, adj, x):
+        # Get device from input tensor
+        device = x.device
         
         lst = list()
-        weight = adj.to_sparse().values()
-        adj = adj.to_sparse().indices()
+        weight = adj.to_sparse().values().to(device)
+        adj_indices = adj.to_sparse().indices().to(device)
         lst.append(x)
 
-        x = self.relu(self.conv1(x,adj,edge_weight=weight))
+        x = self.relu(self.conv1(x, adj_indices, edge_weight=weight))
         x = self.bn1(x.permute((0,2,1))).permute((0,2,1))
         x = self.dropout(x)
         lst.append(x)
 
-        x = self.relu(self.conv2(x, adj,edge_weight=weight))
+        x = self.relu(self.conv2(x, adj_indices, edge_weight=weight))
         x = self.bn2(x.permute((0,2,1))).permute((0,2,1))
         x = self.dropout(x)
         lst.append(x)
@@ -46,7 +48,7 @@ class MPNN_Encoder(nn.Module):
         x = self.relu(self.fc1(x.contiguous().view(-1, x.size(2))))
         x = self.dropout(x)
         x = self.relu(self.fc2(x))
-        return x.view(-1, self.n_nodes, x.size(1))
+        return x.view(-1, self.n_nodes, x.size(1)).to(device)
     
     def reset_parameters(self):
         self.conv1.reset_parameters()
@@ -100,9 +102,11 @@ class ATMGNN(BaseModel):
                 dropout = 0.5,
                 nhead = 1, 
                 num_clusters = [10, 5], 
-                use_norm = False):
+                use_norm = False,
+                device = 'cpu',
+                **kwargs):
         
-        super(ATMGNN, self).__init__()
+        super(ATMGNN, self).__init__(device=device)
         
         self.window = num_timesteps_input
         self.nout = num_timesteps_output
@@ -119,8 +123,8 @@ class ATMGNN(BaseModel):
         # Bottom encoder
         self.bottom_encoder = MPNN_Encoder(self.nfeat, nhid, nhid, self.n_nodes, dropout)
 
-        # Number of clusters
-        self.num_clusters = num_clusters
+        # Number of clusters (convert tuple to list if needed)
+        self.num_clusters = list(num_clusters) if isinstance(num_clusters, tuple) else num_clusters
 
         # Multiresolution construction
         self.middle_linear = nn.ModuleList()
@@ -167,6 +171,11 @@ class ATMGNN(BaseModel):
             The output tensor of shape (batch_size, num_timesteps_output, num_nodes),
             representing the predicted values for each node over the specified output timesteps.
         """
+        # Ensure inputs are on the same device as model parameters
+        device = next(self.parameters()).device
+        x = x.to(device)
+        adj = adj.to(device)
+        
         lst = list()
         skip = x.view(-1, self.window, self.n_nodes, self.nfeat)
         skip = torch.transpose(skip, 1, 2).reshape(-1, self.window, self.nfeat)
@@ -188,7 +197,7 @@ class ATMGNN(BaseModel):
         product = None
 
         # Multiresolution construction
-        adj = adj.to_dense()
+        adj = adj.to_dense().to(device)
         latent = bottom_latent
         num_nodes = [self.n_nodes] + self.num_clusters
         for level in range(len(self.num_clusters)):
@@ -252,7 +261,11 @@ class ATMGNN(BaseModel):
         x = self.relu(self.fc1(x))
         x = self.dropout(x)
         x = self.relu(self.fc2(x))
-        x = x.view(-1, x.shape[-1], self.n_nodes)
+        # x shape after fc2: [batch * n_nodes, nout]
+        # Reshape to expected output: [batch, n_nodes, nout]
+        x = x.view(-1, self.n_nodes, self.nout)
+        # Ensure output is on the correct device
+        x = x.to(device)
 
         return x
     

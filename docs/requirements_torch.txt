@@ -1,1 +1,5 @@
+# Installed before docs/requirements.txt (see .readthedocs.yaml) so that the rest
+# of the docs dependencies resolve against a torch that is already present.
+# epilearn itself only needs torch>=1.13; this pin just keeps the docs image
+# reproducible.
 torch==2.3.1

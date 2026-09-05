@@ -1,0 +1,449 @@
+# =============================================================================
+# EpiLearn COVID-19 Forecasting Benchmark Configuration
+# =============================================================================
+# Dataset: COVID-19 daily cases with trailing 7-day rolling average
+# Coverage: 20 US states × ~1,150 days (2020-01-27 to 2023-03-23)
+# Graph: State adjacency (geographic neighbors)
+#
+# Usage: python -m epilearn.benchmark --config configs/covid_benchmark_config.yaml
+
+# -----------------------------------------------------------------------------
+# REQUIRES DATA THAT IS NOT SHIPPED WITH THE PACKAGE
+# -----------------------------------------------------------------------------
+# This config reads ./datasets/covid_features.csv and ./datasets/covid_edges.csv,
+# which are NOT distributed with EpiLearn. Point `feature_path`/`graph_path` at
+# your own long-format CSV (see Dataset.from_csv), or run
+# configs/quick_test_config.yaml instead, which uses the bundled toy dataset.
+# -----------------------------------------------------------------------------
+task: forecast
+
+# -----------------------------------------------------------------------------
+# Dataset Configuration
+# -----------------------------------------------------------------------------
+dataset:
+  feature_path: "./datasets/covid_features.csv"
+  graph_path: "./datasets/covid_edges.csv"
+  graph_weight_col: "weight"  # Use edge weights from CSV (US mobility flows 2020-2023)
+  timestamp_col: "time"
+  region_col: "node"
+  feature_cols: ["f0", "f1", "f2", "f3"]  # f0=log(cases), f1=growth_rate, f2=deaths, f3=day_of_week
+  target_cols: ["y"]                      # y=cases_7d_trailing (trailing 7-day avg)
+
+  transforms:
+    normalize_features: false
+    normalize_target: false
+    normalize_graph: true
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings (Rolling Train)
+# -----------------------------------------------------------------------------
+# Daily resolution: 1,152 days total per state (Jan 2020 – Mar 2023)
+# Temporal setup (quarterly cadence, matching nowcasting benchmark):
+#   - Lookback: max 62 days (~2 months of history)
+#   - Horizon: 7 days (1-week ahead forecast)
+#   - Train: 180 days (6 months) — captures initial COVID wave dynamics
+#   - Val: 90 days (1 quarter) — HPO & conformal calibration
+#   - Test: 152 days (= step + lookback = 90 + 62) — perfect tiling, 90 effective windows
+#   - Step: 90 days (quarterly) — 9 folds covering Dec 2020 – Jan 2023
+# -----------------------------------------------------------------------------
+evaluation:
+  lookback: 62           # Max lookback 62 days (models may tune smaller values)
+  horizon: 7             # 7-day (1-week) forecast horizon
+  train_size: 180        # 6 months — captures initial COVID surge-decline cycle
+  val_size: 90           # 1 quarter — sufficient for HPO & conformal calibration
+  test_size: 152         # step + lookback → 90 effective test windows, perfect tiling
+  step_size: 90          # Quarterly advancement → 9 folds (Dec 2020 – Jan 2023)
+  max_folds: null
+
+  # Optuna hyperparameter tuning
+  use_optuna: true
+  n_trials: 15
+
+  # Training
+  patience: 15
+  conformal_alpha: 0.1
+  verbose: false
+
+# -----------------------------------------------------------------------------
+# Parallel Execution
+# -----------------------------------------------------------------------------
+parallel:
+  enable: true
+  gpu_ids: null           # null = auto-detect, or [0, 1, 2, 3] for specific GPUs
+  workers_per_gpu: 10     # H200 has 143GB and models are tiny; run many concurrently
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  save_path: "./benchmark_results/covid_forecast/"
+
+# -----------------------------------------------------------------------------
+# Models to Benchmark
+# -----------------------------------------------------------------------------
+
+models:
+  # =========================================================================
+  # TEMPORAL MODELS (Neural Networks - No graph required)
+  # =========================================================================
+
+  # -------------------------------------------------------------------------
+  # Channel-Dependent Models (process all channels/features together)
+  # -------------------------------------------------------------------------
+
+  - name: iTransformerModel
+    requires_graph: true  # Channel-dependent: needs 4D input (batch, time, nodes, features)
+    optuna_model_args:
+      d_model: [32, 64, 128]
+      n_heads: [2, 4, 8]       # 3 values → categorical (avoids invalid divisibility)
+      e_layers: [1, 2, 3]
+      dropout: [0.1, 0.3]      # 2 values → float range [0.1, 0.3]
+      lookback: [7, 14, 30, 45, 62]  # 1 week, 2 weeks, 1 month, 1.5 months, 2 months
+    optimizer_params:
+      lr: [0.0001, 0.001]      # 2 values → log-scale float range
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: TSMixerModel
+    requires_graph: true  # Channel-dependent: needs 4D input (batch, time, nodes, features)
+    optuna_model_args:
+      d_model: [32, 64, 128]
+      e_layers: [1, 2, 3]
+      dropout: [0.1, 0.3]
+      lookback: [7, 14, 30, 45, 62]  # 1 week, 2 weeks, 1 month, 1.5 months, 2 months
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: FreTSModel
+    requires_graph: true  # Channel-dependent: needs 4D input (batch, time, nodes, features)
+    optuna_model_args:
+      embed_size: [64, 128, 256]
+      hidden_size: [128, 256, 512]
+      lookback: [7, 14, 30, 45, 62]  # 1 week, 2 weeks, 1 month, 1.5 months, 2 months
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  # -------------------------------------------------------------------------
+  # Standard Temporal Models
+  # -------------------------------------------------------------------------
+
+  - name: GRUModel
+    requires_graph: false
+    optuna_model_args:
+      nhids: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: LSTMModel
+    requires_graph: false
+    optuna_model_args:
+      nhid: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: CNNModel
+    requires_graph: false
+    optuna_model_args:
+      conv1_hid: [8, 16, 32]
+      conv2_hid: [16, 32, 64]
+      linear_hid: [64, 128]          # 2 values → int range
+      dropout: [0.3, 0.5]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: MLPModel
+    requires_graph: false
+    optuna_model_args:
+      nhids: [32, 64, 128]
+      dropout: [0.1, 0.5]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: DlinearModel
+    requires_graph: false
+    optuna_model_args:
+      moving_avg_window: [7, 15, 25]  # Must be odd for padding; matches flu benchmark
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: PatchTSTModel
+    requires_graph: false
+    optuna_model_args:
+      d_model: [32, 48, 64]        # All divisible by 2, 4, and 8
+      n_heads: [2, 4, 8]           # 3 values → categorical (avoid n_heads=3 from range)
+      n_layers: [1, 2, 3]          # 3 values → categorical
+      patch_len: [4, 8]            # Matches flu benchmark
+      lookback: [16, 30, 45, 62]  # Min 16 to ensure >= 2 × max(patch_len)=16
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  # =========================================================================
+  # SKLEARN MODELS (Traditional ML - No optimizer params needed)
+  # =========================================================================
+
+  - name: LinearRegressionModel
+    requires_graph: false
+    optuna_model_args:
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: RidgeModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: LassoModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.01, 0.1, 1.0]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: ElasticNetModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.01, 0.1, 1.0]
+      l1_ratio: [0.2, 0.5, 0.8]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: RandomForestModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100, 200]
+      max_depth: [5, 10, 20]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: GradientBoostingModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100, 200]
+      max_depth: [3, 5, 7]
+      learning_rate: [0.01, 0.05, 0.1]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  # - name: SVRModel
+  #   requires_graph: false
+  #   optuna_model_args:
+  #     C: [0.1, 1.0, 10.0]
+  #     kernel: ['rbf', 'linear']
+  #     lookback: [7, 14, 30, 45, 62]
+  #   optimizer_params: {}
+
+  - name: KNNModel
+    requires_graph: false
+    optuna_model_args:
+      n_neighbors: [3, 5, 10]
+      weights: ['uniform', 'distance']
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: DecisionTreeModel
+    requires_graph: false
+    optuna_model_args:
+      max_depth: [5, 10, 20]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  # =========================================================================
+  # STATSMODELS (Statistical Models)
+  # =========================================================================
+
+  - name: ARIMAModel
+    requires_graph: false
+    n_trials: 5             # Fewer trials since ARIMA is slow (fits per-sample)
+    optuna_model_args:
+      p: [1, 2, 3]          # AR order
+      d: [0, 1, 2]          # Differencing order (3 values → categorical)
+      q: [0, 1, 2]          # MA order
+      lookback: [14, 30, 45, 62]  # 2 weeks, 1 month, 1.5 months, 2 months (slower model, fewer options)
+    optimizer_params: {}
+
+  - name: SeasonalNaiveModel
+    requires_graph: false
+    n_trials: 10            # Matches flu benchmark; explore season_length × lookback space
+    optuna_model_args:
+      season_length: [1, 7, 14, 30, 60]  # 1=naive, 7=weekly, 14=biweekly, 30=monthly, 60=bimonthly
+      lookback: [14, 30, 45, 62]          # Need >= season_length for proper seasonal forecast
+    optimizer_params: {}
+
+  # =========================================================================
+  # COMPARTMENTAL MODELS (Epidemic ODE - fitted per-sample like ARIMA)
+  # =========================================================================
+
+  - name: SIRModel
+    requires_graph: false
+    n_trials: 5
+    optuna_model_args:
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: SEIRModel
+    requires_graph: false
+    n_trials: 5
+    optuna_model_args:
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params: {}
+
+  # =========================================================================
+  # FOUNDATION MODELS (Pretrained - Zero-shot inference, no training required)
+  # =========================================================================
+
+  - name: ChronosModel
+    requires_graph: false
+    model_args:
+      model_name: "amazon/chronos-t5-small"
+      num_samples: 10
+    optuna_model_args:
+      lookback: [14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: MoiraiModel
+    requires_graph: false
+    model_args:
+      model_name: "Salesforce/moirai-1.0-R-small"
+      num_samples: 10
+    optuna_model_args:
+      lookback: [14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: MomentModel
+    requires_graph: false
+    model_args:
+      model_name: "AutonLab/MOMENT-1-large"
+    optuna_model_args:
+      lookback: [14, 30, 45, 62]
+    optimizer_params: {}
+
+  - name: TimesFMModel
+    requires_graph: false
+    model_args:
+      model_name: "google/timesfm-2.0-500m-pytorch"
+      freq: 0               # 0 = daily frequency
+    optuna_model_args:
+      lookback: [14, 30, 45, 62]
+    optimizer_params: {}
+
+  # =========================================================================
+  # SPATIOTEMPORAL MODELS (Graph-based)
+  # =========================================================================
+
+  - name: STGCN
+    requires_graph: true
+    optuna_model_args:
+      nhids: [32, 48, 64]         # Moderate capacity (too small causes underfitting)
+      lookback: [14, 21, 30, 45, 62]  # STGCN requires lookback > 10 (temporal convolutions)
+    optimizer_params:
+      lr: [0.00003, 0.0001]       # Moderate LR (50x lower than original) to balance stability and learning
+      batch_size: [32]
+      weight_decay: [0.05, 0.1]   # Moderate regularization (was 0-0.01) - not too aggressive
+      epochs: [150]
+
+  # - name: DCRNN
+  #   requires_graph: true
+  #   optuna_model_args:
+  #     rnn_units: [32, 64, 128]    # Fixed: was "nhids" but model param is "rnn_units"
+  #     num_rnn_layers: [1, 2, 3]   # 3 values → categorical
+  #     lookback: [7, 14, 30, 45, 62]
+  #   optimizer_params:
+  #     lr: [0.0001, 0.001]
+  #     batch_size: [32]
+  #     weight_decay: [0, 0.01]
+  #     epochs: [150]
+
+  - name: GraphWaveNet
+    requires_graph: true
+    optuna_model_args:
+      residual_channels: [16, 32, 64]   # 3 values → categorical
+      dilation_channels: [16, 32, 64]   # 3 values → categorical
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: EpiGNN
+    requires_graph: true
+    optuna_model_args:
+      hidR: [16, 32, 64]
+      hidA: [16, 32, 64]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: ColaGNN
+    requires_graph: true
+    optuna_model_args:
+      nhid: [32, 48, 64]         # Moderate capacity (too small causes underfitting)
+      n_channels: [2, 3, 4]      # Moderate channels (was [1, 4, 8])
+      dropout: [0.3, 0.5]        # Higher dropout for regularization (was [0.1, 0.3, 0.5])
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.0003]       # Moderate LR (10x lower than original, not 100x) to balance stability and learning
+      batch_size: [32]
+      weight_decay: [0.05, 0.1]  # Moderate regularization (was 0-0.01) - not too aggressive
+      epochs: [150]
+
+  - name: ATMGNN
+    requires_graph: true
+    optuna_model_args:
+      nhid: [32, 64, 128]        # 3 values → categorical (was 2 → unintended range)
+      dropout: [0.1, 0.3, 0.5]   # Added dropout tuning
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]
+
+  - name: MepoGNN
+    requires_graph: true
+    optuna_model_args:
+      residual_channels: [16, 32, 64]
+      dilation_channels: [16, 32, 64]
+      lookback: [7, 14, 30, 45, 62]
+    optimizer_params:
+      lr: [0.0001, 0.001]
+      batch_size: [32]
+      weight_decay: [0, 0.01]
+      epochs: [150]

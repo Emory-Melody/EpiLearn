@@ -1,0 +1,152 @@
+# =============================================================================
+# EpiLearn Scenario Modeling Benchmark Configuration
+# =============================================================================
+# Usage: python -m epilearn.benchmark --config configs/scenario_benchmark_config.yaml
+#
+# This benchmark evaluates models on counterfactual/intervention scenario analysis:
+# - Input: Historical epidemic trajectories with intervention parameters
+# - Output: Predicted outcomes under different intervention scenarios
+# - Metrics: Treatment effect metrics (PEHE, ATE Error)
+
+# -----------------------------------------------------------------------------
+# Task Type
+# -----------------------------------------------------------------------------
+task: scenario  # 'forecast', 'nowcast', or 'scenario'
+
+# -----------------------------------------------------------------------------
+# Dataset Configuration (Scenario-specific)
+# -----------------------------------------------------------------------------
+dataset:
+  # Scenario modeling uses synthetic data generated from compartmental models
+  scenario:
+    n_scenarios: 4           # Number of intervention scenarios
+    n_samples: 200           # Number of time samples to generate
+    population: 1000000      # Population size
+    process_noise: 0.01      # Noise in simulation
+    seed: 42
+    baseline_scenario_idx: 0  # Index of no-intervention (control) scenario
+    target_compartment: 'I'   # Compartment to measure treatment effects on
+    
+    # Compartmental model parameters (SEIRVI model)
+    compartmental_model:
+      beta: 0.3              # Transmission rate
+      gamma: 0.1             # Recovery rate
+      sigma: 0.2             # Incubation rate
+      vaccine_efficacy: 0.8
+      isolation_efficacy: 0.9
+
+  transforms:
+    normalize_features: true
+    normalize_target: true
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings (Rolling Train)
+# -----------------------------------------------------------------------------
+evaluation:
+  lookback: 20           # L: days of history as features
+  horizon: 10            # H: days to predict (scenario divergence period)
+  train_size: 100
+  val_size: 40
+  test_size: 40
+  step_size: 20
+  max_folds: null           # Limit folds for faster benchmarking
+  
+  # Optuna hyperparameter tuning
+  use_optuna: true
+  n_trials: 5
+  
+  # Training
+  patience: 15
+  verbose: false
+
+# -----------------------------------------------------------------------------
+# Parallel Execution
+# -----------------------------------------------------------------------------
+parallel:
+  enable: true
+  gpu_ids: null           # null = auto-detect, or [0, 1, 2, 3] for specific GPUs
+  workers_per_gpu: 2
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  save_path: "./benchmark_results/scenario/"
+
+# -----------------------------------------------------------------------------
+# Models to Benchmark
+# -----------------------------------------------------------------------------
+# Scenario modeling supports temporal models (no graph required)
+# Since scenarios are independent samples, we flatten across scenarios
+
+models:
+  # =========================================================================
+  # TEMPORAL MODELS (Neural Networks)
+  # =========================================================================
+  
+  - name: GRUModel
+    requires_graph: false
+    optuna_model_args:
+      nhids: [32, 64, 128]
+      dropout: [0.1, 0.3]
+      lookback: [10, 15, 20]
+    optimizer_params:
+      lr: [0.001, 0.01]
+      batch_size: [16, 32]
+      weight_decay: [0, 0.0001]
+      epochs: [50]
+
+  - name: LSTMModel
+    requires_graph: false
+    optuna_model_args:
+      nhid: [32, 64, 128]
+      dropout: [0.1, 0.3]
+      lookback: [10, 15, 20]
+    optimizer_params:
+      lr: [0.001, 0.01]
+      batch_size: [16, 32]
+      weight_decay: [0, 0.0001]
+      epochs: [50]
+
+  - name: MLPModel
+    requires_graph: false
+    optuna_model_args:
+      nhid: [32, 64, 128]
+      dropout: [0.1, 0.3]
+      lookback: [10, 15, 20]
+    optimizer_params:
+      lr: [0.001, 0.01]
+      batch_size: [16, 32]
+      weight_decay: [0, 0.0001]
+      epochs: [50]
+
+  # =========================================================================
+  # SCIKIT-LEARN MODELS (Baselines)
+  # =========================================================================
+  
+  - name: RidgeModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.1, 1.0, 10.0]
+      lookback: [10, 15, 20]
+
+  - name: LassoModel
+    requires_graph: false
+    optuna_model_args:
+      alpha: [0.01, 0.1, 1.0]
+      lookback: [10, 15, 20]
+
+  - name: RandomForestModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100]
+      max_depth: [5, 10, 15]
+      lookback: [10, 15, 20]
+
+  - name: GradientBoostingModel
+    requires_graph: false
+    optuna_model_args:
+      n_estimators: [50, 100]
+      max_depth: [3, 5]
+      learning_rate: [0.05, 0.1]
+      lookback: [10, 15, 20]

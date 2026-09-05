@@ -46,7 +46,7 @@ class BaseModel(nn.Module):
         early_stopping = patience
         best_val = float('inf')
         best_weights = deepcopy(self.state_dict())
-        for epoch in tqdm(range(epochs)):
+        for epoch in tqdm(range(epochs), disable=True):  # disable=True to prevent multiprocessing deadlock
             # train one epoch
             # import ipdb; ipdb.set_trace()
             loss = self.train_epoch(optimizer=optimizer, 
@@ -97,12 +97,13 @@ class BaseModel(nn.Module):
         print("Final Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
 
-        plt.figure()
-        plt.plot(training_losses, label="train")
-        plt.plot(validation_losses, label="val")
-        plt.legend()
-        plt.savefig("st_loss.png")
-        plt.show()
+        # Plotting disabled to prevent deadlock in multiprocessing
+        # plt.figure()
+        # plt.plot(training_losses, label="train")
+        # plt.plot(validation_losses, label="val")
+        # plt.legend()
+        # plt.savefig("st_loss.png")
+        # plt.show()
         
         self.load_state_dict(best_weights)
 
@@ -148,6 +149,7 @@ class BaseModel(nn.Module):
             loss = loss_fn(out, y_batch)
             # import ipdb; ipdb.set_trace()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
             optimizer.step()
             epoch_training_losses.append(loss.detach().cpu().numpy())
         return sum(epoch_training_losses)/len(epoch_training_losses)
@@ -194,4 +196,15 @@ class BaseModel(nn.Module):
                 feature = feature.to(self.device)
             # import ipdb; ipdb.set_trace()
             result = self.forward(feature, graph, states, dynamic_graph)
-        return result.detach().cpu()
+
+        if isinstance(result, dict):
+            # Handle dictionary output (e.g., with uncertainty)
+            return {key: value.detach().cpu() for key, value in result.items()}
+        elif isinstance(result, tuple):
+            # Handle tuple output (e.g., (output, uncertainty_dict))
+            output, uncertainty_dict = result
+            return output.detach().cpu(), {key: value.detach().cpu() for key, value in uncertainty_dict.items()}
+        else:
+            # Handle simple tensor output
+            return result.detach().cpu() 
+

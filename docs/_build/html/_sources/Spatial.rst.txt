@@ -1,4 +1,0 @@
-Spatial
-============
-
-Spatial for Epilearn

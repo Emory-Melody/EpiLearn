@@ -159,9 +159,10 @@ class SAGE(BaseModel):
         # move newly created modules to the model device
         self.to(self.device)
 
-    def forward(self, x, edge_index, edge_weight=None):
+    def forward(self, X, edge_index, edge_weight=None):
         # If input feature dim doesn't match initialized layers, rebuild to match
-        actual_in = x.shape[-1]
+        actual_in = X.shape[-1]
+        x = X
         if len(self.layers) > 0 and self.layers[0].in_channels != actual_in:
             self._rebuild_layers(actual_in)
 

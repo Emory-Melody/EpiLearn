@@ -6,7 +6,13 @@
 Enpowering Epidemic Modeling with EpiLearn!
 ============================================
 
-Epilearn is a python library built for epidemic modeling, providing abundant tools to quickly construct and test epidemic models as well as analyze epidemic data. 
+Epilearn is a python library built for epidemic modeling, providing abundant tools to quickly construct and test epidemic models as well as analyze epidemic data.
+
+It covers four tasks -- forecasting, nowcasting, scenario modeling and outbreak detection -- behind
+one model interface, and evaluates them with a shared rolling-window protocol that produces
+conformal prediction intervals. The model zoo has 65 classes (:doc:`API/models`), 45 of which are
+wired into the config-driven benchmark. Start with the :doc:`Quickstart`, then use the
+:doc:`Benchmark` page to compare many models from a single YAML config.
 
 .. toctree::
    :maxdepth: 1
@@ -19,6 +25,7 @@ Epilearn is a python library built for epidemic modeling, providing abundant too
    :caption: Usage
 
    Quickstart
+   Benchmark
 
    tutorials/task_building
    tutorials/simulation
@@ -34,4 +41,3 @@ Epilearn is a python library built for epidemic modeling, providing abundant too
    API/tasks
    API/utils
    API/visualization
-

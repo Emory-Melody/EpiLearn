@@ -41,8 +41,14 @@ def calculate_scaled_laplacian(adj_mx, lambda_max=2, undirected=True):
         #adj_mx = np.maximum(adj_mx, adj_mx.T)
     L = calculate_normalized_laplacian(adj_mx)
     if lambda_max is None:
-        lambda_max, _ = linalg.eigsh(L, 1, which='LM')
-        lambda_max = lambda_max[0]
+        try:
+            # Add small perturbation to avoid zero starting vector in ARPACK
+            L_perturbed = L + sp.eye(L.shape[0]) * 1e-8
+            lambda_max, _ = linalg.eigsh(L_perturbed, 1, which='LM')
+            lambda_max = lambda_max[0]
+        except Exception:
+            # Fallback to default lambda_max if eigenvalue computation fails
+            lambda_max = 2.0
     L = sp.csr_matrix(L)
     M, _ = L.shape
     I = sp.identity(M, format='csr', dtype=L.dtype)
@@ -127,7 +133,7 @@ class DCGRUCell(nn.Module):
         self.device = device
         self.filter_type = filter_type
 
-        #self._gconv_params = LayerParams(self, 'gconv', device=device)
+        self._gconv_params = LayerParams(self, 'gconv', device=device)
 
     def reset_parameters(self):
         self._gconv_params = LayerParams(self, 'gconv', device=self.device)
@@ -364,6 +370,8 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
         Dropout rate applied in the network to prevent overfitting. Default: 0.
     device : str, optional
         The device (cpu or gpu) on which the model will be run. Default: 'cpu'.
+    num_nodes : int, optional
+        Number of nodes in the graph. This parameter is accepted for API compatibility but not used in initialization. Default: None.
 
     Returns
     -------
@@ -381,7 +389,9 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
               rnn_units=1,
               nonlinearity="tanh",
               dropout=0,
-              device="cpu"):
+              device="cpu",
+              num_nodes=None,
+              **kwargs):
 
         super().__init__()
         Seq2SeqAttrs.__init__(self, max_diffusion_step=max_diffusion_step, filter_type=filter_type,
@@ -478,10 +488,11 @@ class DCRNN(BaseModel, Seq2SeqAttrs):
             adj_m = data.adj_m[mask]
         new_inputs = torch.stack(individual_graphs, dim=0)'''
         
-        inputs = torch.permute(inputs,(2, 0, 1, 3))
+        # Permute from (batch, time, nodes, features) to (time, batch, nodes, features)
+        inputs = torch.permute(inputs,(1, 0, 2, 3))
+        # Then reshape to (time, batch, nodes*features)
         inputs = torch.reshape(inputs, (inputs.shape[0], inputs.shape[1], 
                                             inputs.shape[2]*inputs.shape[3]))
-        
         
         num_nodes = graph.shape[0]
         encoder_hidden_state = self.encoder(inputs, graph, num_nodes)

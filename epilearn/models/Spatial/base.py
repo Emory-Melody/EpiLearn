@@ -5,7 +5,8 @@ from copy import deepcopy
 import torch
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from ...data.dataset import UniversalDataset, custom_collate
+import matplotlib.pyplot as plt
+from ...data.dataset import Dataset, custom_collate
 from ...utils import utils, metrics
 
 
@@ -41,8 +42,8 @@ class BaseModel(nn.Module):
         if initialize:
             self.initialize()
 
-        train_dataset = UniversalDataset(x=train_input, y=train_target, graph=train_graph, dynamic_graph=train_dynamic_graph)
-        val_dataset = UniversalDataset(x=val_input, y=val_target, graph=val_graph, dynamic_graph=val_dynamic_graph)
+        train_dataset = Dataset(x=train_input, y=train_target, graph=train_graph, dynamic_graph=train_dynamic_graph)
+        val_dataset = Dataset(x=val_input, y=val_target, graph=val_graph, dynamic_graph=val_dynamic_graph)
         
         optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay)
         loss_fn = metrics.get_loss(loss)
@@ -52,7 +53,7 @@ class BaseModel(nn.Module):
         early_stopping = patience
         best_val = float('inf')
         es_flag = False
-        for epoch in tqdm(range(epochs)):
+        for epoch in tqdm(range(epochs), disable=True):  # disable=True to prevent multiprocessing deadlock
             loss = self.train_epoch(optimizer = optimizer, loss_fn = loss_fn, dataset=train_dataset, graph=train_graph,
                                     batch_size = batch_size, device = self.device, shuffle=shuffle)
             training_losses.append(loss)
@@ -97,6 +98,14 @@ class BaseModel(nn.Module):
         print("\nFinal Training loss: {}".format(training_losses[-1]))
         print("Final Validation loss: {}".format(validation_losses[-1]))
 
+        # Plotting disabled to prevent deadlock in multiprocessing
+        # plt.figure()
+        # plt.plot(training_losses, label="train")
+        # plt.plot(validation_losses, label="val")
+        # plt.legend()
+        # plt.savefig("s_loss.png")
+        # plt.show()
+
         self.load_state_dict(best_weights)
 
         
@@ -139,7 +148,7 @@ class BaseModel(nn.Module):
 
             loss.backward()
             optimizer.step()
-            epoch_training_losses.append(loss)
+            epoch_training_losses.append(loss.detach().cpu().numpy())
         return sum(epoch_training_losses)/len(epoch_training_losses)
     
     
@@ -179,12 +188,12 @@ class BaseModel(nn.Module):
         print("\nPredicting Progress...")
         assert self.out_shape is not None, "Please fit model first!"
         self.eval()
-        dataset = UniversalDataset(x=feature, graph=graph, dynamic_graph=dynamic_graph)
+        dataset = Dataset(x=feature, graph=graph, dynamic_graph=dynamic_graph)
         test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate)
         '''edge_index = dataset.edge_index
         edge_weight = dataset.edge_weight'''
         outs = []
-        for batch_data in tqdm(test_loader, total=len(test_loader)):
+        for batch_data in tqdm(test_loader, total=len(test_loader), disable=True):  # disable=True to prevent multiprocessing deadlock
             batch_data = batch_data.to(self.device)
             # y_batch = batch_data.y
             x_batch = batch_data.x
@@ -194,6 +203,7 @@ class BaseModel(nn.Module):
             out = self.forward(x_batch, edge_index, edge_weight)
             # self.out_shape = [47, 1]
             #  [0...9]
+
             try:
                 out = torch.reshape(out, (batch_data.batch[-1]+1, *self.out_shape))  # [2, 47, 1]
             except:

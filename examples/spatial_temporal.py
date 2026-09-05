@@ -1,210 +1,187 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Spatial-temporal models without a Task (EpiLearn 0.1.0).
 
-# In[1]:
+Same manual pipeline as examples/temporal.py and examples/spatial.py, for the
+models in ``epilearn.models.SpatialTemporal``. They take a whole window of node
+features, shaped (samples, lookback, nodes, channels), plus an adjacency matrix,
+and predict (samples, nodes, horizon).
 
+0.1.0 notes:
+  * ``Dataset.get_transformed()`` is gone -> ``set_transforms(..., apply_now=True)``
+  * ``Compose.feat_mean`` / ``.feat_std`` are gone -> ``get_process_history()``
+  * ``generate_dataset`` returns a DICT, and its ``permute`` flag flipped meaning:
+    the new default ``permute=False`` is the old ``permute=True``.
+
+Run it with::
+
+    python examples/spatial_temporal.py
+"""
+
+import os
+import sys
+
+EXAMPLE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(EXAMPLE_DIR)
+sys.path.append(os.path.dirname(EXAMPLE_DIR))
+# load_toy_dataset() resolves './datasets' relative to the working directory.
+os.chdir(REPO_ROOT)          # so "./datasets" resolves (load_toy_dataset reads it from cwd)
 
 import torch
-import os
 import matplotlib.pyplot as plt
-os.chdir("..")
 
 from epilearn.models.SpatialTemporal.STGCN import STGCN
-from epilearn.models.SpatialTemporal.ATMGNN import MPNN_LSTM, ATMGNN
-from epilearn.models.SpatialTemporal.STAN import STAN
+from epilearn.models.SpatialTemporal.ATMGNN import ATMGNN
 from epilearn.models.SpatialTemporal.DCRNN import DCRNN
 from epilearn.models.SpatialTemporal.GraphWaveNet import GraphWaveNet
 
+from epilearn.data import Dataset
+from epilearn.utils import metrics, transforms
 
-from epilearn.data import UniversalDataset
-from epilearn.utils import utils, metrics
-from epilearn.utils import transforms
 
-# initial settings
+# ### Configs
+
 device = torch.device('cpu')
 torch.manual_seed(7)
 
-lookback = 12 # inputs size
-horizon = 3 # predicts size
+lookback = 12   # input size
+horizon = 3     # prediction size
 
-# permutation is True when using STGCN
-permute = False
-
-epochs = 50 # training epochs
-batch_size = 50 # training batch size
+epochs = 20
+batch_size = 32
 
 
-# In[2]:
+# ### Load and transform the dataset
 
-
-# load toy dataset
-dataset = UniversalDataset()
+dataset = Dataset()              # 0.0.x called this UniversalDataset
 dataset.load_toy_dataset()
+# The toy dynamic graph ships as (T, N, N, 1); pass
+# dynamic_adj=dataset.dynamic_graph.squeeze(-1) below if your model needs it.
+dataset.dynamic_graph = None
 
-# initialize transforms
 transformation = transforms.Compose({
-                                    'features': [
-                                                    transforms.normalize_feat(),
+    'features': [transforms.normalize_feat()],
+    'target': [transforms.normalize_target()],
+    'graph': [transforms.normalize_adj()],
+    'states': [],
+})
+dataset.set_transforms(transformation, apply_now=True)
 
-                                                ],
-                                    "target": [transforms.normalize_feat()],
-                                    'graph': [
-                                                transforms.normalize_adj(),
-                                                    
-                                            ],
-                                    'dynamic_graph': [
-                                                        transforms.normalize_adj(),
-                                                    
-                                                    ],
-                                    'states': []
-                                    })
+stats = dataset.get_process_history()
+target_mean = float(stats['target_mean'])
+target_std = float(stats['target_std'])
+
+features = dataset.x.to(device)
+target = dataset.y.to(device)
+states = dataset.states.to(device)
+adj_norm = dataset.graph.to(device)
 
 
-# preprocessing dataset
-dataset.transforms = transformation
+# ### Split the data by time
 
-features, target, adj_norm, adj_dynamic_norm, states = dataset.get_transformed().values()
-mean, std = dataset.transforms.feat_mean, dataset.transforms.feat_std
-
-features = features.to(device)
-adj_norm = adj_norm.to(device)
-adj_dynamic_norm = adj_dynamic_norm.to(device)
-
-# split data
-train_rate = 0.6 
+train_rate = 0.6
 val_rate = 0.2
-
-target_feat_idx = None
-target_idx = None
 
 split_line1 = int(features.shape[0] * train_rate)
 split_line2 = int(features.shape[0] * (train_rate + val_rate))
 
-train_original_input = features[:split_line1, :, :]
-val_original_input = features[split_line1:split_line2, :, :]
-test_original_input = features[split_line2:, :, :]
 
-train_original_target = target[:split_line1, :]
-val_original_target = target[split_line1:split_line2, :]
-test_original_target = target[split_line2:, :]
-
-train_original_states = dataset.states[:split_line1, :, :]
-val_original_states = dataset.states[split_line1:split_line2, :, :]
-test_original_states = dataset.states[split_line2:, :, :]
+def make_split(start, end):
+    return dataset.generate_dataset(X=features[start:end],
+                                    Y=target[start:end],
+                                    states=states[start:end],
+                                    adj=adj_norm,
+                                    lookback_window_size=lookback,
+                                    horizon_size=horizon)
 
 
-train_input, train_target, train_states, train_adj = dataset.generate_dataset(X = train_original_input, Y = train_original_target, states = train_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-val_input, val_target, val_states, val_adj = dataset.generate_dataset(X = val_original_input, Y = val_original_target, states = val_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
-test_input, test_target, test_states, test_adj = dataset.generate_dataset(X = test_original_input, Y = test_original_target, states = test_original_states, dynamic_adj = adj_dynamic_norm, lookback_window_size = lookback, horizon_size = horizon, permute = permute)
+train_split = make_split(0, split_line1)
+val_split = make_split(split_line1, split_line2)
+test_split = make_split(split_line2, features.shape[0])
+print({k: tuple(v.shape) for k, v in train_split.items() if v is not None})
+
+num_nodes = adj_norm.shape[0]
+num_features = train_split['features'].shape[3]
 
 
-# prepare model
+# ### Prepare the model
 
-# model = STGCN(
-#             num_nodes=adj_norm.shape[0],
-#             num_features=train_input.shape[3],
-#             num_timesteps_input=lookback,
-#             num_timesteps_output=horizon
-#             ).to(device=device)
-
-model = MPNN_LSTM(
-                num_nodes=adj_norm.shape[0],
-                num_features=train_input.shape[3],
-                num_timesteps_input=lookback,
-                num_timesteps_output=horizon,
-                nhid=4
-                ).to(device=device)
-
-# model = ATMGNN(
-#                 num_nodes=adj_norm.shape[0],
-#                 num_features=train_input.shape[3],
-#                 num_timesteps_input=lookback,
-#                 num_timesteps_output=horizon,
-#                 nhid=4
-#                 ).to(device=device)
-
-# model = STAN(
-#             num_nodes=adj_norm.shape[0],
-#             num_features=train_input.shape[3],
-#             num_timesteps_input=lookback,
-#             num_timesteps_output=horizon
-#             ).to(device=device)
-
-
-'''model = DCRNN(num_features=train_input.shape[3],
+model = STGCN(num_nodes=num_nodes,
+              num_features=num_features,
               num_timesteps_input=lookback,
-              num_timesteps_output=horizon,
-              num_classes=1,
-              max_diffusion_step=2, 
-              filter_type="laplacian",
-              num_rnn_layers=1, 
-              rnn_units=1,
-              nonlinearity="tanh",
-              dropout=0.5,
-              device=device)'''
+              num_timesteps_output=horizon).to(device)
+
+# model = ATMGNN(num_nodes=num_nodes,
+#                num_features=num_features,
+#                num_timesteps_input=lookback,
+#                num_timesteps_output=horizon,
+#                nhid=4).to(device)
+
+# model = DCRNN(num_features=num_features,
+#               num_timesteps_input=lookback,
+#               num_timesteps_output=horizon,
+#               num_classes=1,
+#               max_diffusion_step=2,
+#               filter_type="laplacian",
+#               num_rnn_layers=1,
+#               rnn_units=1,
+#               nonlinearity="tanh",
+#               dropout=0.5,
+#               device=device).to(device)
+
+# model = GraphWaveNet(num_nodes=num_nodes,
+#                      num_features=num_features,
+#                      num_timesteps_input=lookback,
+#                      num_timesteps_output=horizon,
+#                      adj_m=adj_norm, gcn_bool=True,
+#                      addaptadj=True, aptinit=None,
+#                      blocks=2, nlayers=2,
+#                      residual_channels=8, dilation_channels=8,
+#                      skip_channels=32, end_channels=64,
+#                      dropout=0.3, device=device).to(device)
 
 
-'''model = GraphWaveNet(num_timesteps_input=train_input.shape[3], num_timesteps_output=horizon, 
-                     adj_m=adj_norm, gcn_bool=True, 
-                     addaptadj=True, aptinit=None, 
-                     blocks=4, nlayers=2,
-                     residual_channels=32, dilation_channels=32, 
-                     skip_channels=32 * 8, end_channels=32 * 16,dropout=0.3, device=device)'''
+# ### Train
+# For a dynamic-graph model pass train_dynamic_graph=train_split['dynamic_graph'].
+
+model.fit(train_input=train_split['features'],
+          train_target=train_split['targets'],
+          train_states=train_split['states'],
+          train_graph=adj_norm,
+          val_input=val_split['features'],
+          val_target=val_split['targets'],
+          val_states=val_split['states'],
+          val_graph=adj_norm,
+          loss='mse',
+          verbose=True,
+          batch_size=batch_size,
+          epochs=epochs)
 
 
-# In[3]:
+# ### Evaluate
+# Metrics are NOT auto-denormalized in 0.1.0: undo normalize_target() by hand.
+
+out = model.predict(feature=test_split['features'],
+                    graph=adj_norm,
+                    states=test_split['states'])
+if isinstance(out, tuple):       # some models also return a physics term
+    out = out[0]
+
+preds = out.detach().cpu() * target_std + target_mean
+targets = test_split['targets'].detach().cpu() * target_std + target_mean
+print(f"MAE: {metrics.get_MAE(preds, targets).item():.4f}")
 
 
-# training
-model.fit(
-        train_input=train_input, 
-        train_target=train_target,
-        train_states = train_states, 
-        train_graph=adj_norm,  # for dynamic graph, use val_adj
-        val_input=val_input, 
-        val_target=val_target, 
-        val_states=val_states,
-        val_graph=adj_norm,  # for dynamic graph, use val_adj
-        loss='mse',
-        verbose=True,
-        batch_size=batch_size,
-        epochs=epochs)
+# ### Visualize one node across the test window
 
-
-# In[4]:
-
-
-# evaluate
-out = model.predict(feature=test_input, graph=adj_norm)
-preds = out.detach().cpu()*std[0]+mean[0]
-targets = test_target.detach().cpu()*std[0]+mean[0]
-# MAE
-mae = metrics.get_MAE(preds, targets)
-print(f"MAE: {mae.item()}")
-
-
-# In[5]:
-
-
-# # visualization
-# out = model.predict(feature=train_input, graph=adj_norm).detach().cpu()
-
-# sample = 28
-
-# plt.figure(figsize=(15 ,5))
-# for i in range(1, 4):
-#     sample_input=train_input[sample, i, :, 0]
-#     sample_output=out[sample, i, :]
-#     sample_target=train_target[sample, i, :]
-
-#     vis_data = torch.cat([sample_input, sample_target]).numpy()
-    
-#     plt.subplot(1, 3, i)
-#     rng = list(range(lookback+horizon))
-#     plt.plot(rng, vis_data, label="ground truth")
-#     plt.plot(rng[lookback:lookback+horizon], sample_output.numpy(), label="prediction")
-#     plt.legend()
-
-
-# plt.show()
-
+node = 0
+plt.figure(figsize=(12, 4))
+plt.plot(preds[:, node, -1].numpy(), 'r-', label='Prediction')
+plt.plot(targets[:, node, -1].numpy(), 'b--', label='Ground Truth')
+plt.xlabel("Test window index")
+plt.ylabel("Value")
+plt.title(f"Node {node}, horizon step {horizon}")
+plt.legend()
+plt.tight_layout()
+plt.show()

@@ -39,7 +39,7 @@ class GATLayer(nn.Module):
         nn.init.xavier_normal_(self.attn_fc.weight, gain=gain)
 
     def forward(self, adj, h):
-        import ipdb; ipdb.set_trace()  
+        # import ipdb; ipdb.set_trace()  
         z = self.fc(h)
 
         sparse_adj = adj.to_sparse_coo()

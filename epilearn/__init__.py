@@ -6,4 +6,4 @@ from . import (
     tasks
 )
 
-__version__ = "0.0.19"
+__version__ = "0.1.0"

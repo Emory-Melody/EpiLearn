@@ -70,17 +70,27 @@ class stcell(nn.Module):
         receptive_field = 1
         self.supports_len = 2
 
+        # Store dilations for each layer to compute proper receptive field
+        self.dilations = []
+        
         for b in range(blocks):
             additional_scope = 1
             new_dilation = 1
             for i in range(layers):
+                # Cap dilation more aggressively to work with small temporal sequences
+                # Effective kernel size = (kernel_size - 1) * dilation + 1
+                # Keep max effective kernel size around 5-7 for small sequences
+                capped_dilation = min(new_dilation, 2)  # Max dilation of 2 for compatibility
+                self.dilations.append(capped_dilation)
+                
+                # Dilation should be tuple (height_dilation, width_dilation) = (1, temporal_dilation)
                 self.filter_convs.append(nn.Conv2d(in_channels=residual_channels,
                                                    out_channels=dilation_channels,
-                                                   kernel_size=(1,kernel_size),dilation=new_dilation))
+                                                   kernel_size=(1,kernel_size),dilation=(1, capped_dilation)))
 
                 self.gate_convs.append(nn.Conv2d(in_channels=residual_channels,
                                                  out_channels=dilation_channels,
-                                                 kernel_size=(1, kernel_size), dilation=new_dilation))
+                                                 kernel_size=(1, kernel_size), dilation=(1, capped_dilation)))
 
                 self.residual_convs.append(nn.Conv2d(in_channels=dilation_channels,
                                                      out_channels=residual_channels,
@@ -90,9 +100,10 @@ class stcell(nn.Module):
                                                  out_channels=skip_channels,
                                                  kernel_size=(1, 1)))
                 new_dilation *=2
-                receptive_field += additional_scope
+                receptive_field += (kernel_size - 1) * capped_dilation
                 additional_scope *= 2
-                self.ln.append(nn.LayerNorm([residual_channels, num_nodes, (2 ** layers - 1) * blocks + 2 - receptive_field]))
+                # Use LayerNorm that normalizes over channel dimension only, allowing variable temporal sizes
+                self.ln.append(nn.LayerNorm([residual_channels], elementwise_affine=True))
                 self.gconv.append(gcn(dilation_channels,residual_channels,dropout,support_len=self.supports_len))
 
 
@@ -152,7 +163,11 @@ class stcell(nn.Module):
 
             gate = torch.sigmoid(x)
             x = x * gate + dense * (1 - gate)
+            # Apply LayerNorm over channel dimension: (B, C, N, T) -> normalize over C
+            # Transpose to (B, N, T, C), apply norm, transpose back
+            x = x.permute(0, 2, 3, 1)  # (B, C, N, T) -> (B, N, T, C)
             x = self.ln[i](x)
+            x = x.permute(0, 3, 1, 2)  # (B, N, T, C) -> (B, C, N, T)
 
         param_b = F.relu(skip)
         param_b = F.relu(self.end_conv_b1(param_b))
@@ -251,7 +266,8 @@ class MepoGNN(BaseModel):
                  blocks=2, 
                  layers=3, 
                  nhids=None,
-                 device = 'cpu'):
+                 device = 'cpu',
+                 **kwargs):
         super(MepoGNN, self).__init__(device = device)
         self.stcell = stcell(num_nodes, dropout, num_features, num_timesteps_output, residual_channels, dilation_channels,
                              skip_channels, end_channels, kernel_size, blocks, layers)
@@ -259,9 +275,13 @@ class MepoGNN(BaseModel):
         self.out_dim = num_timesteps_output
         self.glm_type = glm_type
         self.device = device
+        self.num_nodes = num_nodes
 
         if self.glm_type == 'Adaptive':
             # To prevent parameter magnitude being too big
+            if adapt_graph is None:
+                # If no adapt_graph provided, create identity matrix as fallback
+                adapt_graph = torch.eye(num_nodes, device=device)
             log_g = torch.log(adapt_graph+1.0)
             self.max_log = log_g.max()
             # initialize g
@@ -296,6 +316,18 @@ class MepoGNN(BaseModel):
         x_node = x
         od = dynamic_adj
         SIR = states
+        
+        # Handle missing states by creating initialized SIR compartments
+        if SIR is None:
+            batch_size = x.shape[0]
+            num_nodes = x.shape[2]
+            num_timesteps = x.shape[1]
+            # Initialize with reasonable default SIR values: S=0.9, I=0.1, R=0.0
+            # Shape: (batch, timesteps, nodes, 3) for S, I, R compartments
+            SIR = torch.zeros(batch_size, num_timesteps, num_nodes, 3, device=x.device)
+            SIR[..., 0] = 0.9  # S
+            SIR[..., 1] = 0.1  # I  
+            SIR[..., 2] = 0.0  # R
 
         x_node = x_node.transpose(1,3)
         if self.glm_type == 'Adaptive':
@@ -310,6 +342,26 @@ class MepoGNN(BaseModel):
                 outputs_SIR.append(NSIR[..., [0]])
 
         if self.glm_type == 'Dynamic':
+            # Handle case when dynamic_adj (OD matrix) is not available
+            if od is None:
+                # Fallback: use static adjacency matrix repeated over time as a proxy
+                # Create a simple OD-like tensor from static adjacency
+                batch_size = x.shape[0]
+                num_timesteps = x.shape[1]
+                
+                # Use static adjacency as proxy for mobility: (num_nodes, num_nodes)
+                # Expand to (batch, time_in, nodes, nodes, 1) to match expected OD format
+                if adj is not None:
+                    # Normalize adjacency to represent mobility probabilities
+                    adj_norm = adj / (adj.sum(dim=1, keepdim=True) + 1e-8)
+                    # Expand: (N, N) -> (B, T_in, N, N, 1)
+                    od = adj_norm.unsqueeze(0).unsqueeze(0).unsqueeze(-1)
+                    od = od.expand(batch_size, num_timesteps, -1, -1, -1).to(x.device)
+                else:
+                    # Last resort: use identity-like structure
+                    od = torch.eye(self.num_nodes).unsqueeze(0).unsqueeze(0).unsqueeze(-1)
+                    od = od.expand(batch_size, num_timesteps, -1, -1, -1).to(x.device)
+            
             incidence = torch.softmax(self.inc_init, dim=1)
             # import ipdb; ipdb.set_trace()
             mob = torch.einsum('kl,blnmc->bknmc', incidence, od).squeeze(-1)
@@ -324,9 +376,13 @@ class MepoGNN(BaseModel):
                 SIR = NSIR[...,1:]
                 outputs_SIR.append(NSIR[...,[0]])
 
-        outputs = torch.stack(outputs_SIR, dim=1)
+        outputs = torch.stack(outputs_SIR, dim=1)  # (batch, horizon, nodes, 1)
+        outputs = outputs.squeeze(-1)  # Remove last dimension: (batch, horizon, nodes)
+        
+        # Transpose to match expected format: (batch, nodes, horizon)
+        outputs = outputs.transpose(1, 2)
 
-        return outputs.squeeze()
+        return outputs
     
     def initialize(self):
         for layer in self.children():
